@@ -7,9 +7,9 @@ import time
 import threading
 import json
 import gevent
-# *** ADDED: Imports for explicit gevent server ***
-from gevent import pywsgi
-from geventwebsocket.handler import WebSocketHandler
+# *** REMOVED: Imports for explicit gevent server ***
+# from gevent import pywsgi
+# from geventwebsocket.handler import WebSocketHandler
 import math
 import traceback
 import collections
@@ -26,7 +26,7 @@ WEB_SERVER_HOST = '0.0.0.0'
 WEB_SERVER_PORT = 5000
 
 # --- Constants ---
-HEARTBEAT_TIMEOUT = 7
+HEARTBEAT_TIMEOUT = 15
 REQUEST_STREAM_RATE_HZ = 4
 COMMAND_ACK_TIMEOUT = 5
 TELEMETRY_UPDATE_INTERVAL = 0.1 # Seconds (10 Hz)
@@ -39,7 +39,7 @@ MAV_RESULT_STR = {v: k for k, v in MAV_RESULT_ENUM.items()}
 
 
 # --- Flask & SocketIO Setup ---
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = 'desktop_drone_secret!'
 socketio = SocketIO(app,
                     async_mode='gevent',
@@ -111,9 +111,19 @@ def connect_mavlink():
     try:
         # Attempt connection and heartbeat wait
         print(f"Attempting TCP connection: {MAVLINK_CONNECTION_STRING}...")
-        mavlink_connection = mavutil.mavlink_connection(MAVLINK_CONNECTION_STRING, source_system=250)
+        try:
+            mavlink_connection = mavutil.mavlink_connection(MAVLINK_CONNECTION_STRING, source_system=250)
+            print("MAVLink connection object created successfully.")
+        except Exception as e:
+            print(f"Error creating MAVLink connection object: {e}")
+            return False
         print("Waiting for initial heartbeat...")
-        mavlink_connection.wait_heartbeat(timeout=10) # Wait for the first heartbeat
+        try:
+            mavlink_connection.wait_heartbeat(timeout=10) # Wait for the first heartbeat
+            print("Initial heartbeat received successfully.")
+        except Exception as e:
+            print(f"Error waiting for initial heartbeat: {e}")
+            return False
 
         # Check if connection succeeded (target_system is set)
         if mavlink_connection.target_system == 0:
@@ -210,6 +220,8 @@ def mavlink_receive_loop():
                 with drone_state_lock: drone_state_changed = True
                 gevent.sleep(5); continue
         if drone_state.get('connected') and (time.time() - last_heartbeat_time > HEARTBEAT_TIMEOUT):
+            # *** ADDED: Log inside timeout check ***
+            print(f"DEBUG: Heartbeat timeout detected. LastHB:{last_heartbeat_time:.2f} Now:{time.time():.2f} Timeout:{HEARTBEAT_TIMEOUT}")
             print(f"MAVLink timeout (>{HEARTBEAT_TIMEOUT}s). Resetting.")
             if mavlink_connection:
                 try: mavlink_connection.close(); print("Closed timed-out connection.");
@@ -227,6 +239,8 @@ def mavlink_receive_loop():
 
         msg = None
         state_updated_by_msg = False
+        # *** ADDED: Log before recv_match ***
+        print("DEBUG: Attempting to receive MAVLink message...")
         try:
             msg = mavlink_connection.recv_match(blocking=False, timeout=0.02)
         except (mavutil.mavlink.MAVLinkException, OSError, ConnectionResetError, BrokenPipeError) as e:
@@ -257,6 +271,8 @@ def mavlink_receive_loop():
                             if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED: drone_state['mode'] = AP_MODE_NAME_TO_ID.get(msg.custom_mode, f"Custom({msg.custom_mode})")
                             else: drone_state['mode'] = mavutil.mode_string_v10(msg)
                             drone_state['system_status'] = msg.system_status
+                            # *** ADDED: More detailed heartbeat log ***
+                            print(f"DEBUG: HEARTBEAT processed. SysID:{msg.get_srcSystem()} LastHB:{last_heartbeat_time:.2f} Now:{time.time():.2f} Armed:{drone_state['armed']} Mode:{drone_state['mode']}")
                             if (not was_connected or not data_streams_requested) and mavlink_connection.target_system != 0: request_data_streams()
                             if not was_connected: socketio.emit('status_message', {'text': 'Drone Reconnected', 'type': 'info'}, namespace='/drone')
                     elif msg_type == 'GLOBAL_POSITION_INT': drone_state.update({'lat': msg.lat / 1e7, 'lon': msg.lon / 1e7, 'alt_rel': msg.relative_alt / 1000.0, 'alt_abs': msg.alt / 1000.0, 'heading': msg.hdg / 100.0 if msg.hdg != 65535 else drone_state.get('heading', 0.0), 'vx': msg.vx / 100.0, 'vy': msg.vy / 100.0, 'vz': msg.vz / 100.0, 'groundspeed': math.sqrt(msg.vx**2 + msg.vy**2) / 100.0})
@@ -288,7 +304,8 @@ def mavlink_receive_loop():
 
                 if state_updated_by_msg:
                     drone_state_changed = True
-
+                # *** ADDED: Emit raw mavlink message for heartbeat animation ***
+                socketio.emit('mavlink_message', msg.to_dict(), namespace='/drone')
                 gevent.sleep(0.001)
 
             except Exception as parse_err: print(f"Error parsing {msg_type}: {parse_err}"); traceback.print_exc()
@@ -319,6 +336,18 @@ def periodic_telemetry_update():
 # --- Flask Routes and SocketIO Handlers ---
 @app.route('/')
 def index(): return render_template("index.html", version="v2.63-Desktop-TCP-AckEkf")
+from flask import send_from_directory
+
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
+
+# Add a route for favicon.ico to prevent 404 errors in browser console
+@app.route('/favicon.ico')
+def favicon():
+    # Return "204 No Content" which tells the browser there is no icon without causing an error
+    return '', 204
+
 @app.route('/mavlink_dump')
 def mavlink_dump(): return render_template("mavlink_dump.html", version="v2.63-Desktop-TCP-AckEkf")
 @socketio.on('connect', namespace='/drone')
@@ -394,16 +423,19 @@ if __name__ == '__main__':
     print(f"Starting Flask-SocketIO web server on http://{WEB_SERVER_HOST}:{WEB_SERVER_PORT}")
     print("Access the interface at http://<your_desktop_ip>:%s or http://127.0.0.1:%s" % (WEB_SERVER_PORT, WEB_SERVER_PORT))
     try:
-        server = pywsgi.WSGIServer((WEB_SERVER_HOST, WEB_SERVER_PORT), app, handler_class=WebSocketHandler)
-        print("Starting server with gevent pywsgi...")
-        server.serve_forever()
+        # *** CHANGED: Use socketio.run() to start the server ***
+        # server = pywsgi.WSGIServer((WEB_SERVER_HOST, WEB_SERVER_PORT), app, handler_class=WebSocketHandler)
+        # print("Starting server with gevent pywsgi...")
+        # server.serve_forever()
+        socketio.run(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT, use_reloader=False) # Let SocketIO run the server
     except KeyboardInterrupt: print("KeyboardInterrupt received, shutting down.")
     except Exception as e: print(f"Web Server Error: {e}"); traceback.print_exc(); sys.exit(1)
     finally:
+        # *** REMOVED: Explicit gevent server stop logic ***
         print("Server shutting down...")
-        if 'server' in locals() and hasattr(server, 'stop'):
-             print("Attempting to stop Gevent server...")
-             server.stop(timeout=1)
+        # if 'server' in locals() and hasattr(server, 'stop'):
+        #      print("Attempting to stop Gevent server...")
+        #      server.stop(timeout=1)
         if telemetry_update_thread and not telemetry_update_thread.dead: print("Stopping Telemetry update greenlet..."); telemetry_update_thread.kill(block=False)
         if mavlink_thread and not mavlink_thread.dead: print("Stopping MAVLink listener greenlet..."); mavlink_thread.kill(block=True, timeout=2); print("MAVLink greenlet stopped." if mavlink_thread.dead else "Warning: MAVLink greenlet did not stop cleanly.")
         if mavlink_connection:
