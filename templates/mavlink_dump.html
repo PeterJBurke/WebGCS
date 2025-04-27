@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAVLink Message Dump</title>
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <style>
+        body { font-family: monospace; background-color: #f4f4f4; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }
+        .header { background-color: #333; color: #fff; padding: 10px; margin: 0; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 1.2em; }
+        .nav-link { margin-left: 20px; font-size: .9em; color: #adf; text-decoration: none; }
+        #heartbeat-indicator { display:inline-block; width:16px; height:16px; border-radius:50%; background-color:#e74c3c; margin-right:5px; vertical-align:middle; transition:background-color .1s ease-in-out; border:1px solid #777 }
+        #heartbeat-indicator.on { background-color:#2ecc71 }
+        .dump-container { display: flex; flex-direction: column; flex-grow: 1; padding: 10px; overflow: hidden; }
+        .dump-controls { padding-bottom: 5px; text-align: right; }
+        .dump-controls label { font-size: 0.8em; margin-right: 5px; }
+        .dump-controls input { vertical-align: middle; }
+        .dump-controls button { padding: 3px 8px; font-size: .8em; }
+        #other-dump-area { flex-grow: 1; background-color: #fff; border: 1px solid #ccc; padding: 5px; overflow-y: scroll; font-size: .8em; white-space: pre; }
+        .msg-separator { border-top: 1px dashed #aaa; margin-top: 5px; padding-top: 5px; height: 0; line-height: 0; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>MAVLink Message Dump</h1>
+        <div class="header-right">
+            <a href="/" class="nav-link">[Back to Main Control]</a>
+        </div>
+    </div>
+    <div class="dump-container">
+        <h2>Messages (<span id="other-msg-count">0</span>)</h2>
+        <div class="dump-controls">
+            <label><input type="checkbox" id="filter-hb" checked> Filter HEARTBEAT</label>
+            <button id="clear-button">Clear Log</button>
+        </div>
+        <pre id="other-dump-area">Waiting for messages...</pre>
+    </div>
+
+    <script src="/static/lib/socket.io.min.js"></script>
+    <script>
+        const otherDumpArea = document.getElementById('other-dump-area');
+        const otherCountSpan = document.getElementById('other-msg-count');
+        const clearButton = document.getElementById('clear-button');
+        const filterHbCheckbox = document.getElementById('filter-hb');
+        let otherMessageCount = 0;
+        const MAX_MESSAGES = 500; // Limit messages in the dump view
+
+        const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/drone');
+
+        function clearArea(area, countSpan) {
+            area.textContent = 'Log cleared. Waiting for messages...\n';
+            otherMessageCount = 0;
+            countSpan.textContent = 0;
+        }
+
+        function appendToArea(area, message, countSpan) {
+            const atBottom = (area.scrollHeight - area.clientHeight) <= area.scrollTop + 10;
+            const messageNode = document.createTextNode(JSON.stringify(message, null, 2) + '\n');
+            const separatorNode = document.createTextNode('---\n'); // Visual separator
+
+            area.appendChild(messageNode);
+            area.appendChild(separatorNode);
+            otherMessageCount++;
+
+            // Limit the number of messages displayed
+            while (area.childNodes.length > (2 * MAX_MESSAGES) + 1) { // +1 for the initial text, *2 for msg + separator
+                area.removeChild(area.firstChild); // Remove message
+                if(area.firstChild) area.removeChild(area.firstChild); // Remove separator
+                otherMessageCount--;
+            }
+            countSpan.textContent = otherMessageCount;
+
+            // Auto-scroll if user was near the bottom
+            if (atBottom) {
+                area.scrollTop = area.scrollHeight;
+            }
+        }
+
+        socket.on('connect', () => {
+            console.log('Connected to server for MAVLink dump');
+            otherDumpArea.textContent = 'Connected. Waiting for messages...\n';
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            otherDumpArea.textContent += '\n*** Disconnected from backend server. ***\n';
+        });
+
+        socket.on('mavlink_message', (msg) => {
+            if (msg && msg.mavpackettype) {
+                 // Filter HEARTBEAT if checkbox is checked
+                if (filterHbCheckbox.checked && msg.mavpackettype === 'HEARTBEAT') {
+                    return; // Skip adding HEARTBEAT to the log
+                }
+                appendToArea(otherDumpArea, msg, otherCountSpan);
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            clearArea(otherDumpArea, otherCountSpan);
+        });
+    </script>
+</body>
+</html>

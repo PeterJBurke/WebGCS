@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Update title -->
+    <title>Drone Control Interface v2.63-Desktop-TCP-AckEkf</title>
+    <link rel="stylesheet" href="/static/lib/leaflet.css"/>
+    <link rel="stylesheet" href="/static/css/style.css"/> <!-- Link to the updated style.css -->
+    <style>
+        /* Basic layout styles */
+        body { display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        h1.main-title { background-color: #333; color: #fff; padding: 8px 15px; margin: 0; font-size: 1.2em; flex-shrink: 0; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        button:disabled, select:disabled { background-color: #cccccc; color: #666666; cursor: not-allowed; opacity: 0.7; }
+        .map-controls { position: absolute; top: 10px; left: 50px; z-index: 500; background: rgba(255,255,255,0.8); padding: 5px; border-radius: 4px; border: 1px solid #bbb; }
+        .map-controls button { font-size: 11px; padding: 3px 6px; margin-left: 5px; }
+        .goto-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+        .goto-controls input { flex-grow: 1; min-width: 60px; }
+        .mode-select-control { margin-left: 10px; }
+        .mode-select-control select { padding: 5px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <!-- Update title -->
+    <h1 class="main-title">Drone Control Interface v2.63-Desktop-TCP-AckEkf</h1>
+    <div class="main-container">
+        <div class="left-column">
+            <!-- PFD Section -->
+            <div class="pfd-section">
+                 <div id="attitude-indicator-wrapper">
+                    <canvas id="attitude-canvas" width="280" height="250"></canvas>
+                    <div id="asi-tape-container"><canvas id="asi-canvas" width="60" height="250"></canvas></div>
+                    <div id="alt-tape-container"><canvas id="alt-canvas" width="70" height="250"></canvas></div>
+                    <div id="arming-status-overlay" class="pfd-overlay">DISARMED</div>
+                    <div id="battery-overlay" class="pfd-overlay">Bat: <span id="battery-value">--.-</span>V</div>
+                    <div id="mode-overlay" class="pfd-overlay">Mode: <span id="mode-value">------</span></div>
+                    <div id="current-overlay" class="pfd-overlay">Cur: <span id="current-value">--.-</span>A</div>
+                    <div id="gps-overlay" class="pfd-overlay">GPS: <span id="gps-fix-value">---</span> (<span id="gps-sats-value">0</span>) HDOP:<span id="gps-hdop-value">--.-</span></div>
+                    <div id="latlon-overlay" class="pfd-overlay">Lat: <span id="lat-value">--.------</span><br>Lon: <span id="lon-value">--.------</span></div>
+                </div>
+            </div>
+
+            <div class="info-controls-section">
+                <div class="status">
+                    <h2>Status</h2>
+                    <div class="status-grid">
+                        <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
+                        <!-- *** ADDED: EKF Status Display Element *** -->
+                        <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
+                        <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <!-- Controls section remains unchanged -->
+                     <h2>Controls</h2>
+                    <div><button id="btn-arm">Arm</button> <button id="btn-disarm">Disarm</button> <button id="btn-takeoff">Takeoff</button> (Alt: <input type="number" id="takeoff-alt" value="5" step="1" min="1" max="1000" style="width:45px"> m) <button id="btn-land">Land</button> <button id="btn-rtl">RTL</button></div>
+                    <div class="mode-select-control"><label for="mode-select">Set Mode:</label> <select id="mode-select"><option value="">--Select Mode--</option><option value="STABILIZE">Stabilize</option><option value="ALT_HOLD">Alt Hold</option><option value="POS_HOLD">Pos Hold</option><option value="LOITER">Loiter</option><option value="GUIDED">Guided</option><option value="RTL">RTL</option><option value="LAND">Land</option><option value="AUTO">Auto</option><option value="BRAKE">Brake</option></select> <button id="btn-set-mode">Set</button></div>
+                    <hr>
+                    <div class="goto-controls"> GoTo: Lat <input type="number" step="any" id="goto-lat" placeholder="Lat [-90,90]"> Lon <input type="number" step="any" id="goto-lon" placeholder="Lon [-180,180]"> Alt <input type="number" step="any" id="goto-alt" placeholder="Alt (AGL)" value="10" min="-100" max="5000"> <button id="btn-goto">Go To</button> <button id="btn-clear-goto" title="Clear GoTo Fields">Clear</button> </div>
+                </div>
+            </div>
+        </div>
+        <div class="right-column" id="map">
+            <div class="map-controls"> <button id="btn-center-map" title="Center map on drone">Center Map</button> </div>
+        </div>
+    </div>
+    <a href="/mavlink_dump" id="dump-link-button" target="_blank" title="Open MAVLink Message Dump">Dump</a>
+
+    <script src="/static/lib/leaflet.js"></script>
+    <script src="/static/lib/socket.io.min.js"></script>
+    <script>
+        // --- Global Variables & DOM Elements ---
+        const map = L.map('map').setView([0, 0], 2); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM contributors' }).addTo(map); let droneMarker = null, homeMarker = null, firstLocationUpdate = true; const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] }); const homeIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 24] });
+        const socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + '/drone', { reconnectionAttempts: 5, reconnectionDelay: 3000 });
+        const messagesDiv = document.getElementById('messages');
+        const ahCanvas = document.getElementById('attitude-canvas'), ahCtx = ahCanvas.getContext('2d'); const asiCanvas = document.getElementById('asi-canvas'), asiCtx = asiCanvas.getContext('2d'); const altCanvas = document.getElementById('alt-canvas'), altCtx = altCanvas.getContext('2d');
+        const armingStatusOverlay = document.getElementById('arming-status-overlay'); const batteryOverlay = document.getElementById('battery-overlay'); const modeOverlay = document.getElementById('mode-overlay'); const currentOverlay = document.getElementById('current-overlay'); const gpsOverlay = document.getElementById('gps-overlay'); const latlonOverlay = document.getElementById('latlon-overlay'); const batteryValueSpan = document.getElementById('battery-value'); const modeValueSpan = document.getElementById('mode-value'); const currentValueSpan = document.getElementById('current-value'); const gpsFixValueSpan = document.getElementById('gps-fix-value'); const gpsSatsValueSpan = document.getElementById('gps-sats-value'); const gpsHdopValueSpan = document.getElementById('gps-hdop-value'); const latValueSpan = document.getElementById('lat-value'); const lonValueSpan = document.getElementById('lon-value');
+        // *** ADDED EKF Status Span ***
+        const ekfStatusSpan = document.getElementById('ekf-status');
+        const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")}; const modeSelect=document.getElementById("mode-select");
+        const DEG_TO_RAD = Math.PI / 180; const RAD_TO_DEG = 180 / Math.PI; const M_S_TO_KNOTS = 1.94384; const ahWidth = ahCanvas.width, ahHeight = ahCanvas.height; const ahCenterX = ahWidth / 2, ahCenterY = ahHeight / 2; const PITCH_SCALE_FACTOR = 4; const TAPE_WIDTH = asiCanvas.width; const TAPE_ALT_WIDTH = altCanvas.width; const TAPE_HEIGHT = ahHeight; const TAPE_CENTER_Y = TAPE_HEIGHT / 2; const ASI_PIXELS_PER_UNIT = 5; const ALT_PIXELS_PER_UNIT = 5; const HEADING_PIXELS_PER_DEG = 2.5; const HEADING_TAPE_HEIGHT = 25; const PFD_SKY_COLOR = "#87CEEB"; const PFD_GROUND_COLOR = "#A0522D"; const PFD_HORIZON_LINE_COLOR = "#FFFFFF"; const PFD_AIRCRAFT_SYMBOL_COLOR = "#FFFF00"; const PFD_TAPE_TICK_COLOR = "#FFFFFF"; const PFD_TAPE_POINTER_COLOR = "#FFFF00"; const PFD_OVERLAY_BOX_COLOR = "rgba(50, 50, 50, 0.7)"; const PFD_OVERLAY_TEXT_COLOR = "#FFFFFF";
+
+        // --- PFD Drawing Functions (drawRoundedRect, drawAttitudeIndicator, drawAirspeedTape, drawAltitudeTape) ---
+        // ... (These functions remain the same as the previous response where VSI was removed) ...
+        function drawRoundedRect(ctx, x, y, width, height, radius) { ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.arcTo(x + width, y, x + width, y + radius, radius); ctx.lineTo(x + width, y + height - radius); ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius); ctx.lineTo(x + radius, y + height); ctx.arcTo(x, y + height, x, y + height - radius, radius); ctx.lineTo(x, y + radius); ctx.arcTo(x, y, x + radius, y, radius); ctx.closePath(); }
+        function drawAttitudeIndicator(pitch = 0, roll = 0, heading = 0) { const rollRad = -roll * DEG_TO_RAD; const pitchPx = pitch * PITCH_SCALE_FACTOR; const ctx = ahCtx; ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, ahWidth, ahHeight); ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.save(); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.beginPath(); ctx.rect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX - heading * HEADING_PIXELS_PER_DEG, HEADING_TAPE_HEIGHT / 2); const headingRange = Math.ceil(ahWidth / (2 * HEADING_PIXELS_PER_DEG)); const startHdg = Math.floor(heading - headingRange - 10); const endHdg = Math.ceil(heading + headingRange + 10); const headingLabels = { 0: "N", 30: "3", 60: "6", 90: "E", 120: "12", 150: "15", 180: "S", 210: "21", 240: "24", 270: "W", 300: "30", 330: "33", 360: "N" }; for (let h = startHdg; h <= endHdg; h += 5) { const normalizedHdg = (h % 360 + 360) % 360; const xPos = h * HEADING_PIXELS_PER_DEG; let tickHeight = 5; let isLabelTick = false; let label = null; ctx.lineWidth = 1; if (h % 10 === 0) tickHeight = 10; if (h % 30 === 0) { tickHeight = 15; isLabelTick = true; label = (normalizedHdg / 10).toString(); } if (headingLabels[normalizedHdg]) { tickHeight = 15; isLabelTick = true; label = headingLabels[normalizedHdg]; ctx.lineWidth = 1.5; } ctx.beginPath(); ctx.moveTo(xPos, -tickHeight / 2); ctx.lineTo(xPos, tickHeight / 2); ctx.stroke(); if (isLabelTick && label) { ctx.fillText(label, xPos, tickHeight / 2 + 10); } } ctx.restore(); ctx.save(); ctx.beginPath(); ctx.rect(0, HEADING_TAPE_HEIGHT, ahWidth, ahHeight - HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.rotate(rollRad); ctx.translate(0, pitchPx); ctx.fillStyle = PFD_SKY_COLOR; ctx.fillRect(-ahWidth * 1.5, -ahHeight * 2, ahWidth * 3, ahHeight * 2); ctx.fillStyle = PFD_GROUND_COLOR; ctx.fillRect(-ahWidth * 1.5, 0, ahWidth * 3, ahHeight * 2); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-ahWidth * 1.5, 0); ctx.lineTo(ahWidth * 1.5, 0); ctx.stroke(); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 1; ctx.font = "12px monospace"; ctx.fillStyle = PFD_HORIZON_LINE_COLOR; ctx.textAlign = "center"; const tickLengthShort = 25; const tickLengthLong = 50; for (let p = -90; p <= 90; p += 5) { if (p === 0) continue; const yPos = -p * PITCH_SCALE_FACTOR; if (Math.abs(yPos) > ahHeight * 1.5) continue; const isMajorTick = (p % 10 === 0); const tickLength = isMajorTick ? tickLengthLong : tickLengthShort; ctx.beginPath(); ctx.moveTo(-tickLength / 2, yPos); ctx.lineTo(tickLength / 2, yPos); ctx.stroke(); if (isMajorTick) { ctx.fillText(Math.abs(p).toString(), -tickLength / 2 - 20, yPos + 4); ctx.fillText(Math.abs(p).toString(), tickLength / 2 + 20, yPos + 4); } } ctx.restore(); ctx.save(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.strokeStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.fillStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.lineWidth = 2; const notchSize = 4; ctx.beginPath(); ctx.moveTo(0, -notchSize / 2); ctx.lineTo(-notchSize, notchSize / 2); ctx.lineTo(notchSize, notchSize / 2); ctx.closePath(); ctx.fillRect(-1,-1,2,2); const wingLength = 40; ctx.beginPath(); ctx.moveTo(-wingLength, 0); ctx.lineTo(-notchSize*1.5, 0); ctx.moveTo(notchSize*1.5, 0); ctx.lineTo(wingLength, 0); ctx.stroke(); ctx.restore(); ctx.save(); const hdgBoxWidth = 80; const hdgBoxHeight = 20; const hdgBoxX = ahCenterX - hdgBoxWidth / 2; const hdgBoxY = 5; const hdgBoxRadius = 5; ctx.fillStyle = PFD_OVERLAY_BOX_COLOR; drawRoundedRect(ctx, hdgBoxX, hdgBoxY, hdgBoxWidth, hdgBoxHeight, hdgBoxRadius); ctx.fill(); ctx.fillStyle = PFD_OVERLAY_TEXT_COLOR; ctx.font = "bold 11px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`HDG: ${heading.toFixed(0)}°`, ahCenterX, hdgBoxY + hdgBoxHeight / 2); ctx.restore(); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(ahCenterX, HEADING_TAPE_HEIGHT); ctx.lineTo(ahCenterX - 6, HEADING_TAPE_HEIGHT + 6); ctx.lineTo(ahCenterX + 6, HEADING_TAPE_HEIGHT + 6); ctx.closePath(); ctx.fill(); ctx.restore(); }
+        function drawAirspeedTape(speed = 0) { const ctx = asiCtx; const tapeWidth = TAPE_WIDTH; const tapeHeight = TAPE_HEIGHT; const centerY = TAPE_CENTER_Y; const pixelsPerUnit = ASI_PIXELS_PER_UNIT; const pointerWidth = 15; ctx.save(); ctx.clearRect(0, 0, tapeWidth, tapeHeight); const pointerBoxHeight = 20; const pointerBoxY = centerY - pointerBoxHeight / 2; const textBoxX = 5; const textBoxWidth = tapeWidth - pointerWidth - 10; ctx.strokeStyle = PFD_TAPE_POINTER_COLOR; ctx.lineWidth = 1.5; ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(speed.toFixed(0), textBoxX + textBoxWidth / 2, centerY); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(tapeWidth - pointerWidth, pointerBoxY); ctx.lineTo(tapeWidth, centerY); ctx.lineTo(tapeWidth - pointerWidth, pointerBoxY + pointerBoxHeight); ctx.closePath(); ctx.fill(); ctx.translate(0, centerY + speed * pixelsPerUnit); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "12px monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle"; const range = Math.ceil(tapeHeight / (2 * pixelsPerUnit * 5)) * 5; const startValue = Math.max(0, Math.floor(speed - range) - 5); const endValue = Math.ceil(speed + range) + 10; for (let val = startValue; val <= endValue; val += 1) { const yPos = -val * pixelsPerUnit; if (yPos < -centerY - 20 || yPos > tapeHeight - centerY + 20) continue; let tickLength = 0; let isLabelTick = false; ctx.lineWidth = 1; if (val % 10 === 0) { tickLength = 15; isLabelTick = true; ctx.lineWidth = 1.5; } else if (val % 5 === 0) { tickLength = 10; } else { tickLength = 5; } if (tickLength > 0) { ctx.beginPath(); ctx.moveTo(0, yPos); ctx.lineTo(tickLength, yPos); ctx.stroke(); if (isLabelTick && val >= 0) { ctx.fillText(val.toString(), -5, yPos); } } } ctx.restore(); }
+        function drawAltitudeTape(alt = 0) { const ctx = altCtx; const tapeWidth = TAPE_ALT_WIDTH; const tapeHeight = TAPE_HEIGHT; const centerY = TAPE_CENTER_Y; const pixelsPerUnit = ALT_PIXELS_PER_UNIT; const pointerWidth = 15; ctx.save(); ctx.clearRect(0, 0, tapeWidth, tapeHeight); const pointerBoxHeight = 20; const pointerBoxY = centerY - pointerBoxHeight / 2; const textBoxX = pointerWidth + 5; const textBoxWidth = tapeWidth - pointerWidth - 10; ctx.strokeStyle = PFD_TAPE_POINTER_COLOR; ctx.lineWidth = 1.5; ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(alt.toFixed(0), textBoxX + textBoxWidth / 2, centerY); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(pointerWidth, pointerBoxY); ctx.lineTo(0, centerY); ctx.lineTo(pointerWidth, pointerBoxY + pointerBoxHeight); ctx.closePath(); ctx.fill(); ctx.translate(0, centerY + alt * pixelsPerUnit); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "12px monospace"; ctx.textAlign = "left"; ctx.textBaseline = "middle"; const range = Math.ceil(tapeHeight / (2 * pixelsPerUnit * 10)) * 10; const startValue = Math.floor(alt - range) - 10; const endValue = Math.ceil(alt + range) + 20; for (let val = startValue; val <= endValue; val += 2) { const yPos = -val * pixelsPerUnit; if (yPos < -centerY - 20 || yPos > tapeHeight - centerY + 20) continue; let tickLength = 0; let isLabelTick = false; ctx.lineWidth = 1; if (val % 100 === 0) { tickLength = 20; isLabelTick = true; ctx.lineWidth = 2; } else if (val % 20 === 0) { tickLength = 15; isLabelTick = true; ctx.lineWidth = 1.5; } else if (val % 10 === 0) { tickLength = 10; } else if (val % 2 === 0) { tickLength = 5;} if (tickLength > 0) { ctx.beginPath(); ctx.moveTo(tapeWidth, yPos); ctx.lineTo(tapeWidth - tickLength, yPos); ctx.stroke(); if (isLabelTick) { ctx.fillText(val.toString(), tapeWidth - tickLength - 25, yPos); } } } ctx.restore(); }
+
+        // --- Utility Functions ---
+        function addMessage(text, type = "info") { const p = document.createElement("p"); const timestamp = new Date().toLocaleTimeString(); p.textContent = `[${timestamp}] ${text}`; p.className = `msg-${type}`; messagesDiv.appendChild(p); messagesDiv.scrollTop = messagesDiv.scrollHeight; while (messagesDiv.children.length > 150) { messagesDiv.removeChild(messagesDiv.children[1]); } }
+        function setControlsDisabled(disabled) { Object.values(commandControls).forEach(control => { if (control) control.disabled = disabled; }); if (modeSelect) modeSelect.disabled = disabled; const inputs = document.querySelectorAll('.controls input, .controls select'); inputs.forEach(input => input.disabled = disabled); if (modeSelect && !disabled) modeSelect.disabled = false; }
+
+        // --- SocketIO Event Handlers ---
+        socket.on("connect", () => { console.log("Socket Connected"); addMessage("Connected to backend.", "info"); document.getElementById("status-connection").textContent = "Backend Connected"; document.getElementById("status-connection").className = "connected"; });
+        socket.on("disconnect", () => { console.log("Socket Disconnected"); addMessage("Disconnected from backend.", "error"); document.getElementById("status-connection").textContent = "Disconnected"; document.getElementById("status-connection").className = "disconnected"; armingStatusOverlay.textContent = "DISARMED"; armingStatusOverlay.classList.remove("pfd-armed"); batteryValueSpan.textContent = "--.-"; modeValueSpan.textContent = "------"; currentValueSpan.textContent = "--.-"; gpsFixValueSpan.textContent = "---"; gpsSatsValueSpan.textContent = "0"; gpsHdopValueSpan.textContent = "--.-"; latValueSpan.textContent = "--.------"; lonValueSpan.textContent = "--.------"; const heartIconDisc = document.getElementById('heartbeat-indicator'); if(heartIconDisc) heartIconDisc.classList.remove('connected-state'); ekfStatusSpan.textContent = 'N/A'; ekfStatusSpan.className = 'ekf-status ekf-error'; drawAttitudeIndicator(0, 0, 0); drawAirspeedTape(0); drawAltitudeTape(0); setControlsDisabled(true); });
+        socket.on("connect_error", (err) => { console.error("Socket Connection Error:", err); addMessage(`Backend connection error: ${err.message}`, "error"); document.getElementById("status-connection").textContent = "Connect Error"; document.getElementById("status-connection").className = "disconnected"; const heartIconErr = document.getElementById('heartbeat-indicator'); if(heartIconErr) heartIconErr.classList.remove('connected-state'); ekfStatusSpan.textContent = 'ERROR'; ekfStatusSpan.className = 'ekf-status ekf-error'; setControlsDisabled(true); });
+        socket.on("status_message", (data) => { console.log("Status Msg:", data.text, "Type:", data.type); addMessage(data.text, data.type); });
+
+        // *** ADDED: Handle COMMAND_ACK feedback ***
+        socket.on("command_ack_received", (data) => {
+            console.log("ACK Received:", data);
+            let message = `CMD ${data.command_name}: ${data.result_text}`;
+            let type = 'ack'; // Default style for generic/in-progress ACKs
+            if (data.result === 0) { // MAV_RESULT_ACCEPTED
+                type = 'ack'; // Keep blue/default for success
+            } else if (data.result === -1) { // Custom: Timeout
+                message = `CMD ${data.command_name}: Timeout (No ACK received)`;
+                type = 'ack-timeout'; // Yellow/orange for timeout
+            } else { // Failed, unsupported, temporarily rejected, etc.
+                type = 'ack-fail'; // Red for failure
+            }
+            addMessage(message, type);
+            // Note: Re-enabling buttons on ACK is tricky if multiple commands of the same type are sent quickly.
+            // The simple 'command_result' handler might still be needed for basic send failures.
+        });
+
+        // Heartbeat animation trigger
+        socket.on("mavlink_message", (msg) => {
+            if (msg && msg.mavpackettype === 'HEARTBEAT') {
+                const heartIcon = document.getElementById('heartbeat-indicator');
+                if (heartIcon) {
+                    if (!heartIcon.classList.contains('beating')) {
+                        heartIcon.classList.add('beating');
+                        heartIcon.addEventListener('animationend', () => {
+                            heartIcon.classList.remove('beating');
+                        }, { once: true });
+                    }
+                }
+            }
+        });
+
+        socket.on("command_result", (data) => { console.log("Command Result:", data); if (!data.success) { const control = commandControls[data.command]; if (control) { control.disabled = false; if (data.command === 'SET_MODE' && modeSelect) { modeSelect.disabled = false; } } } });
+
+        socket.on("telemetry_update", (state) => {
+            const isConnected = state.connected;
+            document.getElementById("status-connection").textContent = isConnected ? "Drone Connected" : "Drone Disconnected";
+            document.getElementById("status-connection").className = isConnected ? "connected" : "disconnected";
+            setControlsDisabled(!isConnected);
+
+            const heartIconElement = document.getElementById('heartbeat-indicator');
+            if (heartIconElement) { heartIconElement.classList.toggle('connected-state', isConnected); }
+
+            // Update EKF Status Display
+            const ekfReport = state.ekf_status_report || 'N/A';
+            if (ekfStatusSpan) {
+                ekfStatusSpan.textContent = ekfReport;
+                ekfStatusSpan.className = 'ekf-status '; // Reset classes
+                if (ekfReport === 'EKF OK') {
+                    ekfStatusSpan.classList.add('ekf-ok');
+                } else if (ekfReport.includes('INIT') || ekfReport.includes('N/A') || ekfReport.includes('ERROR')) {
+                     ekfStatusSpan.classList.add('ekf-error');
+                } else { // Treat other non-OK statuses as warnings
+                    ekfStatusSpan.classList.add('ekf-warn');
+                }
+            }
+
+            // Update text overlays
+            const mode = (state.mode || "UNKNOWN").toUpperCase(); const voltage = state.battery_voltage || 0; const current = state.battery_current ?? -1; const armed = state.armed || false; const lat = state.lat ?? 0; const lon = state.lon ?? 0; const fix = state.gps_fix_type ?? 0; const sats = state.satellites_visible ?? 0; const hdop = state.hdop ?? 99.9; batteryValueSpan.textContent = voltage.toFixed(2); modeValueSpan.textContent = mode; armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED"; armingStatusOverlay.classList.toggle("pfd-armed", armed); currentValueSpan.textContent = current >= 0 ? current.toFixed(1) : "--.-"; let fixStr = "---"; switch (fix) { case 0: case 1: fixStr = "NO"; break; case 2: fixStr = "2D"; break; case 3: fixStr = "3D"; break; case 4: fixStr = "DGPS"; break; case 5: fixStr = "RTKf"; break; case 6: fixStr = "RTKx"; break; default: fixStr = `?${fix}`; } gpsFixValueSpan.textContent = fixStr; gpsSatsValueSpan.textContent = sats >= 0 ? sats : "?"; gpsHdopValueSpan.textContent = hdop < 99 ? hdop.toFixed(1) : "--.-"; latValueSpan.textContent = lat.toFixed(7); lonValueSpan.textContent = lon.toFixed(7);
+
+            // Update PFD canvas drawings
+            const airspeed = state.airspeed || 0; const altRel = state.alt_rel || 0; const heading = state.heading || 0; const pitch = (state.pitch || 0) * RAD_TO_DEG; const roll = (state.roll || 0) * RAD_TO_DEG;
+            drawAttitudeIndicator(pitch, roll, heading); drawAirspeedTape(airspeed); drawAltitudeTape(altRel);
+
+            // Update Map
+            if (isConnected && lat != null && lon != null && lat !== 0 && lon !== 0) { const latLng = [lat, lon]; if (!droneMarker) { droneMarker = L.marker(latLng, { icon: droneIcon }).addTo(map).bindPopup("Drone Position"); } else { droneMarker.setLatLng(latLng); } if (firstLocationUpdate) { map.setView(latLng, 16); firstLocationUpdate = false; } } else { if (droneMarker) { map.removeLayer(droneMarker); droneMarker = null; firstLocationUpdate = true; } } const homeLat = state.home_lat; const homeLon = state.home_lon; if (isConnected && homeLat != null && homeLon != null && homeLat !== 0 && homeLon !== 0) { const homeLatLng = [homeLat, homeLon]; if (!homeMarker) { homeMarker = L.marker(homeLatLng, { icon: homeIcon }).addTo(map).bindPopup("Home Position"); } else { homeMarker.setLatLng(homeLatLng); } } else { if (homeMarker) { map.removeLayer(homeMarker); homeMarker = null; } } try{ map.invalidateSize(); } catch(e) {/*ignore*/} });
+
+        // --- Command Button Event Listeners ---
+        commandControls.ARM.addEventListener("click",function(){if(confirm("ARM drone?")){this.disabled=!0;socket.emit("send_command",{command:"ARM"})}});
+        commandControls.DISARM.addEventListener("click",function(){if(confirm("DISARM drone?")){this.disabled=!0;socket.emit("send_command",{command:"DISARM"})}});
+        commandControls.TAKEOFF.addEventListener("click",function(){const e=document.getElementById("takeoff-alt"),t=parseFloat(e.value);if(isNaN(t)||t<=0||t>1e3)return addMessage("Invalid takeoff altitude (must be > 0 and <= 1000).","warning"),void e.focus();if(confirm(`Takeoff to ${t}m?`)){this.disabled=!0;socket.emit("send_command",{command:"TAKEOFF",altitude:t})}});
+        commandControls.LAND.addEventListener("click",function(){if(confirm("LAND drone?")){this.disabled=!0;socket.emit("send_command",{command:"LAND"})}});
+        commandControls.RTL.addEventListener("click",function(){if(confirm("Return-To-Launch (RTL)?")){this.disabled=!0;socket.emit("send_command",{command:"RTL"})}});
+        commandControls.SET_MODE.addEventListener("click",function(){const e=modeSelect.value;if(!e)return void addMessage("Please select a flight mode.","warning");if(confirm(`Set mode to ${e}?`)){this.disabled=!0;modeSelect.disabled=!0;socket.emit("send_command",{command:"SET_MODE",mode_string:e})}});
+        commandControls.GOTO.addEventListener("click",function(){const e=document.getElementById("goto-lat"),t=document.getElementById("goto-lon"),o=document.getElementById("goto-alt"),a=parseFloat(e.value),n=parseFloat(t.value),i=parseFloat(o.value);let s=!0,l="Invalid GoTo parameters: ";if(isNaN(a)||a<-90||a>90){s=!1;l+=" Latitude invalid.";e.focus()}else if(isNaN(n)||n<-180||n>180){s=!1;l+=" Longitude invalid.";t.focus()}else if(isNaN(i)||i<-100||i>5e3){s=!1;l+=" Altitude invalid.";o.focus()}if(!s)return void addMessage(l,"warning");if(confirm(`Go to Lat: ${a.toFixed(6)}, Lon: ${n.toFixed(6)}, Alt: ${i.toFixed(1)}m?`)){this.disabled=!0;socket.emit("send_command",{command:"GOTO",lat:a,lon:n,alt:i})}});
+        commandControls["clear-goto"].addEventListener("click",function(){document.getElementById("goto-lat").value="";document.getElementById("goto-lon").value="";document.getElementById("goto-alt").value="10";addMessage("GoTo fields cleared.","info")});
+        commandControls["center-map"].addEventListener("click",function(){if(droneMarker){map.setView(droneMarker.getLatLng(),map.getZoom()<14?16:map.getZoom());addMessage("Map centered on drone.","info")}else{addMessage("Drone location not available to center map.","warning")}});
+        map.on("click",function(e){const t=e.latlng.lat.toFixed(7),o=e.latlng.lng.toFixed(7);document.getElementById("goto-lat").value=t;document.getElementById("goto-lon").value=o;addMessage(`Selected map point: Lat ${t}, Lon ${o}`,"info")});
+
+        // --- Initialisation ---
+        function initializeUI() {
+            addMessage("Connecting to backend...", "info");
+            drawAttitudeIndicator(); drawAirspeedTape(); drawAltitudeTape();
+            armingStatusOverlay.textContent = "DISARMED"; armingStatusOverlay.classList.remove("pfd-armed");
+            batteryValueSpan.textContent = "--.-"; modeValueSpan.textContent = "------"; currentValueSpan.textContent = "--.-";
+            gpsFixValueSpan.textContent = "---"; gpsSatsValueSpan.textContent = "0"; gpsHdopValueSpan.textContent = "--.-";
+            latValueSpan.textContent = "--.------"; lonValueSpan.textContent = "--.------";
+            // *** ADDED: Initialize heart and EKF status ***
+            const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
+            if(ekfStatusSpan) { ekfStatusSpan.textContent = 'INIT'; ekfStatusSpan.className = 'ekf-status ekf-error'; }
+            setControlsDisabled(true);
+            setTimeout(() => { try { map.invalidateSize(); } catch(e) { console.error("Error on initial invalidateSize:", e); } }, 100);
+        }
+        initializeUI();
+
+    </script>
+</body>
+</html>
