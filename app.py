@@ -214,7 +214,11 @@ def mavlink_receive_loop():
                     connected = drone_state.get('connected', False)
                     mode = drone_state.get('mode', 'UNKNOWN')
                     armed = drone_state.get('armed', False)
-                    print(f"Status: {'Connected' if connected else 'Disconnected'} | Mode: {mode} | {'ARMED' if armed else 'DISARMED'}")
+                    lat = drone_state.get('lat', 0.0)
+                    lon = drone_state.get('lon', 0.0)
+                    alt = drone_state.get('alt_rel', 0.0)
+                    ekf = drone_state.get('ekf_status_report', 'N/A')
+                    print(f"Status: {'Connected' if connected else 'Disconnected'} | Mode: {mode} | {'ARMED' if armed else 'DISARMED'} | Lat: {lat:.6f} Lon: {lon:.6f} Alt: {alt:.1f}m | EKF: {ekf}")
                     last_status_print = current_time
 
                 # Process messages with minimal logging
