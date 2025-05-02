@@ -19,6 +19,37 @@
         .goto-controls input { flex-grow: 1; min-width: 60px; }
         .mode-select-control { margin-left: 10px; }
         .mode-select-control select { padding: 5px; font-size: 0.9em; }
+        
+        /* Bottom left button styles */
+        .bottom-left-buttons {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .bottom-left-buttons .action-button {
+            background-color: rgba(0, 123, 255, 0.85);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .bottom-left-buttons .action-button:hover {
+            background-color: rgba(0, 105, 217, 0.95);
+        }
+        .bottom-left-buttons .action-button:active {
+            transform: translateY(1px);
+        }
+        .bottom-left-buttons .action-button:disabled {
+            background-color: rgba(108, 117, 125, 0.7);
+        }
     </style>
 </head>
 <body>
@@ -48,15 +79,6 @@
                         <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
                         <!-- *** ADDED: EKF Status Display Element *** -->
                         <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
-                        <!-- *** ADDED: Geofence Table Section *** -->
-                        <div class="status-item geofence-section">
-                            <strong>Geofence:</strong>
-                            <button id="btn-request-fence" class="small-button" title="Request Geofence Data">Request Fence</button>
-                        </div>
-                        <div class="status-item mission-section">
-                            <strong>Mission:</strong>
-                            <button id="btn-request-mission" class="small-button" title="Request Mission Waypoints">Request Mission</button>
-                        </div>
                         <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
                     </div>
                 </div>
@@ -75,6 +97,11 @@
         </div>
     </div>
     <a href="/mavlink_dump" id="dump-link-button" target="_blank" title="Open MAVLink Message Dump">Dump</a>
+    <!-- Add the bottom-left buttons container -->
+    <div class="bottom-left-buttons">
+        <button id="btn-request-fence" class="action-button" title="Request Geofence Data">Request Fence</button>
+        <button id="btn-request-mission" class="action-button" title="Request Mission Waypoints">Request Mission</button>
+    </div>
 
     <script src="/static/lib/leaflet.js"></script>
     <script src="/static/lib/socket.io.min.js"></script>
