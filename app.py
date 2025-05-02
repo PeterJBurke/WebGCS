@@ -88,27 +88,32 @@ def get_ekf_status_report(flags):
     if not (ekf_flags_bits & mavutil.mavlink.EKF_PRED_POS_HORIZ_REL): return "EKF Variance (H)"
     return "EKF OK"
 
-# *** connect_mavlink function with ALL exception blocks corrected ***
+def process_heartbeat(msg):
+    """Process HEARTBEAT message with minimal logging."""
+    global last_heartbeat_time
+    last_heartbeat_time = time.time()
+    with drone_state_lock:
+        drone_state['connected'] = True
+        drone_state['armed'] = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+        if msg.get_srcSystem() == mavlink_connection.target_system:
+            custom_mode_str = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
+            drone_state['mode'] = custom_mode_str[0] if custom_mode_str else 'UNKNOWN'
+    drone_state_changed = True
+
 def connect_mavlink():
     """Attempts to establish MAVLink connection TO the drone via UDP."""
     global mavlink_connection, last_heartbeat_time, data_streams_requested, home_position_requested, pending_commands, connection_event
     
-    print("\n" + "="*50)
-    print("DETAILED CONNECTION DEBUG")
-    print("="*50)
-    print(f"Connection string: {MAVLINK_CONNECTION_STRING}")
-    print(f"Current connection state: {'Connected' if mavlink_connection else 'Not connected'}")
+    print("Attempting MAVLink connection...")
     
     # Close existing connection if any
     if mavlink_connection:
         try:
-            print("Closing existing MAVLink connection...")
             mavlink_connection.close()
         except Exception as close_err:
-            print(f"Error closing existing connection: {close_err}")
+            print(f"Error closing connection: {close_err}")
         finally:
             mavlink_connection = None
-            print("Connection object set to None")
 
     # Reset state variables
     with drone_state_lock:
@@ -119,78 +124,25 @@ def connect_mavlink():
     home_position_requested = False
     pending_commands.clear()
     connection_event.clear()
-    print("All state variables reset")
 
-    def _attempt_connection():
-        """Internal function to handle connection attempt"""
-        try:
-            print("Creating MAVLink connection object...")
-            mav = mavutil.mavlink_connection(
-                MAVLINK_CONNECTION_STRING,
-                source_system=250,
-                source_component=1,
-                retries=3,
-                robust_parsing=True
-            )
-            print(f"Connection object created: {mav}")
-            
-            print("Waiting for heartbeat (10 second timeout)...")
-            msg = mav.wait_heartbeat(timeout=10)
-            if msg:
-                print(f"Heartbeat received! System: {mav.target_system}, Component: {mav.target_component}")
-                print(f"Autopilot type: {msg.autopilot}")
-                print(f"Vehicle type: {msg.type}")
-                print(f"System status: {msg.system_status}")
-                return mav, True
-        except Exception as e:
-            print(f"Connection attempt failed: {str(e)}")
-        return None, False
-
-    # Connection attempt with retries
-    max_retries = 3
-    for attempt in range(max_retries):
-        print(f"\nConnection attempt {attempt + 1}/{max_retries}")
-        
-        # Use gevent to handle the connection attempt
-        mavlink_connection, success = gevent.spawn(_attempt_connection).get(timeout=15)
-        
-        if success and mavlink_connection and mavlink_connection.target_system != 0:
-            print("Connection successful!")
-            with drone_state_lock:
-                drone_state['connected'] = True
-            last_heartbeat_time = time.time()
-            connection_event.set()
-            
-            print("Requesting data streams...")
-            request_data_streams()
-            print("Connection process complete!")
-            print("="*50 + "\n")
-            return True
-        
-        if attempt < max_retries - 1:
-            print("Retrying in 2 seconds...")
-            gevent.sleep(2)
-    
-    print("All connection attempts failed")
-    print("="*50 + "\n")
-    return False
-
+    try:
+        mavlink_connection = mavutil.mavlink_connection(MAVLINK_CONNECTION_STRING)
+        print("MAVLink connection established")
+        return True
+    except Exception as e:
+        print(f"MAVLink connection error: {e}")
+        return False
 
 def request_data_streams(req_rate_hz=REQUEST_STREAM_RATE_HZ):
     """Requests necessary data streams from the flight controller."""
     global data_streams_requested
-    print("\nDEBUG: Attempting to request data streams...")
-    print(f"Connection state: {bool(mavlink_connection)}")
-    print(f"Drone connected: {drone_state.get('connected', False)}")
-    print(f"Target system: {mavlink_connection.target_system if mavlink_connection else 'N/A'}")
     
     if not mavlink_connection or not drone_state.get("connected", False) or mavlink_connection.target_system == 0: 
-        print("DEBUG: Skipping data stream request - connection not ready")
         return
+
     try:
         target_sys = mavlink_connection.target_system
         target_comp = mavlink_connection.target_component
-        print(f"DEBUG: Requesting streams from SYS:{target_sys} COMP:{target_comp} at {req_rate_hz}Hz...")
         messages_to_request = { 
             mavutil.mavlink.MAVLINK_MSG_ID_HEARTBEAT: 1, 
             mavutil.mavlink.MAVLINK_MSG_ID_SYS_STATUS: 1, 
@@ -207,15 +159,11 @@ def request_data_streams(req_rate_hz=REQUEST_STREAM_RATE_HZ):
             if msg_id == mavutil.mavlink.MAVLINK_MSG_ID_HOME_POSITION and home_position_requested: interval_us = -1
             if interval_us != -1 or (msg_id == mavutil.mavlink.MAVLINK_MSG_ID_HOME_POSITION and not home_position_requested):
                 mavlink_connection.mav.command_long_send(target_sys, target_comp, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, msg_id, interval_us, 0, 0, 0, 0, 0)
-                print(f"DEBUG: Requested msg_id {msg_id} at {interval_us}us interval")
                 gevent.sleep(0.05)
         data_streams_requested = True
-        print("DEBUG: All data stream requests sent successfully")
     except Exception as req_err: 
-        print(f"ERROR Sending data stream requests: {req_err}")
-        traceback.print_exc()
+        print(f"Error requesting data streams: {req_err}")
         data_streams_requested = False
-
 
 def check_pending_command_timeouts():
     """Check for command timeouts and emit timeout messages."""
@@ -241,22 +189,18 @@ def mavlink_receive_loop():
     global mavlink_connection, last_heartbeat_time, drone_state_changed, data_streams_requested, home_position_requested
     print("MAVLink receive loop starting...")
     message_counts = collections.defaultdict(int)
-    last_count_print = time.time()
+    last_status_print = time.time()
     
     while True:
         try:
             if not mavlink_connection:
-                print("DEBUG: No MAVLink connection available...")
-                # Wait for connection event or timeout
                 if connection_event.wait(timeout=5):
-                    print("Connection event received, continuing...")
+                    print("Connection event received")
                     continue
                 else:
-                    # Try to reconnect
                     if connect_mavlink():
                         print("Reconnection successful")
-                    else:
-                        gevent.sleep(1)
+                    gevent.sleep(1)
                     continue
 
             msg = mavlink_connection.recv_match(blocking=True, timeout=1.0)
@@ -264,30 +208,18 @@ def mavlink_receive_loop():
                 msg_type = msg.get_type()
                 message_counts[msg_type] += 1
                 
-                # Print message statistics every 5 seconds
+                # Print status message once per second
                 current_time = time.time()
-                if current_time - last_count_print >= 5:
-                    print("\nMessage counts in last 5 seconds:")
-                    for mtype, count in message_counts.items():
-                        print(f"{mtype}: {count}")
-                    message_counts.clear()
-                    last_count_print = current_time
-                    print(f"Connection state: {drone_state['connected']}")
-                    print(f"Data streams requested: {data_streams_requested}")
-                    print(f"Target system: {mavlink_connection.target_system}")
-                    print(f"Target component: {mavlink_connection.target_component}\n")
+                if current_time - last_status_print >= 1.0:
+                    connected = drone_state.get('connected', False)
+                    mode = drone_state.get('mode', 'UNKNOWN')
+                    armed = drone_state.get('armed', False)
+                    print(f"Status: {'Connected' if connected else 'Disconnected'} | Mode: {mode} | {'ARMED' if armed else 'DISARMED'}")
+                    last_status_print = current_time
 
+                # Process messages with minimal logging
                 if msg_type == 'HEARTBEAT':
-                    last_heartbeat_time = time.time()
-                    with drone_state_lock:
-                        drone_state['connected'] = True
-                        drone_state['armed'] = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
-                        if msg.get_srcSystem() == mavlink_connection.target_system:
-                            custom_mode_str = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
-                            drone_state['mode'] = custom_mode_str[0] if custom_mode_str else 'UNKNOWN'
-                    print(f"DEBUG: HEARTBEAT processed. SysID:{msg.get_srcSystem()} LastHB:{last_heartbeat_time} Now:{time.time()} Armed:{drone_state['armed']} Mode:{drone_state['mode']}")
-                    drone_state_changed = True
-
+                    process_heartbeat(msg)
                 elif msg_type == 'GLOBAL_POSITION_INT':
                     with drone_state_lock:
                         drone_state['lat'] = msg.lat / 1e7
@@ -297,15 +229,15 @@ def mavlink_receive_loop():
                         drone_state['vx'] = msg.vx / 100.0
                         drone_state['vy'] = msg.vy / 100.0
                         drone_state['vz'] = msg.vz / 100.0
-                        drone_state['heading'] = msg.hdg / 100.0 if msg.hdg != 65535 else drone_state['heading']
+                        drone_state['heading'] = msg.hdg / 100.0 if msg.hdg != 65535 else 0
+                        drone_state['groundspeed'] = math.sqrt(drone_state['vx']**2 + drone_state['vy']**2)
+                        drone_state['airspeed'] = drone_state['groundspeed']  # Approximation
                     drone_state_changed = True
-
                 elif msg_type == 'VFR_HUD':
                     with drone_state_lock:
                         drone_state['airspeed'] = msg.airspeed
                         drone_state['groundspeed'] = msg.groundspeed
                     drone_state_changed = True
-
                 elif msg_type == 'SYS_STATUS':
                     with drone_state_lock:
                         drone_state['battery_voltage'] = msg.voltage_battery / 1000.0 if msg.voltage_battery > 0 else 0
@@ -315,27 +247,23 @@ def mavlink_receive_loop():
                         drone_state['ekf_flags'] = msg.onboard_control_sensors_health
                         drone_state['ekf_status_report'] = get_ekf_status_report(msg.onboard_control_sensors_health)
                     drone_state_changed = True
-
                 elif msg_type == 'GPS_RAW_INT':
                     with drone_state_lock:
                         drone_state['gps_fix_type'] = msg.fix_type
                         drone_state['satellites_visible'] = msg.satellites_visible
                         drone_state['hdop'] = msg.eph / 100.0 if msg.eph != 65535 else 99.99
                     drone_state_changed = True
-
                 elif msg_type == 'ATTITUDE':
                     with drone_state_lock:
                         drone_state['pitch'] = msg.pitch
                         drone_state['roll'] = msg.roll
                     drone_state_changed = True
-
                 elif msg_type == 'HOME_POSITION':
                     with drone_state_lock:
                         drone_state['home_lat'] = msg.latitude / 1e7
                         drone_state['home_lon'] = msg.longitude / 1e7
                     home_position_requested = True
                     drone_state_changed = True
-
                 elif msg_type == 'STATUSTEXT':
                     text = msg.text.strip()
                     if text:
@@ -343,7 +271,6 @@ def mavlink_receive_loop():
                         print(f"Status Text ({severity_str}): {text}")
                         msg_type = 'error' if msg.severity <= 3 else 'warning' if msg.severity == 4 else 'info'
                         socketio.emit('status_message', {'text': text, 'type': msg_type})
-
                 elif msg_type == 'COMMAND_ACK':
                     cmd = msg.command
                     if cmd in pending_commands:
@@ -357,7 +284,6 @@ def mavlink_receive_loop():
                             'result': msg.result,
                             'result_text': result_name
                         })
-
                 socketio.emit('mavlink_message', {'mavpackettype': msg_type})
 
             # Check for command timeouts
@@ -396,29 +322,18 @@ def mavlink_receive_loop():
 def periodic_telemetry_update():
     """Periodically send telemetry updates to web clients."""
     global drone_state_changed
-    print("Starting periodic telemetry update thread...")
     update_count = 0
-    last_debug = time.time()
     
     while True:
         try:
-            current_time = time.time()
             if drone_state_changed:
                 with drone_state_lock:
                     socketio.emit('telemetry_update', drone_state)
                     drone_state_changed = False
                     update_count += 1
-                    
-                    # Print debug info every 5 seconds
-                    if current_time - last_debug >= 5:
-                        print(f"DEBUG: Sent {update_count} telemetry updates in last 5s")
-                        update_count = 0
-                        last_debug = current_time
-                        
             gevent.sleep(TELEMETRY_UPDATE_INTERVAL)
         except Exception as e:
             print(f"Error in telemetry update: {e}")
-            traceback.print_exc()
             gevent.sleep(1)
 
 
