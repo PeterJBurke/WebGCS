@@ -74,3 +74,57 @@ This project provides a web-based ground control interface, adapted from the Ras
     *   Run the `test_web_server.py` script (after activating venv: `python test_web_server.py`).
 *   **"Address already in use" Error:** Another application might be using port `5000`. Stop the other application or change `WEB_SERVER_PORT` in `app.py`.
 *   **Dependency Errors:** Ensure you ran `setup_desktop.sh` successfully and activated the `venv` before running `python app.py`.
+
+# WebGCS Configuration Guide
+
+This document describes how to configure the WebGCS application using environment variables.
+
+## Configuration Options
+
+### Drone Connection Settings
+- `DRONE_TCP_ADDRESS`: IP address of the drone (default: 192.168.1.247)
+- `DRONE_TCP_PORT`: Port number for MAVLink connection (default: 5678)
+
+### Web Server Settings
+- `WEB_SERVER_HOST`: Host address to bind the web server (default: 0.0.0.0)
+- `WEB_SERVER_PORT`: Port number for the web server (default: 5000)
+- `SECRET_KEY`: Secret key for Flask sessions (default: desktop_drone_secret!)
+
+### MAVLink Settings
+- `HEARTBEAT_TIMEOUT`: Timeout in seconds for MAVLink heartbeat (default: 15)
+- `REQUEST_STREAM_RATE_HZ`: Rate in Hz for requesting MAVLink data streams (default: 4)
+- `COMMAND_ACK_TIMEOUT`: Timeout in seconds for command acknowledgments (default: 5)
+- `TELEMETRY_UPDATE_INTERVAL`: Interval in seconds for telemetry updates (default: 0.1)
+
+## Example Configuration
+
+Create a `.env` file in the root directory with the following content:
+
+```bash
+# Drone Connection Settings
+DRONE_TCP_ADDRESS=192.168.1.247
+DRONE_TCP_PORT=5678
+
+# Web Server Settings
+WEB_SERVER_HOST=0.0.0.0
+WEB_SERVER_PORT=5000
+SECRET_KEY=change_this_to_a_secure_secret_key
+
+# MAVLink Settings
+HEARTBEAT_TIMEOUT=15
+REQUEST_STREAM_RATE_HZ=4
+COMMAND_ACK_TIMEOUT=5
+TELEMETRY_UPDATE_INTERVAL=0.1
+```
+
+## Usage
+
+1. Copy the example configuration above to a new file named `.env`
+2. Modify the values according to your setup
+3. The application will automatically load these environment variables
+
+## Security Notes
+
+1. Always change the `SECRET_KEY` to a secure value in production
+2. Keep your `.env` file secure and never commit it to version control
+3. Use different configurations for development and production environments
