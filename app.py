@@ -435,6 +435,68 @@ def send_mavlink_command(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0):
         traceback.print_exc()
         return (False, err_msg)
 
+def request_geofence_data():
+    """Request geofence data using the mission protocol."""
+    if not mavlink_connection or not drone_state.get("connected", False):
+        print("Cannot request geofence: No connection")
+        return False
+
+    try:
+        print("Requesting geofence mission list...")
+        # Request the geofence mission list
+        mavlink_connection.mav.mission_request_list_send(
+            mavlink_connection.target_system,
+            mavlink_connection.target_component,
+            mavutil.mavlink.MAV_MISSION_TYPE_FENCE
+        )
+
+        # Wait for MISSION_COUNT
+        msg = mavlink_connection.recv_match(type='MISSION_COUNT', blocking=True, timeout=5)
+        if not msg or msg.mission_type != mavutil.mavlink.MAV_MISSION_TYPE_FENCE:
+            print("Did not receive MISSION_COUNT for geofence")
+            return False
+
+        fence_count = msg.count
+        print(f"Number of geofence items: {fence_count}")
+        fence_points = []
+
+        # Request each fence point
+        for seq in range(fence_count):
+            mavlink_connection.mav.mission_request_send(
+                mavlink_connection.target_system,
+                mavlink_connection.target_component,
+                seq,
+                mavutil.mavlink.MAV_MISSION_TYPE_FENCE
+            )
+
+            item = mavlink_connection.recv_match(type='MISSION_ITEM', blocking=True, timeout=5)
+            if item:
+                print(f"Received Geofence Item #{item.seq}")
+                print(f"  Command: {item.command}")
+                print(f"  Frame: {item.frame}")
+                print(f"  Location: Lat={item.x:.7f}, Lon={item.y:.7f}, Alt={item.z:.2f}")
+                print(f"  Params: {[item.param1, item.param2, item.param3, item.param4]}")
+                
+                # Store the fence point
+                fence_points.append([item.x, item.y])
+            else:
+                print(f"Timeout waiting for MISSION_ITEM #{seq}")
+                return False
+
+        # If we got all points, send them to the frontend
+        if len(fence_points) == fence_count:
+            print(f"Complete fence received with {fence_count} points")
+            socketio.emit('geofence_update', {
+                'points': fence_points
+            })
+            return True
+
+    except Exception as e:
+        print(f"Error requesting geofence: {e}")
+        return False
+
+    return False
+
 @socketio.on('send_command')
 def handle_send_command(data):
     """Handles commands received from the web UI."""
@@ -512,14 +574,9 @@ def handle_send_command(data):
             cmd_type = 'error'
     elif cmd == 'REQUEST_FENCE':
         try:
-            # Request fence point count first
-            success, msg_send = send_mavlink_command(
-                mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE,
-                p1=mavutil.mavlink.MAVLINK_MSG_ID_FENCE_POINT,
-                p2=0  # First point
-            )
+            success = request_geofence_data()
             cmd_type = 'info' if success else 'error'
-            msg = 'Requesting geofence data...' if success else f'Geofence request failed: {msg_send}'
+            msg = 'Requesting geofence data...' if success else 'Failed to get geofence data'
         except Exception as e:
             success = False
             msg = f'Geofence request error: {e}'
