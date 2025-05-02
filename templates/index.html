@@ -53,6 +53,10 @@
                             <strong>Geofence:</strong>
                             <button id="btn-request-fence" class="small-button" title="Request Geofence Data">Request Fence</button>
                         </div>
+                        <div class="status-item mission-section">
+                            <strong>Mission:</strong>
+                            <button id="btn-request-mission" class="small-button" title="Request Mission Waypoints">Request Mission</button>
+                        </div>
                         <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
                     </div>
                 </div>
@@ -377,6 +381,10 @@
         let geofencePolygon = null;
         let geofenceVertexMarkers = []; // Array to track vertex markers
 
+        // Add variables to track mission waypoints
+        let missionPolyline = null;
+        let missionWaypointMarkers = []; // Array to track waypoint markers
+
         socket.on("geofence_update", (data) => {
             // Table has been removed from the UI
             
@@ -444,6 +452,109 @@
         document.getElementById('btn-request-fence').addEventListener('click', function() {
             this.disabled = true;
             socket.emit('send_command', {command: 'REQUEST_FENCE'});
+            setTimeout(() => { this.disabled = false; }, 2000);  // Re-enable after 2 seconds
+        });
+
+        // Handle mission waypoint updates
+        socket.on("mission_update", (data) => {
+            if (data && data.waypoints && data.waypoints.length > 0) {
+                // Clear existing mission markers and lines
+                if (missionPolyline) {
+                    map.removeLayer(missionPolyline);
+                }
+                
+                // Remove existing waypoint markers
+                missionWaypointMarkers.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                missionWaypointMarkers = [];
+                
+                // Extract coordinate points for the path 
+                const pathPoints = [];
+                
+                // Create markers for each waypoint
+                data.waypoints.forEach((wp, index) => {
+                    // Skip waypoints without valid coordinates (like RTL commands)
+                    if (wp.lat === 0 && wp.lon === 0) return;
+                    
+                    // Add point to path if it's a navigation point
+                    if (wp.command === 16 || wp.command === 22 || wp.command === 21) { // NAV_WAYPOINT, TAKEOFF, LAND
+                        pathPoints.push([wp.lat, wp.lon]);
+                    }
+                    
+                    // Create waypoint icon based on command type
+                    let iconColor = '#ff7800'; // Default orange
+                    let iconPath = '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>';
+                    let tooltipText = `Waypoint ${index + 1}`;
+                    
+                    // Customize by command type
+                    if (wp.command === 22) { // TAKEOFF
+                        iconColor = '#28a745'; // Green
+                        tooltipText = `Takeoff (${wp.alt.toFixed(1)}m)`;
+                        iconPath = '<path d="M2 22h20V10L12 2 2 10v12zm11-1h-4v-5H6.5v-3.5h3V8l4-4 4 4v4.5h3V16H13v5z"/>';
+                    } else if (wp.command === 20) { // RETURN_TO_LAUNCH
+                        iconColor = '#dc3545'; // Red
+                        tooltipText = 'Return to Launch';
+                        iconPath = '<path d="M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z"/>';
+                    } else if (wp.command === 21) { // LAND
+                        iconColor = '#ffc107'; // Yellow/amber
+                        tooltipText = 'Land';
+                        iconPath = '<path d="M12 7.27l4.28 10.43-3.47-1.53-.81-.36-.81.36-3.47 1.53L12 7.27M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/>';
+                    }
+                    
+                    // Create custom icon for this waypoint
+                    const wpIcon = L.divIcon({
+                        className: 'mission-waypoint-icon',
+                        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${iconColor}" width="24px" height="24px">${iconPath}</svg>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    
+                    // Add marker with the custom icon
+                    const marker = L.marker([wp.lat, wp.lon], {
+                        icon: wpIcon
+                    }).addTo(map)
+                    .bindTooltip(tooltipText, {
+                        permanent: false,
+                        direction: 'top'
+                    });
+                    
+                    // Store marker for later removal
+                    missionWaypointMarkers.push(marker);
+                });
+                
+                // Create a polyline connecting the navigation points
+                if (pathPoints.length > 1) {
+                    missionPolyline = L.polyline(pathPoints, {
+                        color: '#ff7800',  // Orange
+                        weight: 3,
+                        opacity: 0.8,
+                        dashArray: '5, 10' // Dashed line
+                    }).addTo(map);
+                }
+                
+                addMessage(`Mission with ${data.waypoints.length} waypoints plotted on map`, "info");
+            } else {
+                // Clear existing mission
+                if (missionPolyline) {
+                    map.removeLayer(missionPolyline);
+                    missionPolyline = null;
+                }
+                
+                // Remove existing waypoint markers
+                missionWaypointMarkers.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                missionWaypointMarkers = [];
+                
+                addMessage("No mission waypoints available", "warning");
+            }
+        });
+
+        // Add event listener for mission request button
+        document.getElementById('btn-request-mission').addEventListener('click', function() {
+            this.disabled = true;
+            socket.emit('send_command', {command: 'REQUEST_MISSION'});
             setTimeout(() => { this.disabled = false; }, 2000);  // Re-enable after 2 seconds
         });
 

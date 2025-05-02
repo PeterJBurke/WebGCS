@@ -75,6 +75,8 @@ home_position_requested = False
 pending_commands = collections.OrderedDict() # {cmd_id: timestamp}
 fence_request_pending = False # New flag for fence request
 fence_request_lock = threading.Lock() # Lock for the flag
+mission_request_pending = False # New flag for mission request
+mission_request_lock = threading.Lock() # Lock for the mission flag
 
 # --- MAVLink Helper Functions ---
 def get_ekf_status_report(flags):
@@ -348,6 +350,11 @@ def mavlink_receive_loop():
             if fence_request_pending:
                 _execute_fence_request()
             # ---------------------------------
+            
+            # --- Handle Pending Mission Request ---
+            if mission_request_pending:
+                _execute_mission_request()
+            # ---------------------------------
 
         except Exception as e:
             print(f"Error in MAVLink receive loop: {e}")
@@ -435,6 +442,146 @@ def _execute_fence_request():
         # Emit final status for the operation initiated by REQUEST_FENCE
         socketio.emit('status_message', {'text': status_msg, 'type': cmd_type})
         socketio.emit('command_result', {'command': 'REQUEST_FENCE', 'success': success, 'message': status_msg})
+
+def _execute_mission_request():
+    """Executes the mission request logic. Called from main loop."""
+    global mission_request_pending, mavlink_connection
+    
+    # Reset flag immediately
+    with mission_request_lock:
+        mission_request_pending = False
+        
+    print("\n--- Executing Pending Mission Request ---")
+    status_msg = "Starting mission request..."
+    cmd_type = 'info'
+    success = False
+    waypoints = []
+    
+    try:
+        if not mavlink_connection or not drone_state.get("connected", False):
+            raise Exception("Cannot request mission: Drone not connected.")
+
+        target_sys = mavlink_connection.target_system
+        target_comp = mavlink_connection.target_component
+        print(f"Requesting mission list for SYS:{target_sys} COMP:{target_comp}...")
+
+        mavlink_connection.mav.mission_request_list_send(
+            target_sys, target_comp, mavutil.mavlink.MAV_MISSION_TYPE_MISSION
+        )
+
+        print("Waiting for MISSION_COUNT...")
+        msg = mavlink_connection.recv_match(type='MISSION_COUNT', blocking=True, timeout=5)
+
+        if not msg:
+            raise Exception("Timeout waiting for MISSION_COUNT.")
+        if msg.mission_type != mavutil.mavlink.MAV_MISSION_TYPE_MISSION:
+            raise Exception(f"Received MISSION_COUNT for wrong mission type: {msg.mission_type}")
+
+        waypoint_count = msg.count
+        print(f"Found {waypoint_count} mission waypoints.")
+        socketio.emit('status_message', {'text': f"Found {waypoint_count} waypoints", 'type': 'info'})
+
+        if waypoint_count == 0:
+            status_msg = "No mission waypoints defined."
+            cmd_type = 'warning'
+            success = True
+            socketio.emit('mission_update', {'waypoints': []})
+        else:
+            for seq in range(waypoint_count):
+                print(f"Requesting waypoint {seq + 1}/{waypoint_count}...")
+                mavlink_connection.mav.mission_request_send(
+                    target_sys, target_comp, seq, mavutil.mavlink.MAV_MISSION_TYPE_MISSION
+                )
+                print("Waiting for MISSION_ITEM...")
+                item = mavlink_connection.recv_match(type='MISSION_ITEM', blocking=True, timeout=5)
+                if not item:
+                    raise Exception(f"Timeout waiting for MISSION_ITEM {seq}.")
+                
+                # Process waypoint data
+                lat = item.x
+                lon = item.y
+                alt = item.z
+                cmd = item.command
+                frame = item.frame
+                param1 = item.param1
+                param2 = item.param2
+                param3 = item.param3
+                param4 = item.param4
+                
+                # Get command name if available
+                cmd_name = "UNKNOWN"
+                if hasattr(mavutil.mavlink, 'enums') and 'MAV_CMD' in mavutil.mavlink.enums:
+                    if cmd in mavutil.mavlink.enums['MAV_CMD']:
+                        cmd_name = mavutil.mavlink.enums['MAV_CMD'][cmd].name
+                
+                # Get frame name if available
+                frame_name = "UNKNOWN"
+                if hasattr(mavutil.mavlink, 'enums') and 'MAV_FRAME' in mavutil.mavlink.enums:
+                    if frame in mavutil.mavlink.enums['MAV_FRAME']:
+                        frame_name = mavutil.mavlink.enums['MAV_FRAME'][frame].name
+                
+                print(f"  Command: {cmd} ({cmd_name})")
+                print(f"  Frame: {frame} ({frame_name})")
+                print(f"  Location: Lat={lat:.7f}, Lon={lon:.7f}, Alt={alt:.2f}m")
+                print(f"  Parameters: [{param1:.2f}, {param2:.2f}, {param3:.2f}, {param4:.2f}]")
+                
+                waypoints.append({
+                    'seq': item.seq,
+                    'command': cmd,
+                    'command_name': cmd_name,
+                    'frame': frame,
+                    'frame_name': frame_name,
+                    'lat': lat,
+                    'lon': lon,
+                    'alt': alt,
+                    'param1': param1,
+                    'param2': param2,
+                    'param3': param3,
+                    'param4': param4
+                })
+
+            # Send mission acknowledgment
+            mavlink_connection.mav.mission_ack_send(
+                target_sys, target_comp, 
+                mavutil.mavlink.MAV_MISSION_ACCEPTED,
+                mavutil.mavlink.MAV_MISSION_TYPE_MISSION
+            )
+
+            # Print summary in the terminal
+            print("\nMission Summary:")
+            print("----------------")
+            for i, wp in enumerate(waypoints):
+                cmd_desc = f"{wp['command']} ({wp['command_name']})"
+                if wp['command'] == mavutil.mavlink.MAV_CMD_NAV_WAYPOINT:
+                    print(f"WP #{i+1}: WAYPOINT at Lat={wp['lat']:.7f}, Lon={wp['lon']:.7f}, Alt={wp['alt']:.2f}m")
+                elif wp['command'] == mavutil.mavlink.MAV_CMD_NAV_TAKEOFF:
+                    print(f"WP #{i+1}: TAKEOFF to Alt={wp['alt']:.2f}m")
+                elif wp['command'] == mavutil.mavlink.MAV_CMD_NAV_LAND:
+                    print(f"WP #{i+1}: LAND at Lat={wp['lat']:.7f}, Lon={wp['lon']:.7f}")
+                elif wp['command'] == mavutil.mavlink.MAV_CMD_NAV_RETURN_TO_LAUNCH:
+                    print(f"WP #{i+1}: RETURN TO LAUNCH")
+                elif wp['command'] == mavutil.mavlink.MAV_CMD_DO_JUMP:
+                    print(f"WP #{i+1}: DO JUMP to #{int(wp['param1'])+1}, {int(wp['param2'])} times")
+                else:
+                    print(f"WP #{i+1}: {cmd_desc} at Lat={wp['lat']:.7f}, Lon={wp['lon']:.7f}, Alt={wp['alt']:.2f}m")
+            
+            socketio.emit('mission_update', {'waypoints': waypoints})
+            status_msg = f"Retrieved {waypoint_count} waypoints successfully."
+            cmd_type = 'info'
+            success = True
+
+    except Exception as e:
+        status_msg = f"Error during mission request: {e}"
+        cmd_type = 'error'
+        success = False
+        print(f"\nError: {status_msg}")
+        traceback.print_exc()
+
+    finally:
+        print("--- Mission Request Execution Finished ---")
+        # Emit final status for the operation initiated by REQUEST_MISSION
+        socketio.emit('status_message', {'text': status_msg, 'type': cmd_type})
+        socketio.emit('command_result', {'command': 'REQUEST_MISSION', 'success': success, 'message': status_msg})
 
 def periodic_telemetry_update():
     """Periodically send telemetry updates to web clients."""
@@ -609,7 +756,7 @@ def request_geofence_data():
 @socketio.on('send_command')
 def handle_send_command(data):
     """Handles commands received from the web UI."""
-    global fence_request_pending
+    global fence_request_pending, mission_request_pending
     cmd = data.get('command')
     print(f"UI Command Received: {cmd} Data: {data}")
     success = False
@@ -696,9 +843,20 @@ def handle_send_command(data):
                 msg = "Fence request already in progress."
                 cmd_type = 'warning'
                 print(msg)
-        # Note: We no longer handle the full request here
-        # The main loop will pick it up.
-        # We still need to emit the initial command result
+    elif cmd == 'REQUEST_MISSION':
+        print(f"\nReceived UI command: {cmd}")
+        with mission_request_lock:
+            if not mission_request_pending:
+                mission_request_pending = True
+                success = True
+                msg = "Mission request initiated."
+                cmd_type = 'info'
+                print(msg)
+            else:
+                success = False
+                msg = "Mission request already in progress."
+                cmd_type = 'warning'
+                print(msg)
     else:
         msg = f'Unknown command received: {cmd}'
         cmd_type = 'warning'
