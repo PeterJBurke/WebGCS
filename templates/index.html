@@ -92,21 +92,10 @@
             maxNativeZoom: 18
         });
 
-        const hybridLayer = L.layerGroup([
-            satelliteLayer,
-            L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png', {
-                attribution: 'Labels by Stamen Design',
-                maxZoom: 22,
-                maxNativeZoom: 18,
-                opacity: 0.7
-            })
-        ]);
-
         // Define base maps for layer control
         const baseMaps = {
             "Street": osmLayer,
-            "Satellite": satelliteLayer,
-            "Hybrid": hybridLayer
+            "Satellite": satelliteLayer
         };
 
         // Add default layer and layer control with collapsed: false to always show options
