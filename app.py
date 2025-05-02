@@ -505,6 +505,20 @@ def handle_send_command(data):
             success = False
             msg = f'Invalid GoTo parameters: {e}'
             cmd_type = 'error'
+    elif cmd == 'REQUEST_FENCE':
+        try:
+            # Request fence point count first
+            success, msg_send = send_mavlink_command(
+                mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE,
+                p1=mavutil.mavlink.MAVLINK_MSG_ID_FENCE_POINT,
+                p2=0  # First point
+            )
+            cmd_type = 'info' if success else 'error'
+            msg = 'Requesting geofence data...' if success else f'Geofence request failed: {msg_send}'
+        except Exception as e:
+            success = False
+            msg = f'Geofence request error: {e}'
+            cmd_type = 'error'
     else:
         msg = f'Unknown command received: {cmd}'
         cmd_type = 'warning'

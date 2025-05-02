@@ -51,6 +51,7 @@
                         <!-- *** ADDED: Geofence Table Section *** -->
                         <div class="status-item geofence-section">
                             <strong>Geofence:</strong>
+                            <button id="btn-request-fence" class="small-button" title="Request Geofence Data">Request Fence</button>
                             <table id="geofence-table" class="geofence-table">
                                 <thead>
                                     <tr>
@@ -401,6 +402,13 @@
                 row.insertCell(0).setAttribute('colspan', '3');
                 row.cells[0].textContent = 'No fence points available';
             }
+        });
+
+        // Add event listener for geofence request button
+        document.getElementById('btn-request-fence').addEventListener('click', function() {
+            this.disabled = true;
+            socket.emit('send_command', {command: 'REQUEST_FENCE'});
+            setTimeout(() => { this.disabled = false; }, 2000);  // Re-enable after 2 seconds
         });
 
     </script>
