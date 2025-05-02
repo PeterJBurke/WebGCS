@@ -228,20 +228,25 @@ def mavlink_receive_loop():
                 elif msg_type == 'FENCE_POINT':
                     # Process fence point message
                     if msg.count > 0:  # Only process if we have fence points
+                        print(f"Received FENCE_POINT {msg.idx + 1}/{msg.count}: Lat={msg.lat:.7f}, Lon={msg.lng:.7f}")
                         while len(geofence_points) <= msg.idx:
                             geofence_points.append(None)
                         geofence_points[msg.idx] = [msg.lat, msg.lng]
                         
                         # If we have all points and they're valid
                         if None not in geofence_points[:msg.count]:
+                            print(f"Complete fence received with {msg.count} points")
                             # Emit the complete fence to the frontend
                             socketio.emit('geofence_update', {
                                 'points': geofence_points[:msg.count]
                             })
                 elif msg_type == 'FENCE_STATUS':
                     # Process fence status and request points if needed
+                    breach_status = "No Breach" if msg.breach_status == 0 else f"BREACH TYPE {msg.breach_status}"
+                    print(f"Received FENCE_STATUS: {breach_status}, Breach Count: {msg.breach_count}, Breach Time: {msg.breach_time}s")
                     if msg.breach_status == 0:  # No breach
                         if not geofence_points:  # If we don't have the fence points
+                            print("No fence points in memory, requesting from drone...")
                             # Request fence point count
                             mavlink_connection.mav.command_long_send(
                                 mavlink_connection.target_system,
