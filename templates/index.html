@@ -20,6 +20,12 @@
         .mode-select-control { margin-left: 10px; }
         .mode-select-control select { padding: 5px; font-size: 0.9em; }
         
+        /* Fly To mode styling */
+        .mode-toggle.active {
+            background-color: #28a745;
+            color: white;
+        }
+        
         /* Request buttons styles - horizontal layout */
         .request-controls {
             display: flex;
@@ -80,7 +86,10 @@
             </div>
         </div>
         <div class="right-column" id="map">
-            <div class="map-controls"> <button id="btn-center-map" title="Center map on drone">Center Map</button> </div>
+            <div class="map-controls"> 
+                <button id="btn-center-map" title="Center map on drone">Center Map</button>
+                <button id="btn-fly-to-mode" title="Click on map to fly the drone to that position" class="mode-toggle">Fly To: OFF</button>
+            </div>
         </div>
     </div>
     <a href="/mavlink_dump" id="dump-link-button" target="_blank" title="Open MAVLink Message Dump">Dump</a>
@@ -322,7 +331,76 @@
         commandControls.GOTO.addEventListener("click",function(){const e=document.getElementById("goto-lat"),t=document.getElementById("goto-lon"),o=document.getElementById("goto-alt"),a=parseFloat(e.value),n=parseFloat(t.value),i=parseFloat(o.value);let s=!0,l="Invalid GoTo parameters: ";if(isNaN(a)||a<-90||a>90){s=!1;l+=" Latitude invalid.";e.focus()}else if(isNaN(n)||n<-180||n>180){s=!1;l+=" Longitude invalid.";t.focus()}else if(isNaN(i)||i<-100||i>5e3){s=!1;l+=" Altitude invalid.";o.focus()}if(!s)return void addMessage(l,"warning");if(confirm(`Go to Lat: ${a.toFixed(6)}, Lon: ${n.toFixed(6)}, Alt: ${i.toFixed(1)}m?`)){this.disabled=!0;socket.emit("send_command",{command:"GOTO",lat:a,lon:n,alt:i})}});
         commandControls["clear-goto"].addEventListener("click",function(){document.getElementById("goto-lat").value="";document.getElementById("goto-lon").value="";document.getElementById("goto-alt").value="10";addMessage("GoTo fields cleared.","info")});
         commandControls["center-map"].addEventListener("click",function(){if(droneMarker){map.setView(droneMarker.getLatLng(),map.getZoom()<14?16:map.getZoom());addMessage("Map centered on drone.","info")}else{addMessage("Drone location not available to center map.","warning")}});
-        map.on("click",function(e){const t=e.latlng.lat.toFixed(7),o=e.latlng.lng.toFixed(7);document.getElementById("goto-lat").value=t;document.getElementById("goto-lon").value=o;addMessage(`Selected map point: Lat ${t}, Lon ${o}`,"info")});
+        
+        // Add Fly To Mode Functionality
+        let flyToModeActive = false;
+        const flyToButton = document.getElementById('btn-fly-to-mode');
+        
+        flyToButton.addEventListener('click', function() {
+            flyToModeActive = !flyToModeActive;
+            this.textContent = flyToModeActive ? 'Fly To: ON' : 'Fly To: OFF';
+            this.classList.toggle('active', flyToModeActive);
+            
+            if (flyToModeActive) {
+                addMessage("Fly To mode activated. Click on map to send drone to that position.", "info");
+                // Change cursor to indicate clickable map
+                map._container.style.cursor = 'crosshair';
+            } else {
+                addMessage("Fly To mode deactivated.", "info");
+                // Restore default cursor
+                map._container.style.cursor = '';
+            }
+        });
+        
+        // Combined map click handler for both filling the GoTo fields and Fly To functionality
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            
+            // Always update the GoTo input fields
+            document.getElementById("goto-lat").value = lat.toFixed(7);
+            document.getElementById("goto-lon").value = lon.toFixed(7);
+            addMessage(`Selected map point: Lat ${lat.toFixed(7)}, Lon ${lon.toFixed(7)}`, "info");
+            
+            // If Fly To mode is active, handle the direct command
+            if (flyToModeActive) {
+                const alt = parseFloat(document.getElementById('goto-alt').value) || 10; // Use goto-alt value or default to 10m
+                
+                // Confirm before sending the command
+                if (confirm(`Send drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m?`)) {
+                    // Disable the button during the operation
+                    flyToButton.disabled = true;
+                    
+                    // Send the command
+                    socket.emit('send_command', {
+                        command: 'GOTO',
+                        lat: lat,
+                        lon: lon,
+                        alt: alt
+                    });
+                    
+                    // Show a temporary marker at the target location
+                    const targetMarker = L.marker([lat, lon], {
+                        icon: L.divIcon({
+                            className: 'target-marker',
+                            html: '<div style="background-color: rgba(255,0,0,0.5); border-radius: 50%; width: 20px; height: 20px; border: 2px solid white;"></div>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 10]
+                        })
+                    }).addTo(map);
+                    targetMarker.bindPopup("Fly To Target").openPopup();
+                    
+                    // Remove the marker after 8 seconds
+                    setTimeout(() => {
+                        map.removeLayer(targetMarker);
+                        // Re-enable the button
+                        flyToButton.disabled = false;
+                    }, 8000);
+                    
+                    addMessage(`Sent drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m`, "info");
+                }
+            }
+        });
 
         // --- Initialisation ---
         function initializeUI() {
