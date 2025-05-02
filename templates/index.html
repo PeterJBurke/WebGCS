@@ -71,18 +71,69 @@
     <script src="/static/lib/socket.io.min.js"></script>
     <script>
         // --- Global Variables & DOM Elements ---
-        const map = L.map('map').setView([0, 0], 2); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM contributors' }).addTo(map); let droneMarker = null, homeMarker = null, firstLocationUpdate = true; const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] }); const homeIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 24] });
+        const map = L.map('map', {
+            maxZoom: 22,  // Increased from default (18)
+            minZoom: 2,   // Minimum zoom level
+            zoomControl: true,  // Show zoom controls
+            zoomDelta: 1,  // Zoom level increment
+            zoomSnap: 0.5  // Allow half-step zoom levels
+        }).setView([0, 0], 2);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OSM contributors',
+            maxZoom: 22,  // Match the map's maxZoom
+            maxNativeZoom: 19  // OSM's max zoom, will scale tiles beyond this
+        }).addTo(map);
+        
+        let droneMarker = null, homeMarker = null, firstLocationUpdate = true;
+        const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] });
+        const homeIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 24] });
         const socket = io();
         const messagesDiv = document.getElementById('messages');
-        const ahCanvas = document.getElementById('attitude-canvas'), ahCtx = ahCanvas.getContext('2d'); const asiCanvas = document.getElementById('asi-canvas'), asiCtx = asiCanvas.getContext('2d'); const altCanvas = document.getElementById('alt-canvas'), altCtx = altCanvas.getContext('2d');
-        const armingStatusOverlay = document.getElementById('arming-status-overlay'); const batteryOverlay = document.getElementById('battery-overlay'); const modeOverlay = document.getElementById('mode-overlay'); const currentOverlay = document.getElementById('current-overlay'); const gpsOverlay = document.getElementById('gps-overlay'); const latlonOverlay = document.getElementById('latlon-overlay'); const batteryValueSpan = document.getElementById('battery-value'); const modeValueSpan = document.getElementById('mode-value'); const currentValueSpan = document.getElementById('current-value'); const gpsFixValueSpan = document.getElementById('gps-fix-value'); const gpsSatsValueSpan = document.getElementById('gps-sats-value'); const gpsHdopValueSpan = document.getElementById('gps-hdop-value'); const latValueSpan = document.getElementById('lat-value'); const lonValueSpan = document.getElementById('lon-value');
-        // *** ADDED EKF Status Span ***
+        const ahCanvas = document.getElementById('attitude-canvas'), ahCtx = ahCanvas.getContext('2d');
+        const asiCanvas = document.getElementById('asi-canvas'), asiCtx = asiCanvas.getContext('2d');
+        const altCanvas = document.getElementById('alt-canvas'), altCtx = altCanvas.getContext('2d');
+        const armingStatusOverlay = document.getElementById('arming-status-overlay');
+        const batteryOverlay = document.getElementById('battery-overlay');
+        const modeOverlay = document.getElementById('mode-overlay');
+        const currentOverlay = document.getElementById('current-overlay');
+        const gpsOverlay = document.getElementById('gps-overlay');
+        const latlonOverlay = document.getElementById('latlon-overlay');
+        const batteryValueSpan = document.getElementById('battery-value');
+        const modeValueSpan = document.getElementById('mode-value');
+        const currentValueSpan = document.getElementById('current-value');
+        const gpsFixValueSpan = document.getElementById('gps-fix-value');
+        const gpsSatsValueSpan = document.getElementById('gps-sats-value');
+        const gpsHdopValueSpan = document.getElementById('gps-hdop-value');
+        const latValueSpan = document.getElementById('lat-value');
+        const lonValueSpan = document.getElementById('lon-value');
         const ekfStatusSpan = document.getElementById('ekf-status');
-        const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")}; const modeSelect=document.getElementById("mode-select");
-        const DEG_TO_RAD = Math.PI / 180; const RAD_TO_DEG = 180 / Math.PI; const M_S_TO_KNOTS = 1.94384; const ahWidth = ahCanvas.width, ahHeight = ahCanvas.height; const ahCenterX = ahWidth / 2, ahCenterY = ahHeight / 2; const PITCH_SCALE_FACTOR = 4; const TAPE_WIDTH = asiCanvas.width; const TAPE_ALT_WIDTH = altCanvas.width; const TAPE_HEIGHT = ahHeight; const TAPE_CENTER_Y = TAPE_HEIGHT / 2; const ASI_PIXELS_PER_UNIT = 5; const ALT_PIXELS_PER_UNIT = 5; const HEADING_PIXELS_PER_DEG = 2.5; const HEADING_TAPE_HEIGHT = 25; const PFD_SKY_COLOR = "#87CEEB"; const PFD_GROUND_COLOR = "#A0522D"; const PFD_HORIZON_LINE_COLOR = "#FFFFFF"; const PFD_AIRCRAFT_SYMBOL_COLOR = "#FFFF00"; const PFD_TAPE_TICK_COLOR = "#FFFFFF"; const PFD_TAPE_POINTER_COLOR = "#FFFF00"; const PFD_OVERLAY_BOX_COLOR = "rgba(50, 50, 50, 0.7)"; const PFD_OVERLAY_TEXT_COLOR = "#FFFFFF";
+        const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")};
+        const modeSelect=document.getElementById("mode-select");
+        const DEG_TO_RAD = Math.PI / 180;
+        const RAD_TO_DEG = 180 / Math.PI;
+        const M_S_TO_KNOTS = 1.94384;
+        const ahWidth = ahCanvas.width, ahHeight = ahCanvas.height;
+        const ahCenterX = ahWidth / 2, ahCenterY = ahHeight / 2;
+        const PITCH_SCALE_FACTOR = 4;
+        const TAPE_WIDTH = asiCanvas.width;
+        const TAPE_ALT_WIDTH = altCanvas.width;
+        const TAPE_HEIGHT = ahHeight;
+        const TAPE_CENTER_Y = TAPE_HEIGHT / 2;
+        const ASI_PIXELS_PER_UNIT = 5;
+        const ALT_PIXELS_PER_UNIT = 5;
+        const HEADING_PIXELS_PER_DEG = 2.5;
+        const HEADING_TAPE_HEIGHT = 25;
+        const PFD_SKY_COLOR = "#87CEEB";
+        const PFD_GROUND_COLOR = "#A0522D";
+        const PFD_HORIZON_LINE_COLOR = "#FFFFFF";
+        const PFD_AIRCRAFT_SYMBOL_COLOR = "#FFFF00";
+        const PFD_TAPE_TICK_COLOR = "#FFFFFF";
+        const PFD_TAPE_POINTER_COLOR = "#FFFF00";
+        const PFD_OVERLAY_BOX_COLOR = "rgba(50, 50, 50, 0.7)";
+        const PFD_OVERLAY_TEXT_COLOR = "#FFFFFF";
 
         // --- PFD Drawing Functions (drawRoundedRect, drawAttitudeIndicator, drawAirspeedTape, drawAltitudeTape) ---
-        // ... (These functions remain the same as the previous response where VSI was removed) ...
         function drawRoundedRect(ctx, x, y, width, height, radius) { ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.arcTo(x + width, y, x + width, y + radius, radius); ctx.lineTo(x + width, y + height - radius); ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius); ctx.lineTo(x + radius, y + height); ctx.arcTo(x, y + height, x, y + height - radius, radius); ctx.lineTo(x, y + radius); ctx.arcTo(x, y, x + radius, y, radius); ctx.closePath(); }
         function drawAttitudeIndicator(pitch = 0, roll = 0, heading = 0) { const rollRad = -roll * DEG_TO_RAD; const pitchPx = pitch * PITCH_SCALE_FACTOR; const ctx = ahCtx; ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, ahWidth, ahHeight); ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.save(); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.beginPath(); ctx.rect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX - heading * HEADING_PIXELS_PER_DEG, HEADING_TAPE_HEIGHT / 2); const headingRange = Math.ceil(ahWidth / (2 * HEADING_PIXELS_PER_DEG)); const startHdg = Math.floor(heading - headingRange - 10); const endHdg = Math.ceil(heading + headingRange + 10); const headingLabels = { 0: "N", 30: "3", 60: "6", 90: "E", 120: "12", 150: "15", 180: "S", 210: "21", 240: "24", 270: "W", 300: "30", 330: "33", 360: "N" }; for (let h = startHdg; h <= endHdg; h += 5) { const normalizedHdg = (h % 360 + 360) % 360; const xPos = h * HEADING_PIXELS_PER_DEG; let tickHeight = 5; let isLabelTick = false; let label = null; ctx.lineWidth = 1; if (h % 10 === 0) tickHeight = 10; if (h % 30 === 0) { tickHeight = 15; isLabelTick = true; label = (normalizedHdg / 10).toString(); } if (headingLabels[normalizedHdg]) { tickHeight = 15; isLabelTick = true; label = headingLabels[normalizedHdg]; ctx.lineWidth = 1.5; } ctx.beginPath(); ctx.moveTo(xPos, -tickHeight / 2); ctx.lineTo(xPos, tickHeight / 2); ctx.stroke(); if (isLabelTick && label) { ctx.fillText(label, xPos, tickHeight / 2 + 10); } } ctx.restore(); ctx.save(); ctx.beginPath(); ctx.rect(0, HEADING_TAPE_HEIGHT, ahWidth, ahHeight - HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.rotate(rollRad); ctx.translate(0, pitchPx); ctx.fillStyle = PFD_SKY_COLOR; ctx.fillRect(-ahWidth * 1.5, -ahHeight * 2, ahWidth * 3, ahHeight * 2); ctx.fillStyle = PFD_GROUND_COLOR; ctx.fillRect(-ahWidth * 1.5, 0, ahWidth * 3, ahHeight * 2); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-ahWidth * 1.5, 0); ctx.lineTo(ahWidth * 1.5, 0); ctx.stroke(); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 1; ctx.font = "12px monospace"; ctx.fillStyle = PFD_HORIZON_LINE_COLOR; ctx.textAlign = "center"; const tickLengthShort = 25; const tickLengthLong = 50; for (let p = -90; p <= 90; p += 5) { if (p === 0) continue; const yPos = -p * PITCH_SCALE_FACTOR; if (Math.abs(yPos) > ahHeight * 1.5) continue; const isMajorTick = (p % 10 === 0); const tickLength = isMajorTick ? tickLengthLong : tickLengthShort; ctx.beginPath(); ctx.moveTo(-tickLength / 2, yPos); ctx.lineTo(tickLength / 2, yPos); ctx.stroke(); if (isMajorTick) { ctx.fillText(Math.abs(p).toString(), -tickLength / 2 - 20, yPos + 4); ctx.fillText(Math.abs(p).toString(), tickLength / 2 + 20, yPos + 4); } } ctx.restore(); ctx.save(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.strokeStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.fillStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.lineWidth = 2; const notchSize = 4; ctx.beginPath(); ctx.moveTo(0, -notchSize / 2); ctx.lineTo(-notchSize, notchSize / 2); ctx.lineTo(notchSize, notchSize / 2); ctx.closePath(); ctx.fillRect(-1,-1,2,2); const wingLength = 40; ctx.beginPath(); ctx.moveTo(-wingLength, 0); ctx.lineTo(-notchSize*1.5, 0); ctx.moveTo(notchSize*1.5, 0); ctx.lineTo(wingLength, 0); ctx.stroke(); ctx.restore(); ctx.save(); const hdgBoxWidth = 80; const hdgBoxHeight = 20; const hdgBoxX = ahCenterX - hdgBoxWidth / 2; const hdgBoxY = 5; const hdgBoxRadius = 5; ctx.fillStyle = PFD_OVERLAY_BOX_COLOR; drawRoundedRect(ctx, hdgBoxX, hdgBoxY, hdgBoxWidth, hdgBoxHeight, hdgBoxRadius); ctx.fill(); ctx.fillStyle = PFD_OVERLAY_TEXT_COLOR; ctx.font = "bold 11px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`HDG: ${heading.toFixed(0)}°`, ahCenterX, hdgBoxY + hdgBoxHeight / 2); ctx.restore(); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(ahCenterX, HEADING_TAPE_HEIGHT); ctx.lineTo(ahCenterX - 6, HEADING_TAPE_HEIGHT + 6); ctx.lineTo(ahCenterX + 6, HEADING_TAPE_HEIGHT + 6); ctx.closePath(); ctx.fill(); ctx.restore(); }
         function drawAirspeedTape(speed = 0) { const ctx = asiCtx; const tapeWidth = TAPE_WIDTH; const tapeHeight = TAPE_HEIGHT; const centerY = TAPE_CENTER_Y; const pixelsPerUnit = ASI_PIXELS_PER_UNIT; const pointerWidth = 15; ctx.save(); ctx.clearRect(0, 0, tapeWidth, tapeHeight); const pointerBoxHeight = 20; const pointerBoxY = centerY - pointerBoxHeight / 2; const textBoxX = 5; const textBoxWidth = tapeWidth - pointerWidth - 10; ctx.strokeStyle = PFD_TAPE_POINTER_COLOR; ctx.lineWidth = 1.5; ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(speed.toFixed(0), textBoxX + textBoxWidth / 2, centerY); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(tapeWidth - pointerWidth, pointerBoxY); ctx.lineTo(tapeWidth, centerY); ctx.lineTo(tapeWidth - pointerWidth, pointerBoxY + pointerBoxHeight); ctx.closePath(); ctx.fill(); ctx.translate(0, centerY + speed * pixelsPerUnit); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "12px monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle"; const range = Math.ceil(tapeHeight / (2 * pixelsPerUnit * 5)) * 5; const startValue = Math.max(0, Math.floor(speed - range) - 5); const endValue = Math.ceil(speed + range) + 10; for (let val = startValue; val <= endValue; val += 1) { const yPos = -val * pixelsPerUnit; if (yPos < -centerY - 20 || yPos > tapeHeight - centerY + 20) continue; let tickLength = 0; let isLabelTick = false; ctx.lineWidth = 1; if (val % 10 === 0) { tickLength = 15; isLabelTick = true; ctx.lineWidth = 1.5; } else if (val % 5 === 0) { tickLength = 10; } else { tickLength = 5; } if (tickLength > 0) { ctx.beginPath(); ctx.moveTo(0, yPos); ctx.lineTo(tickLength, yPos); ctx.stroke(); if (isLabelTick && val >= 0) { ctx.fillText(val.toString(), -5, yPos); } } } ctx.restore(); }
