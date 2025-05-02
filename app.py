@@ -73,6 +73,8 @@ drone_state = {
 data_streams_requested = False
 home_position_requested = False
 pending_commands = collections.OrderedDict() # {cmd_id: timestamp}
+fence_request_pending = False # New flag for fence request
+fence_request_lock = threading.Lock() # Lock for the flag
 
 # --- MAVLink Helper Functions ---
 def get_ekf_status_report(flags):
@@ -341,11 +343,98 @@ def mavlink_receive_loop():
                     )
                 except Exception as e:
                     print(f"Error requesting home position: {e}")
+            
+            # --- Handle Pending Fence Request ---
+            if fence_request_pending:
+                _execute_fence_request()
+            # ---------------------------------
 
         except Exception as e:
             print(f"Error in MAVLink receive loop: {e}")
             traceback.print_exc()
             gevent.sleep(1)
+
+def _execute_fence_request():
+    """Executes the fence request logic. Called from main loop."""
+    global fence_request_pending, mavlink_connection
+    
+    # Reset flag immediately
+    with fence_request_lock:
+        fence_request_pending = False
+        
+    print("\n--- Executing Pending Fence Request ---")
+    status_msg = "Starting fence request..."
+    cmd_type = 'info'
+    success = False
+    fence_points = []
+    
+    try:
+        if not mavlink_connection or not drone_state.get("connected", False):
+            raise Exception("Cannot request fence: Drone not connected.")
+
+        target_sys = mavlink_connection.target_system
+        target_comp = mavlink_connection.target_component
+        print(f"Requesting mission list for SYS:{target_sys} COMP:{target_comp}...")
+
+        mavlink_connection.mav.mission_request_list_send(
+            target_sys, target_comp, mavutil.mavlink.MAV_MISSION_TYPE_FENCE
+        )
+
+        print("Waiting for MISSION_COUNT...")
+        msg = mavlink_connection.recv_match(type='MISSION_COUNT', blocking=True, timeout=5)
+
+        if not msg:
+            raise Exception("Timeout waiting for MISSION_COUNT.")
+        if msg.mission_type != mavutil.mavlink.MAV_MISSION_TYPE_FENCE:
+            raise Exception(f"Received MISSION_COUNT for wrong mission type: {msg.mission_type}")
+
+        fence_count = msg.count
+        print(f"Found {fence_count} fence items.")
+        socketio.emit('status_message', {'text': f"Found {fence_count} fence points", 'type': 'info'})
+
+        if fence_count == 0:
+            status_msg = "No fence points defined."
+            cmd_type = 'warning'
+            success = True
+        else:
+            for seq in range(fence_count):
+                print(f"Requesting fence point {seq + 1}/{fence_count}...")
+                mavlink_connection.mav.mission_request_send(
+                    target_sys, target_comp, seq, mavutil.mavlink.MAV_MISSION_TYPE_FENCE
+                )
+                print("Waiting for MISSION_ITEM...")
+                item = mavlink_connection.recv_match(type='MISSION_ITEM', blocking=True, timeout=5)
+                if not item:
+                    raise Exception(f"Timeout waiting for MISSION_ITEM {seq}.")
+                
+                lat = item.x / 1e7 if abs(item.x) > 180 else item.x
+                lon = item.y / 1e7 if abs(item.y) > 180 else item.y
+                print(f"  Point {seq+1}: Lat={lat:.7f}, Lon={lon:.7f}, Alt={item.z:.2f}")
+                fence_points.append([lat, lon])
+
+            # Print summary
+            print("\nFence Summary:")
+            print("-------------")
+            for idx, point in enumerate(fence_points):
+                print(f"Point {idx + 1}: Lat={point[0]:.7f}, Lon={point[1]:.7f}")
+            
+            socketio.emit('geofence_update', {'points': fence_points})
+            status_msg = f"Retrieved {fence_count} fence points successfully."
+            cmd_type = 'info'
+            success = True
+
+    except Exception as e:
+        status_msg = f"Error during fence request: {e}"
+        cmd_type = 'error'
+        success = False
+        print(f"\nError: {status_msg}")
+        traceback.print_exc()
+
+    finally:
+        print("--- Fence Request Execution Finished ---")
+        # Emit final status for the operation initiated by REQUEST_FENCE
+        socketio.emit('status_message', {'text': status_msg, 'type': cmd_type})
+        socketio.emit('command_result', {'command': 'REQUEST_FENCE', 'success': success, 'message': status_msg})
 
 def periodic_telemetry_update():
     """Periodically send telemetry updates to web clients."""
@@ -520,6 +609,7 @@ def request_geofence_data():
 @socketio.on('send_command')
 def handle_send_command(data):
     """Handles commands received from the web UI."""
+    global fence_request_pending
     cmd = data.get('command')
     print(f"UI Command Received: {cmd} Data: {data}")
     success = False
@@ -593,130 +683,22 @@ def handle_send_command(data):
             msg = f'Invalid GoTo parameters: {e}'
             cmd_type = 'error'
     elif cmd == 'REQUEST_FENCE':
-        try:
-            print("\nRequesting geofence mission list...")
-            # Request the geofence mission list
-            mavlink_connection.mav.mission_request_list_send(
-                mavlink_connection.target_system,
-                mavlink_connection.target_component,
-                mavutil.mavlink.MAV_MISSION_TYPE_FENCE
-            )
-
-            print("Waiting for MISSION_COUNT response...")
-            # Wait for MISSION_COUNT
-            msg = mavlink_connection.recv_match(type=['MISSION_COUNT', 'MISSION_ACK'], blocking=True, timeout=5)
-            if not msg:
-                print("No response to mission list request (timeout)")
-                msg = "No response to mission list request (timeout)"
-                cmd_type = 'error'
-                success = False
-                socketio.emit('status_message', {'text': msg, 'type': cmd_type})
-                return
-            
-            print(f"Received message type: {msg.get_type()}")
-            
-            if msg.get_type() == 'MISSION_ACK':
-                print(f"Received MISSION_ACK with result: {msg.type}")
-                msg = f"Mission request failed with result: {msg.type}"
-                cmd_type = 'error'
-                success = False
-                socketio.emit('status_message', {'text': msg, 'type': cmd_type})
-                return
-            
-            if msg.mission_type != mavutil.mavlink.MAV_MISSION_TYPE_FENCE:
-                print(f"Received mission count but wrong type: {msg.mission_type}")
-                msg = f"Received mission count but wrong type: {msg.mission_type}"
-                cmd_type = 'error'
-                success = False
-                socketio.emit('status_message', {'text': msg, 'type': cmd_type})
-                return
-
-            fence_count = msg.count
-            print(f"Number of geofence items: {fence_count}")
-            socketio.emit('status_message', {'text': f"Found {fence_count} fence points", 'type': 'info'})
-            
-            if fence_count == 0:
-                print("No fence points defined")
-                msg = "No fence points defined"
-                cmd_type = 'warning'
+        print(f"\nReceived UI command: {cmd}")
+        with fence_request_lock:
+            if not fence_request_pending:
+                fence_request_pending = True
                 success = True
-                socketio.emit('status_message', {'text': msg, 'type': cmd_type})
-                return
-
-            fence_points = []
-
-            # Request each fence point
-            for seq in range(fence_count):
-                print(f"\nRequesting fence point {seq + 1}/{fence_count}")
-                mavlink_connection.mav.mission_request_int_send(  # Using mission_request_int instead
-                    mavlink_connection.target_system,
-                    mavlink_connection.target_component,
-                    seq,
-                    mavutil.mavlink.MAV_MISSION_TYPE_FENCE
-                )
-
-                print(f"Waiting for MISSION_ITEM_INT response...")
-                item = mavlink_connection.recv_match(type=['MISSION_ITEM_INT', 'MISSION_ACK'], blocking=True, timeout=5)
-                if not item:
-                    print(f"Timeout waiting for fence point {seq}")
-                    msg = f"Timeout waiting for fence point {seq}"
-                    cmd_type = 'error'
-                    success = False
-                    socketio.emit('status_message', {'text': msg, 'type': cmd_type})
-                    return
-                
-                print(f"Received message type: {item.get_type()}")
-                
-                if item.get_type() == 'MISSION_ACK':
-                    print(f"Received MISSION_ACK with result: {item.type}")
-                    msg = f"Mission request failed with result: {item.type}"
-                    cmd_type = 'error'
-                    success = False
-                    socketio.emit('status_message', {'text': msg, 'type': cmd_type})
-                    return
-
-                # Convert lat/lon from int to float degrees (for MISSION_ITEM_INT)
-                lat = item.x / 1e7
-                lon = item.y / 1e7
-                
-                print(f"  Command: {item.command}")
-                print(f"  Frame: {item.frame}")
-                print(f"  Location: Lat={lat:.7f}, Lon={lon:.7f}, Alt={item.z:.2f}")
-                print(f"  Parameters: {[item.param1, item.param2, item.param3, item.param4]}")
-                
-                fence_points.append([lat, lon])
-
-            # Send mission acknowledgment
-            print("\nSending mission acknowledgment...")
-            mavlink_connection.mav.mission_ack_send(
-                mavlink_connection.target_system,
-                mavlink_connection.target_component,
-                mavutil.mavlink.MAV_MISSION_ACCEPTED,
-                mavutil.mavlink.MAV_MISSION_TYPE_FENCE
-            )
-
-            # Print final summary
-            print("\nFence Summary:")
-            print("-------------")
-            for idx, point in enumerate(fence_points):
-                print(f"Point {idx + 1}: Lat={point[0]:.7f}, Lon={point[1]:.7f}")
-
-            # Send the complete fence to the frontend
-            socketio.emit('geofence_update', {
-                'points': fence_points
-            })
-            
-            success = True
-            msg = f"Retrieved {fence_count} fence points successfully"
-            print(f"\n{msg}")
-            cmd_type = 'info'
-            
-        except Exception as e:
-            success = False
-            msg = f"Error requesting geofence: {e}"
-            cmd_type = 'error'
-            print(f"\nError: {msg}")
-            traceback.print_exc()  # Add stack trace for debugging
+                msg = "Fence request initiated."
+                cmd_type = 'info'
+                print(msg)
+            else:
+                success = False
+                msg = "Fence request already in progress."
+                cmd_type = 'warning'
+                print(msg)
+        # Note: We no longer handle the full request here
+        # The main loop will pick it up.
+        # We still need to emit the initial command result
     else:
         msg = f'Unknown command received: {cmd}'
         cmd_type = 'warning'
