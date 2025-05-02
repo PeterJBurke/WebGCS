@@ -385,22 +385,51 @@
             } 
         });
 
+        // Add variable to track the geofence polygon
+        let geofencePolygon = null;
+
         socket.on("geofence_update", (data) => {
             const table = document.getElementById('geofence-table').getElementsByTagName('tbody')[0];
             table.innerHTML = ''; // Clear existing rows
             
             if (data && data.points && data.points.length > 0) {
+                // Update table
                 data.points.forEach((point, index) => {
                     const row = table.insertRow();
                     row.insertCell(0).textContent = index + 1;
                     row.insertCell(1).textContent = point[0].toFixed(7);
                     row.insertCell(2).textContent = point[1].toFixed(7);
                 });
-                addMessage("Geofence data updated", "info");
+                
+                // Draw fence on the map
+                if (geofencePolygon) {
+                    map.removeLayer(geofencePolygon);
+                }
+                
+                // Create a polygon from the fence points
+                geofencePolygon = L.polygon(data.points, {
+                    color: '#FF4500',  // OrangeRed
+                    weight: 3,
+                    opacity: 0.8,
+                    fillColor: '#FF4500',
+                    fillOpacity: 0.2
+                }).addTo(map);
+                
+                // Don't automatically center on the geofence
+                // Removed map.fitBounds() call to keep current map view
+                
+                addMessage("Geofence data updated and plotted on map", "info");
             } else {
+                // Remove any existing geofence polygon
+                if (geofencePolygon) {
+                    map.removeLayer(geofencePolygon);
+                    geofencePolygon = null;
+                }
+                
                 const row = table.insertRow();
                 row.insertCell(0).setAttribute('colspan', '3');
                 row.cells[0].textContent = 'No fence points available';
+                addMessage("No geofence points available", "warning");
             }
         });
 
