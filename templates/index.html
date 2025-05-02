@@ -48,6 +48,22 @@
                         <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
                         <!-- *** ADDED: EKF Status Display Element *** -->
                         <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
+                        <!-- *** ADDED: Geofence Table Section *** -->
+                        <div class="status-item geofence-section">
+                            <strong>Geofence:</strong>
+                            <table id="geofence-table" class="geofence-table">
+                                <thead>
+                                    <tr>
+                                        <th>Point</th>
+                                        <th>Latitude</th>
+                                        <th>Longitude</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="3">No fence points available</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                         <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
                     </div>
                 </div>
@@ -366,6 +382,25 @@
                     } 
                 } 
             } 
+        });
+
+        socket.on("geofence_update", (data) => {
+            const table = document.getElementById('geofence-table').getElementsByTagName('tbody')[0];
+            table.innerHTML = ''; // Clear existing rows
+            
+            if (data && data.points && data.points.length > 0) {
+                data.points.forEach((point, index) => {
+                    const row = table.insertRow();
+                    row.insertCell(0).textContent = index + 1;
+                    row.insertCell(1).textContent = point[0].toFixed(7);
+                    row.insertCell(2).textContent = point[1].toFixed(7);
+                });
+                addMessage("Geofence data updated", "info");
+            } else {
+                const row = table.insertRow();
+                row.insertCell(0).setAttribute('colspan', '3');
+                row.cells[0].textContent = 'No fence points available';
+            }
         });
 
     </script>

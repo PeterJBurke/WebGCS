@@ -190,6 +190,7 @@ def mavlink_receive_loop():
     print("MAVLink receive loop starting...")
     message_counts = collections.defaultdict(int)
     last_status_print = time.time()
+    geofence_points = []
     
     while True:
         try:
@@ -224,6 +225,32 @@ def mavlink_receive_loop():
                 # Process messages with minimal logging
                 if msg_type == 'HEARTBEAT':
                     process_heartbeat(msg)
+                elif msg_type == 'FENCE_POINT':
+                    # Process fence point message
+                    if msg.count > 0:  # Only process if we have fence points
+                        while len(geofence_points) <= msg.idx:
+                            geofence_points.append(None)
+                        geofence_points[msg.idx] = [msg.lat, msg.lng]
+                        
+                        # If we have all points and they're valid
+                        if None not in geofence_points[:msg.count]:
+                            # Emit the complete fence to the frontend
+                            socketio.emit('geofence_update', {
+                                'points': geofence_points[:msg.count]
+                            })
+                elif msg_type == 'FENCE_STATUS':
+                    # Process fence status and request points if needed
+                    if msg.breach_status == 0:  # No breach
+                        if not geofence_points:  # If we don't have the fence points
+                            # Request fence point count
+                            mavlink_connection.mav.command_long_send(
+                                mavlink_connection.target_system,
+                                mavlink_connection.target_component,
+                                mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE,
+                                0,
+                                mavutil.mavlink.MAVLINK_MSG_ID_FENCE_POINT,
+                                0, 0, 0, 0, 0, 0
+                            )
                 elif msg_type == 'GLOBAL_POSITION_INT':
                     with drone_state_lock:
                         drone_state['lat'] = msg.lat / 1e7
