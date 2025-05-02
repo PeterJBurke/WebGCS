@@ -79,11 +79,39 @@
             zoomSnap: 0.5  // Allow half-step zoom levels
         }).setView([0, 0], 2);
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OSM contributors',
-            maxZoom: 22,  // Match the map's maxZoom
-            maxNativeZoom: 19  // OSM's max zoom, will scale tiles beyond this
-        }).addTo(map);
+        // Base layers
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 22,
+            maxNativeZoom: 19
+        });
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: '© Esri',
+            maxZoom: 22,
+            maxNativeZoom: 18
+        });
+
+        const hybridLayer = L.layerGroup([
+            satelliteLayer,
+            L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-hybrid/{z}/{x}/{y}{r}.png', {
+                attribution: 'Labels by Stamen Design',
+                maxZoom: 22,
+                maxNativeZoom: 18,
+                opacity: 0.7
+            })
+        ]);
+
+        // Define base maps for layer control
+        const baseMaps = {
+            "Street": osmLayer,
+            "Satellite": satelliteLayer,
+            "Hybrid": hybridLayer
+        };
+
+        // Add default layer and layer control
+        osmLayer.addTo(map);
+        L.control.layers(baseMaps, {}, {position: 'topright'}).addTo(map);
         
         let droneMarker = null, homeMarker = null, firstLocationUpdate = true;
         const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] });
