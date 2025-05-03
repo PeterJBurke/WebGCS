@@ -31,14 +31,57 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 /* Info & Controls Section */
 .info-controls-section { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 /* Status Grid */
-.status { margin-bottom: 15px; flex-shrink: 0; }
-.status h2 { font-size: 1.1em; margin: 0 0 8px 0; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+.status { 
+    margin-bottom: 15px; 
+    flex-shrink: 0;
+    background-color: #ddd; 
+    padding: 10px; 
+    border-radius: 5px; 
+    border: 1px solid #bbb;
+}
+.status h2 { font-size: 1.1em; margin: 0 0 8px 0; color: #333; border-bottom: 1px solid #bbb; padding-bottom: 4px; }
 .status-grid { display: grid; grid-template-columns: auto; gap: 6px; }
+/* Add styles for horizontal status row */
+.status-row { 
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
 .status-item { background-color: #e9ecef; padding: 5px 8px; border-radius: 3px; font-size: 0.85em; overflow-wrap: break-word; display: flex; align-items: center; }
 .status-item strong { display: inline-block; min-width: 90px; /* Adjust for alignment */ font-size: 1em; color: #495057; margin-bottom: 0; text-transform: uppercase; margin-right: 5px; text-align: right; /* Right align labels */}
-#messages { height: 90px; /* Adjust height as needed */ max-height: 150px; overflow-y: auto; border: 1px solid #ced4da; padding: 5px 8px; margin-top: 8px; background-color: #fff; font-size: 0.8em; border-radius: 3px; line-height: 1.2; }
-#messages p { margin: 1px 0; padding: 1px 0; border-bottom: 1px dashed #eee; } #messages p:last-child { border-bottom: none; }
-.msg-info { color: #17a2b8; } .msg-warning { color: #ffc107; font-weight: bold; } .msg-error { color: #dc3545; font-weight: bold; }
+
+/* Messages Section */
+.messages-section {
+    margin-bottom: 15px; 
+    flex-shrink: 0;
+    background-color: #ddd; 
+    padding: 10px; 
+    border-radius: 5px; 
+    border: 1px solid #bbb;
+}
+.messages-section h2 { 
+    font-size: 1.1em; 
+    margin: 0 0 8px 0; 
+    color: #333; 
+    border-bottom: 1px solid #bbb; 
+    padding-bottom: 4px; 
+}
+#messages { 
+    height: 100px; 
+    max-height: 150px; 
+    overflow-y: auto; 
+    border: 1px solid #ced4da; 
+    padding: 5px 8px; 
+    background-color: #fff; 
+    font-size: 0.8em; 
+    border-radius: 3px; 
+    line-height: 1.2; 
+}
+#messages p { margin: 1px 0; padding: 1px 0; border-bottom: 1px dashed #eee; } 
+#messages p:last-child { border-bottom: none; }
+.msg-info { color: #17a2b8; } 
+.msg-warning { color: #ffc107; font-weight: bold; } 
+.msg-error { color: #dc3545; font-weight: bold; }
 /* *** ADDED: ACK Message Styles *** */
 .msg-ack { color: #007bff; } /* Blue for ACK */
 .msg-ack-fail { color: #dc3545; font-weight: bold; } /* Red for ACK Fail/Reject */

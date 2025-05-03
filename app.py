@@ -282,6 +282,13 @@ def process_command_ack(msg):
     # Get result name
     result_name = MAV_RESULT_STR.get(result, 'UNKNOWN')
     
+    # Skip logging and emitting MAV_CMD_REQUEST_MESSAGE commands with UNKNOWN results
+    if cmd == mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE and result_name == 'UNKNOWN':
+        # Just remove from pending commands silently
+        if cmd in pending_commands:
+            del pending_commands[cmd]
+        return
+    
     # Log with detailed explanation
     explanation = "Command acknowledged with"
     if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:

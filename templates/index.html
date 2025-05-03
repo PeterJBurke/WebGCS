@@ -15,8 +15,35 @@
         button:disabled, select:disabled { background-color: #cccccc; color: #666666; cursor: not-allowed; opacity: 0.7; }
         .map-controls { position: absolute; top: 10px; left: 50px; z-index: 500; background: rgba(255,255,255,0.8); padding: 5px; border-radius: 4px; border: 1px solid #bbb; }
         .map-controls button { font-size: 11px; padding: 3px 6px; margin-left: 5px; }
-        .goto-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-        .goto-controls input { flex-grow: 1; min-width: 60px; }
+        .goto-controls { 
+            display: flex; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 6px; 
+        }
+        .goto-controls input { 
+            flex-grow: 0; /* Don't let inputs grow automatically */
+            margin-right: 6px; 
+        }
+        /* Specific sizes for different fields */
+        #goto-lat, #goto-lon { 
+            min-width: 120px; 
+            width: 120px; 
+        }
+        #goto-alt { 
+            min-width: 50px; 
+            width: 50px; 
+        }
+        /* Create field groups to keep labels with inputs */
+        .field-group {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            margin-right: 4px;
+        }
+        .field-group label {
+            margin-right: 4px;
+        }
         .mode-select-control { margin-left: 10px; }
         .mode-select-control select { padding: 5px; font-size: 0.9em; }
         
@@ -80,25 +107,48 @@
                 <div class="status">
                     <h2>Status</h2>
                     <div class="status-grid">
-                        <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
-                        <!-- *** ADDED: EKF Status Display Element *** -->
-                        <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
-                        <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
+                        <div class="status-row">
+                            <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
+                            <!-- *** ADDED: EKF Status Display Element *** -->
+                            <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="controls">
                     <!-- Controls section remains unchanged -->
                      <h2>Controls</h2>
                     <div><button id="btn-arm">Arm</button> <button id="btn-disarm">Disarm</button> <button id="btn-takeoff">Takeoff</button> (Alt: <input type="number" id="takeoff-alt" value="5" step="1" min="1" max="1000" style="width:45px"> m) <button id="btn-land">Land</button> <button id="btn-rtl">RTL</button></div>
                     <div class="mode-select-control"><label for="mode-select">Set Mode:</label> <select id="mode-select"><option value="">--Select Mode--</option><option value="STABILIZE">Stabilize</option><option value="ALT_HOLD">Alt Hold</option><option value="POS_HOLD">Pos Hold</option><option value="LOITER">Loiter</option><option value="GUIDED">Guided</option><option value="RTL">RTL</option><option value="LAND">Land</option><option value="AUTO">Auto</option><option value="BRAKE">Brake</option></select> <button id="btn-set-mode">Set</button></div>
                     <hr>
-                    <div class="goto-controls"> GoTo: Lat <input type="number" step="any" id="goto-lat" placeholder="Lat [-90,90]"> Lon <input type="number" step="any" id="goto-lon" placeholder="Lon [-180,180]"> Alt <input type="number" step="any" id="goto-alt" placeholder="Alt (AGL)" value="10" min="-100" max="5000"> <button id="btn-goto">Go To</button> <button id="btn-clear-goto" title="Clear GoTo Fields">Clear</button> </div>
+                    <div class="goto-controls">
+                        <div class="field-group">
+                            <label for="goto-lat">Lat</label>
+                            <input type="number" step="any" id="goto-lat" placeholder="[-90,90]">
+                        </div>
+                        <div class="field-group">
+                            <label for="goto-lon">Lon</label>
+                            <input type="number" step="any" id="goto-lon" placeholder="[-180,180]">
+                        </div>
+                        <div class="field-group">
+                            <label for="goto-alt">Alt</label>
+                            <input type="number" step="any" id="goto-alt" placeholder="AGL" value="10" min="-100" max="5000">
+                        </div>
+                        <button id="btn-goto">Go To</button>
+                        <button id="btn-clear-goto" title="Clear GoTo Fields">Clear</button>
+                    </div>
                     <hr>
                     <!-- Add mission and fence request buttons horizontally -->
                     <div class="request-controls">
                         <button id="btn-request-fence">Request Fence</button>
                         <button id="btn-request-mission">Request Mission</button>
                     </div>
+                </div>
+                
+                <!-- Messages section moved to appear after controls -->
+                <div class="messages-section">
+                    <h2>Messages</h2>
+                    <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
                 </div>
             </div>
         </div>
