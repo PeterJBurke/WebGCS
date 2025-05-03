@@ -151,7 +151,6 @@
         
         let droneMarker = null, homeMarker = null, firstLocationUpdate = true;
         let flyToTargetMarker = null;
-        let testMarker3 = null; // Additional test marker for debugging
         let currentClickMarker = null; // Track the current green dot
         const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] });
         const homeIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 24] });
@@ -371,33 +370,6 @@
                 const homeLatLng = [homeLat, homeLon]; 
                 if (!homeMarker) { 
                     homeMarker = L.marker(homeLatLng, { icon: homeIcon }).addTo(map).bindPopup("Home Position"); 
-                    
-                    // Add test markers near the home position
-                    if (!testMarker3) {
-                        console.log("Creating test markers near home at", homeLat, homeLon);
-                        
-                        // Create test marker 3 - offset slightly from home
-                        testMarker3 = L.circleMarker([homeLat + 0.0002, homeLon + 0.0002], {
-                            color: 'green',
-                            fillColor: 'green',
-                            fillOpacity: 0.7,
-                            radius: 12,
-                            weight: 3
-                        }).addTo(map);
-                        testMarker3.bindTooltip("Test Near Home", {
-                            permanent: true,
-                            direction: 'top'
-                        }).openTooltip();
-                        
-                        // Create another test marker using regular marker
-                        const testMarker4 = L.marker([homeLat - 0.0002, homeLon - 0.0002]).addTo(map);
-                        testMarker4.bindTooltip("Home Test Marker", {
-                            permanent: true,
-                            direction: 'right'
-                        }).openTooltip();
-                        
-                        console.log("Test markers added near home");
-                    }
                 } else { 
                     homeMarker.setLatLng(homeLatLng); 
                 } 
@@ -437,27 +409,10 @@
                 addMessage("Fly To mode activated. Click on map to send drone to that position.", "info");
                 // Change cursor to indicate clickable map
                 map._container.style.cursor = 'crosshair';
-                
-                // Add a test marker when mode is activated
-                testMarker3 = L.circleMarker([0.02, 0.02], {
-                    color: 'green',
-                    fillColor: 'green',
-                    fillOpacity: 0.7,
-                    radius: 10
-                }).addTo(map);
-                testMarker3.bindTooltip("Mode Active").openTooltip();
-                console.log("Added mode active test marker");
-                
             } else {
                 addMessage("Fly To mode deactivated.", "info");
                 // Restore default cursor
                 map._container.style.cursor = '';
-                
-                // Remove test marker
-                if (testMarker3) {
-                    map.removeLayer(testMarker3);
-                    testMarker3 = null;
-                }
                 
                 // Remove any existing target marker when deactivating
                 if (flyToTargetMarker) {
@@ -467,7 +422,7 @@
             }
         });
         
-        // Update map click handler to have only one green dot at a time
+        // Update map click handler to use a red target icon instead of a green dot
         map.on('click', function(e) {
             const lat = e.latlng.lat;
             const lon = e.latlng.lng;
@@ -485,17 +440,25 @@
                     map.removeLayer(currentClickMarker);
                 }
                 
-                // Create a single green dot marker at the clicked location
+                // Create a single red target icon at the clicked location
                 currentClickMarker = L.marker([lat, lon], {
                     icon: L.divIcon({
-                        className: 'click-marker-dot',
-                        html: '<div style="background-color: #00FF00; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>',
-                        iconSize: [12, 12],
-                        iconAnchor: [6, 6]
+                        className: 'click-marker-target',
+                        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                                <circle cx="12" cy="12" r="10" fill="#FF0000" fill-opacity="0.7" stroke="#FFFFFF" stroke-width="1"/>
+                                <circle cx="12" cy="12" r="5" fill="#FF0000" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1"/>
+                                <circle cx="12" cy="12" r="2" fill="#FFFFFF"/>
+                                <line x1="12" y1="2" x2="12" y2="6" stroke="#FFFFFF" stroke-width="1.5"/>
+                                <line x1="12" y1="18" x2="12" y2="22" stroke="#FFFFFF" stroke-width="1.5"/>
+                                <line x1="2" y1="12" x2="6" y2="12" stroke="#FFFFFF" stroke-width="1.5"/>
+                                <line x1="18" y1="12" x2="22" y2="12" stroke="#FFFFFF" stroke-width="1.5"/>
+                              </svg>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
                     })
                 }).addTo(map);
                 
-                console.log("Created new green dot at:", lat, lon);
+                console.log("Created new target icon at:", lat, lon);
             } catch (err) {
                 console.error("Error creating click marker:", err);
             }
