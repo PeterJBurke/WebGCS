@@ -1,6 +1,19 @@
-# Drone Control Desktop Interface (v2.63-Desktop-TCP)
+# Drone Control Desktop Interface (v2.63-Desktop-TCP-AckEkf)
 
 This project provides a web-based ground control interface, adapted from the Raspberry Pi version, to run on a desktop computer. It connects directly to a drone running MAVLink, expecting the drone to act as a TCP server.
+
+## Features
+
+* Direct TCP connection to drone running MAVLink
+* Attitude/heading reference display
+* Real-time map tracking
+* Command interface (arm/disarm, takeoff/landing, mode changes)
+* "Fly To" target location functionality with map marker
+* Geofence and mission visualization
+* Detailed command acknowledgment feedback
+* Enhanced status monitoring (connection, EKF status, messages)
+* Detailed MAVLink heartbeat logging for debugging
+* Responsive UI layout for desktop and mobile use
 
 ## Prerequisites
 
@@ -49,6 +62,31 @@ This project provides a web-based ground control interface, adapted from the Ras
     *   Alternatively, find your desktop's IP address (e.g., using `ip addr` on Linux or `ipconfig` on Windows) and access it via `http://<your_desktop_ip>:5000`.
 
 5.  **Use Interface:** The web interface should load. Check the connection status and wait for telemetry data to appear.
+
+## Using the Interface
+
+1. **Status & Indicators**:
+   * Top section shows attitude and heading indicator
+   * Connection status and EKF status indicators in Status box
+   * Messages box displays system messages and command acknowledgments
+
+2. **Flight Controls**:
+   * Arm/Disarm: Safely arm or disarm the drone
+   * Takeoff: Initiate an automatic takeoff to specified altitude
+   * Land/RTL: Command landing or Return-to-Launch
+
+3. **Mode Selection**:
+   * Set flight modes via dropdown (Guided, Loiter, etc.)
+
+4. **Go To Navigation**:
+   * Enter coordinates manually or click on map
+   * Enable "Fly To" button for point-and-click navigation
+   * Red target marker shows navigation target
+
+5. **Map Features**:
+   * Request and visualize geofence data
+   * Request and visualize mission waypoints
+   * Center map on drone position
 
 ## Stopping the Application
 
