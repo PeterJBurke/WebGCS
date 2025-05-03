@@ -26,6 +26,17 @@
             color: white;
         }
         
+        /* Add pulsing animation for target marker */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .pulsing {
+            animation: pulse 1s infinite ease-in-out;
+        }
+        
         /* Request buttons styles - horizontal layout */
         .request-controls {
             display: flex;
@@ -36,6 +47,12 @@
         }
         .request-controls button {
             flex: 1;
+        }
+
+        /* Add CSS for the target marker to ensure visibility */
+        .target-marker {
+            filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5));
+            z-index: 1000 !important;
         }
     </style>
 </head>
@@ -133,8 +150,16 @@
         }).addTo(map);
         
         let droneMarker = null, homeMarker = null, firstLocationUpdate = true;
+        let flyToTargetMarker = null;
+        let testMarker3 = null; // Additional test marker for debugging
         const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] });
         const homeIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 24] });
+        const targetIcon = L.icon({ 
+            iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff3b30"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="5"/></svg>'), 
+            iconSize: [28, 28], 
+            iconAnchor: [14, 14],
+            className: 'target-marker' // Add class for easier styling/debugging
+        });
         const socket = io();
         const messagesDiv = document.getElementById('messages');
         const ahCanvas = document.getElementById('attitude-canvas'), ahCtx = ahCanvas.getContext('2d');
@@ -319,7 +344,73 @@
             drawAltitudeTape(altRel);
 
             // Update Map
-            if (isConnected && lat != null && lon != null && lat !== 0 && lon !== 0) { const latLng = [lat, lon]; if (!droneMarker) { droneMarker = L.marker(latLng, { icon: droneIcon }).addTo(map).bindPopup("Drone Position"); } else { droneMarker.setLatLng(latLng); } if (firstLocationUpdate) { map.setView(latLng, 16); firstLocationUpdate = false; } } else { if (droneMarker) { map.removeLayer(droneMarker); droneMarker = null; firstLocationUpdate = true; } } const homeLat = state.home_lat; const homeLon = state.home_lon; if (isConnected && homeLat != null && homeLon != null && homeLat !== 0 && homeLon !== 0) { const homeLatLng = [homeLat, homeLon]; if (!homeMarker) { homeMarker = L.marker(homeLatLng, { icon: homeIcon }).addTo(map).bindPopup("Home Position"); } else { homeMarker.setLatLng(homeLatLng); } } else { if (homeMarker) { map.removeLayer(homeMarker); homeMarker = null; } } try{ map.invalidateSize(); } catch(e) {/*ignore*/} });
+            if (isConnected && lat != null && lon != null && lat !== 0 && lon !== 0) { 
+                const latLng = [lat, lon]; 
+                if (!droneMarker) { 
+                    droneMarker = L.marker(latLng, { icon: droneIcon }).addTo(map).bindPopup("Drone Position"); 
+                } else { 
+                    droneMarker.setLatLng(latLng); 
+                } 
+                if (firstLocationUpdate) { 
+                    map.setView(latLng, 16); 
+                    firstLocationUpdate = false; 
+                } 
+            } else { 
+                if (droneMarker) { 
+                    map.removeLayer(droneMarker); 
+                    droneMarker = null; 
+                    firstLocationUpdate = true; 
+                } 
+            } 
+            
+            const homeLat = state.home_lat; 
+            const homeLon = state.home_lon; 
+            
+            if (isConnected && homeLat != null && homeLon != null && homeLat !== 0 && homeLon !== 0) { 
+                const homeLatLng = [homeLat, homeLon]; 
+                if (!homeMarker) { 
+                    homeMarker = L.marker(homeLatLng, { icon: homeIcon }).addTo(map).bindPopup("Home Position"); 
+                    
+                    // Add test markers near the home position
+                    if (!testMarker3) {
+                        console.log("Creating test markers near home at", homeLat, homeLon);
+                        
+                        // Create test marker 3 - offset slightly from home
+                        testMarker3 = L.circleMarker([homeLat + 0.0002, homeLon + 0.0002], {
+                            color: 'green',
+                            fillColor: 'green',
+                            fillOpacity: 0.7,
+                            radius: 12,
+                            weight: 3
+                        }).addTo(map);
+                        testMarker3.bindTooltip("Test Near Home", {
+                            permanent: true,
+                            direction: 'top'
+                        }).openTooltip();
+                        
+                        // Create another test marker using regular marker
+                        const testMarker4 = L.marker([homeLat - 0.0002, homeLon - 0.0002]).addTo(map);
+                        testMarker4.bindTooltip("Home Test Marker", {
+                            permanent: true,
+                            direction: 'right'
+                        }).openTooltip();
+                        
+                        console.log("Test markers added near home");
+                    }
+                } else { 
+                    homeMarker.setLatLng(homeLatLng); 
+                } 
+            } else { 
+                if (homeMarker) { 
+                    map.removeLayer(homeMarker); 
+                    homeMarker = null; 
+                } 
+            } 
+            
+            try{ 
+                map.invalidateSize(); 
+            } catch(e) {/*ignore*/}
+        });
 
         // --- Command Button Event Listeners ---
         commandControls.ARM.addEventListener("click",function(){if(confirm("ARM drone?")){this.disabled=!0;socket.emit("send_command",{command:"ARM"})}});
@@ -345,32 +436,75 @@
                 addMessage("Fly To mode activated. Click on map to send drone to that position.", "info");
                 // Change cursor to indicate clickable map
                 map._container.style.cursor = 'crosshair';
+                
+                // Add a test marker when mode is activated
+                testMarker3 = L.circleMarker([0.02, 0.02], {
+                    color: 'green',
+                    fillColor: 'green',
+                    fillOpacity: 0.7,
+                    radius: 10
+                }).addTo(map);
+                testMarker3.bindTooltip("Mode Active").openTooltip();
+                console.log("Added mode active test marker");
+                
             } else {
                 addMessage("Fly To mode deactivated.", "info");
                 // Restore default cursor
                 map._container.style.cursor = '';
+                
+                // Remove test marker
+                if (testMarker3) {
+                    map.removeLayer(testMarker3);
+                    testMarker3 = null;
+                }
+                
+                // Remove any existing target marker when deactivating
+                if (flyToTargetMarker) {
+                    map.removeLayer(flyToTargetMarker);
+                    flyToTargetMarker = null;
+                }
             }
         });
         
-        // Combined map click handler for both filling the GoTo fields and Fly To functionality
+        // Simplify the map click handler by using the same approach as the test markers
         map.on('click', function(e) {
             const lat = e.latlng.lat;
             const lon = e.latlng.lng;
+            
+            console.log("Map clicked at:", lat, lon, "Fly To active:", flyToModeActive);
             
             // Always update the GoTo input fields
             document.getElementById("goto-lat").value = lat.toFixed(7);
             document.getElementById("goto-lon").value = lon.toFixed(7);
             addMessage(`Selected map point: Lat ${lat.toFixed(7)}, Lon ${lon.toFixed(7)}`, "info");
             
-            // If Fly To mode is active, handle the direct command
+            // If Fly To mode is active, handle the marker and command
             if (flyToModeActive) {
-                const alt = parseFloat(document.getElementById('goto-alt').value) || 10; // Use goto-alt value or default to 10m
+                const alt = parseFloat(document.getElementById('goto-alt').value) || 10;
                 
-                // Confirm before sending the command
+                // Remove existing target marker if present
+                if (flyToTargetMarker) {
+                    map.removeLayer(flyToTargetMarker);
+                }
+                
+                // Create a new marker using the same approach as our working test markers
+                flyToTargetMarker = L.circleMarker([lat, lon], {
+                    color: '#FF0000',         // Red border
+                    fillColor: '#FF0000',     // Red fill
+                    fillOpacity: 0.7,         // Semi-transparent
+                    radius: 12,               // Size of the circle
+                    weight: 3                 // Border thickness
+                }).addTo(map);
+                
+                flyToTargetMarker.bindTooltip(`Target Alt: ${alt.toFixed(1)}m`, {
+                    permanent: false,
+                    direction: 'top'
+                }).openTooltip();
+                
+                console.log("Created fly-to target marker");
+                
+                // Confirm before sending command
                 if (confirm(`Send drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m?`)) {
-                    // Disable the button during the operation
-                    flyToButton.disabled = true;
-                    
                     // Send the command
                     socket.emit('send_command', {
                         command: 'GOTO',
@@ -378,24 +512,6 @@
                         lon: lon,
                         alt: alt
                     });
-                    
-                    // Show a temporary marker at the target location
-                    const targetMarker = L.marker([lat, lon], {
-                        icon: L.divIcon({
-                            className: 'target-marker',
-                            html: '<div style="background-color: rgba(255,0,0,0.5); border-radius: 50%; width: 20px; height: 20px; border: 2px solid white;"></div>',
-                            iconSize: [20, 20],
-                            iconAnchor: [10, 10]
-                        })
-                    }).addTo(map);
-                    targetMarker.bindPopup("Fly To Target").openPopup();
-                    
-                    // Remove the marker after 8 seconds
-                    setTimeout(() => {
-                        map.removeLayer(targetMarker);
-                        // Re-enable the button
-                        flyToButton.disabled = false;
-                    }, 8000);
                     
                     addMessage(`Sent drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m`, "info");
                 }
@@ -414,7 +530,16 @@
             const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
             if(ekfStatusSpan) { ekfStatusSpan.textContent = 'INIT'; ekfStatusSpan.className = 'ekf-status ekf-error'; }
             setControlsDisabled(true);
-            setTimeout(() => { try { map.invalidateSize(); } catch(e) { console.error("Error on initial invalidateSize:", e); } }, 100);
+            setTimeout(() => { 
+                try { 
+                    map.invalidateSize(); 
+                    
+                    // Remove test markers from here - they'll be added in the telemetry update
+                    // when we have home position coordinates
+                } catch(e) { 
+                    console.error("Error on initial invalidateSize:", e); 
+                } 
+            }, 500);
         }
         initializeUI();
 
