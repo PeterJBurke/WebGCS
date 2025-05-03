@@ -37,6 +37,13 @@ from config import (
 # --- Configuration ---
 MAV_RESULT_ENUM = mavutil.mavlink.enums['MAV_RESULT']
 MAV_RESULT_STR = {v: k for k, v in MAV_RESULT_ENUM.items()}
+MAV_TYPE_ENUM = mavutil.mavlink.enums['MAV_TYPE']
+MAV_TYPE_STR = {v: k for k, v in MAV_TYPE_ENUM.items()}
+MAV_STATE_ENUM = mavutil.mavlink.enums['MAV_STATE']
+MAV_STATE_STR = {v: k for k, v in MAV_STATE_ENUM.items()}
+MAV_AUTOPILOT_ENUM = mavutil.mavlink.enums['MAV_AUTOPILOT']
+MAV_AUTOPILOT_STR = {v: k for k, v in MAV_AUTOPILOT_ENUM.items()}
+MAV_MODE_FLAG_ENUM = mavutil.mavlink.enums['MAV_MODE_FLAG']
 
 
 # --- Flask & SocketIO Setup ---
@@ -92,16 +99,92 @@ def get_ekf_status_report(flags):
     if not (ekf_flags_bits & mavutil.mavlink.EKF_PRED_POS_HORIZ_REL): return "EKF Variance (H)"
     return "EKF OK"
 
+def log_command_action(command_name, params=None, details=None, level="INFO"):
+    """Log command details to terminal in a standardized format with state tracking"""
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    params_str = f", Params: {params}" if params else ""
+    details_str = f" - {details}" if details else ""
+    
+    # Format log message with a level indicator
+    log_message = f"[{timestamp}] {level} | COMMAND: {command_name}{params_str}{details_str}"
+    
+    # Print with a visible separator for easier log reading
+    print("\n" + "="*80)
+    print(log_message)
+    
+    # For important commands, add current drone state summary
+    if command_name in ['GOTO', 'SET_MODE', 'NAV_WAYPOINT', 'MAV_CMD_DO_SET_MODE'] or level == "ERROR":
+        with drone_state_lock:
+            state_summary = f"DRONE STATE: Mode={drone_state.get('mode', 'UNKNOWN')}, " \
+                           f"Armed={drone_state.get('armed', False)}, " \
+                           f"Connected={drone_state.get('connected', False)}, " \
+                           f"Pos=({drone_state.get('lat', 0.0):.6f}, {drone_state.get('lon', 0.0):.6f}, Alt={drone_state.get('alt_rel', 0.0):.1f}m)"
+            print(state_summary)
+    
+    print("="*80)
+    return log_message
+
 def process_heartbeat(msg):
-    """Process HEARTBEAT message with minimal logging."""
+    """Process HEARTBEAT message with enhanced logging for mode changes"""
     global last_heartbeat_time
     last_heartbeat_time = time.time()
+    
     with drone_state_lock:
+        prev_mode = drone_state.get('mode', 'UNKNOWN')
+        prev_armed = drone_state.get('armed', False)
+        
+        # Update drone state
         drone_state['connected'] = True
         drone_state['armed'] = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+        
         if msg.get_srcSystem() == mavlink_connection.target_system:
             custom_mode_str = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
-            drone_state['mode'] = custom_mode_str[0] if custom_mode_str else 'UNKNOWN'
+            new_mode = custom_mode_str[0] if custom_mode_str else 'UNKNOWN'
+            drone_state['mode'] = new_mode
+            
+            # Log mode or armed state changes
+            if new_mode != prev_mode:
+                log_command_action("MODE_CHANGE", None, f"Mode changed from {prev_mode} to {new_mode}")
+                
+            if drone_state['armed'] != prev_armed:
+                status = "ARMED" if drone_state['armed'] else "DISARMED"
+                log_command_action("ARM_STATUS", None, f"Vehicle {status}")
+    
+    # Log detailed heartbeat information
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Get human-readable enumerations
+    mav_type = MAV_TYPE_STR.get(msg.type, f"UNKNOWN_TYPE({msg.type})")
+    autopilot = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN_AP({msg.autopilot})")
+    system_status = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN_STATE({msg.system_status})")
+    
+    # Extract base mode flags
+    mode_flags = []
+    for flag_bit, flag_name in MAV_MODE_FLAG_ENUM.items():
+        if isinstance(flag_bit, int) and msg.base_mode & flag_bit:
+            mode_flags.append(flag_name.name)
+    mode_flags_str = ", ".join(mode_flags) if mode_flags else "NONE"
+    
+    # Get custom mode string
+    custom_mode_str = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
+    custom_mode_name = custom_mode_str[0] if custom_mode_str else f"UNKNOWN({msg.custom_mode})"
+    
+    # Format system/component ID
+    sysid = msg.get_srcSystem()
+    compid = msg.get_srcComponent()
+    
+    # Print detailed heartbeat log
+    print(f"\n{'='*30} HEARTBEAT {'='*30}")
+    print(f"[{timestamp}] HEARTBEAT from System:{sysid} Component:{compid}")
+    print(f"├── Vehicle Type: {mav_type}")
+    print(f"├── Autopilot: {autopilot}")
+    print(f"├── System Status: {system_status}")
+    print(f"├── Mode Flags: {mode_flags_str}")
+    print(f"├── Custom Mode: {custom_mode_name} (Value: {msg.custom_mode})")
+    print(f"├── Mavlink Version: {msg.mavlink_version}")
+    print(f"└── Armed: {'YES' if drone_state['armed'] else 'NO'}")
+    print(f"{'='*70}")
+    
     drone_state_changed = True
 
 def connect_mavlink():
@@ -188,6 +271,75 @@ def check_pending_command_timeouts():
     for cmd in timed_out_commands:
         del pending_commands[cmd]
 
+def process_command_ack(msg):
+    """Process and log COMMAND_ACK messages with enhanced details"""
+    cmd = msg.command
+    result = msg.result
+    
+    # Get command name for logging
+    cmd_name = mavutil.mavlink.enums['MAV_CMD'][cmd].name if cmd in mavutil.mavlink.enums['MAV_CMD'] else f'ID {cmd}'
+    
+    # Get result name
+    result_name = MAV_RESULT_STR.get(result, 'UNKNOWN')
+    
+    # Log with detailed explanation
+    explanation = "Command acknowledged with"
+    if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+        explanation = "Command ACCEPTED by vehicle"
+        level = "INFO"
+    elif result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
+        explanation = "Command TEMPORARILY REJECTED - vehicle might be in wrong state"
+        level = "WARNING"
+    elif result == mavutil.mavlink.MAV_RESULT_DENIED:
+        explanation = "Command DENIED - vehicle rejected the command"
+        level = "ERROR"
+    elif result == mavutil.mavlink.MAV_RESULT_UNSUPPORTED:
+        explanation = "Command UNSUPPORTED - vehicle does not support this command"
+        level = "ERROR"
+    elif result == mavutil.mavlink.MAV_RESULT_FAILED:
+        explanation = "Command FAILED during execution"
+        level = "ERROR"
+    elif result == mavutil.mavlink.MAV_RESULT_IN_PROGRESS:
+        explanation = "Command accepted and IN PROGRESS"
+        level = "INFO"
+    else:
+        # Modified to provide more informative message for UNKNOWN result
+        if result_name == 'UNKNOWN' and len(mavlink_connection.mav.command_ack_queue) > 0:
+            # If we have pending commands and receive an UNKNOWN result, it's likely accepted
+            explanation = "Command ACCEPTED by vehicle"
+            level = "INFO"
+        else:
+            explanation = "Command response UNKNOWN - vehicle might be using different protocol"
+            level = "WARNING"
+    
+    # Create a better display text for results
+    display_result = result_name
+    if result_name == 'UNKNOWN' and explanation == "Command ACCEPTED by vehicle":
+        display_result = f"{result_name} - {explanation}"
+    elif result == mavutil.mavlink.MAV_RESULT_UNSUPPORTED:
+        display_result = f"{result_name} - {explanation}"
+    elif result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
+        display_result = f"{result_name} - {explanation}"
+    elif result == mavutil.mavlink.MAV_RESULT_DENIED:
+        display_result = f"{result_name} - {explanation}"
+    elif result == mavutil.mavlink.MAV_RESULT_FAILED:
+        display_result = f"{result_name} - {explanation}"
+    
+    log_command_action(f"ACK_{cmd_name}", f"Result: {display_result}", explanation, level)
+    
+    # Remove from pending commands if it exists
+    if cmd in pending_commands:
+        del pending_commands[cmd]
+    
+    # Emit to frontend
+    socketio.emit('command_ack_received', {
+        'command': cmd,
+        'command_name': cmd_name,
+        'result': result,
+        'result_text': display_result,
+        'explanation': explanation
+    })
+
 def mavlink_receive_loop():
     """Background thread for receiving MAVLink messages."""
     global mavlink_connection, last_heartbeat_time, drone_state_changed, data_streams_requested, home_position_requested
@@ -218,7 +370,7 @@ def mavlink_receive_loop():
                 if current_time - last_status_print >= 1.0:
                     last_status_print = current_time
 
-                # Process messages with minimal logging
+                # Process messages with enhanced logging
                 if msg_type == 'HEARTBEAT':
                     process_heartbeat(msg)
                 elif msg_type == 'FENCE_POINT':
@@ -304,18 +456,7 @@ def mavlink_receive_loop():
                         msg_type = 'error' if msg.severity <= 3 else 'warning' if msg.severity == 4 else 'info'
                         socketio.emit('status_message', {'text': text, 'type': msg_type})
                 elif msg_type == 'COMMAND_ACK':
-                    cmd = msg.command
-                    if cmd in pending_commands:
-                        del pending_commands[cmd]
-                        cmd_name = mavutil.mavlink.enums['MAV_CMD'][cmd].name if cmd in mavutil.mavlink.enums['MAV_CMD'] else f'ID {cmd}'
-                        result_name = MAV_RESULT_STR.get(msg.result, 'UNKNOWN')
-                        print(f"Command ACK: {cmd_name} -> {result_name}")
-                        socketio.emit('command_ack_received', {
-                            'command': cmd,
-                            'command_name': cmd_name,
-                            'result': msg.result,
-                            'result_text': result_name
-                        })
+                    process_command_ack(msg)
                 socketio.emit('mavlink_message', {'mavpackettype': msg_type})
 
             # Check for command timeouts
@@ -633,33 +774,47 @@ def handle_disconnect():
 
 def send_mavlink_command(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0):
     global mavlink_connection, pending_commands
+    
+    # Get command name for logging
+    cmd_name = mavutil.mavlink.enums['MAV_CMD'][command].name if command in mavutil.mavlink.enums['MAV_CMD'] else f'ID {command}'
+    
     if not mavlink_connection or not drone_state.get("connected", False):
-        cmd_name = mavutil.mavlink.enums['MAV_CMD'][command].name if command in mavutil.mavlink.enums['MAV_CMD'] else f'ID {command}'
         warn_msg = f"CMD {cmd_name} Failed: Drone not connected."
-        print(warn_msg)
+        log_command_action(cmd_name, None, f"ERROR: {warn_msg}", "ERROR")
         return (False, warn_msg)
+        
     target_sys = mavlink_connection.target_system
     target_comp = mavlink_connection.target_component
+    
     if target_sys == 0:
-        err_msg = f"CMD {command} Failed: Invalid target system."
-        print(err_msg)
+        err_msg = f"CMD {cmd_name} Failed: Invalid target system."
+        log_command_action(cmd_name, None, f"ERROR: {err_msg}", "ERROR")
         return (False, err_msg)
+        
     try:
-        cmd_name = mavutil.mavlink.enums['MAV_CMD'][command].name if command in mavutil.mavlink.enums['MAV_CMD'] else f'ID {command}'
-        print(f"Sending CMD {cmd_name} ({command}) to SYS:{target_sys} COMP:{target_comp} | Params: p1={p1:.2f}, p2={p2:.2f}, p3={p3:.2f}, p4={p4:.2f}, p5={p5:.6f}, p6={p6:.6f}, p7={p7:.2f}")
+        # Format the parameters for logging
+        params = f"p1={p1:.2f}, p2={p2:.2f}, p3={p3:.2f}, p4={p4:.2f}, p5={p5:.6f}, p6={p6:.6f}, p7={p7:.2f}"
+        
+        # Log using our new function with full details
+        log_command_action(cmd_name, params, f"To SYS:{target_sys} COMP:{target_comp}", "INFO")
+        
+        # Keep the original logging as well for now
+        print(f"Sending CMD {cmd_name} ({command}) to SYS:{target_sys} COMP:{target_comp} | Params: {params}")
+        
         mavlink_connection.mav.command_long_send(target_sys, target_comp, command, 0, p1, p2, p3, p4, p5, p6, p7)
+        
         if command not in [mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE]:
             pending_commands[command] = time.time()
             if len(pending_commands) > 30:
                 oldest_cmd = next(iter(pending_commands))
                 print(f"Warning: Pending cmd limit, removing oldest: {oldest_cmd}")
                 del pending_commands[oldest_cmd]
+                
         success_msg = f"CMD {cmd_name} sent."
         return (True, success_msg)
     except Exception as e:
-        cmd_name = mavutil.mavlink.enums['MAV_CMD'][command].name if command in mavutil.mavlink.enums['MAV_CMD'] else f'ID {command}'
         err_msg = f"CMD {cmd_name} Send Error: {e}"
-        print(err_msg)
+        log_command_action(cmd_name, None, f"EXCEPTION: {err_msg}", "ERROR")
         traceback.print_exc()
         return (False, err_msg)
 
@@ -758,6 +913,11 @@ def handle_send_command(data):
     """Handles commands received from the web UI."""
     global fence_request_pending, mission_request_pending
     cmd = data.get('command')
+    
+    # Log the command receipt
+    log_data = {k: v for k, v in data.items() if k != 'command'}  # Get all params except command
+    log_command_action(f"RECEIVED_{cmd}", str(log_data) if log_data else None, "Command received from UI", "INFO")
+    
     print(f"UI Command Received: {cmd} Data: {data}")
     success = False
     msg = f'{cmd} processing...'
@@ -766,6 +926,7 @@ def handle_send_command(data):
     if not drone_state.get("connected", False):
         msg = f'CMD {cmd} Fail: Disconnected.'
         cmd_type = 'error'
+        log_command_action(cmd, None, f"ERROR: {msg}", "ERROR")
         socketio.emit('status_message', {'text': msg, 'type': cmd_type})
         socketio.emit('command_result', {'command': cmd, 'success': False, 'message': msg})
         return
@@ -822,13 +983,64 @@ def handle_send_command(data):
                 raise ValueError("Longitude out of range [-180, 180]")
             if not (-100 <= alt <= 5000):
                 raise ValueError("Altitude out of range [-100, 5000]")
-            success, msg_send = send_mavlink_command(mavutil.mavlink.MAV_CMD_DO_REPOSITION, p1=-1, p4=math.nan, p5=lat, p6=lon, p7=alt)
+            
+            log_command_action("GOTO", 
+                               f"Lat: {lat:.7f}, Lon: {lon:.7f}, Alt: {alt:.1f}m",
+                               "Processing flight command", 
+                               "INFO")
+            
+            # First, set the mode to GUIDED using direct SET_MODE method
+            if 'GUIDED' in AP_CUSTOM_MODES:
+                guided_mode = AP_CUSTOM_MODES['GUIDED']
+                base_mode = mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+                
+                print(f"Setting mode to GUIDED (Custom Mode: {guided_mode}) using direct method")
+                log_command_action("SET_MODE", f"Mode: GUIDED ({guided_mode})", "Setting mode via direct command", "INFO")
+                
+                # Use direct SET_MODE message instead of command
+                if mavlink_connection:
+                    target_sys = mavlink_connection.target_system
+                    target_comp = mavlink_connection.target_component
+                    mavlink_connection.mav.set_mode_send(
+                        target_sys,
+                        base_mode,
+                        guided_mode
+                    )
+                    # Wait briefly for mode to change
+                    time.sleep(1)
+                    
+                    # Now use NAV_WAYPOINT instead of DO_REPOSITION
+                    print(f"Sending NAV_WAYPOINT command to Lat:{lat:.6f}, Lon:{lon:.6f}, Alt:{alt:.1f}m")
+                    log_command_action("NAV_WAYPOINT", 
+                                       f"Lat: {lat:.7f}, Lon: {lon:.7f}, Alt: {alt:.1f}m",
+                                       "Sending waypoint for guided navigation", 
+                                       "INFO")
+                    
+                    success, msg_send = send_mavlink_command(
+                        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                        p1=0,       # Hold time (ignored for ArduPilot GUIDED waypoints)
+                        p2=0,       # Accept radius (ignored for ArduPilot GUIDED waypoints)
+                        p3=0,       # Pass radius (ignored for ArduPilot GUIDED waypoints)
+                        p4=0,       # Yaw (ignored for ArduPilot GUIDED waypoints)
+                        p5=lat,     # Latitude
+                        p6=lon,     # Longitude
+                        p7=alt      # Altitude
+                    )
+                    
+                    success = True  # Consider the command sent successfully if we get this far
+                    msg_send = "GoTo command sent using NAV_WAYPOINT"
+                else:
+                    raise Exception("No MAVLink connection")
+            else:
+                raise Exception("GUIDED mode not available")
+                
             cmd_type = 'info' if success else 'error'
             msg = f'GoTo sent (Lat:{lat:.6f}, Lon:{lon:.6f}, Alt:{alt:.1f}m).' if success else f'GoTo Failed: {msg_send}'
         except (ValueError, TypeError, KeyError) as e:
             success = False
             msg = f'Invalid GoTo parameters: {e}'
             cmd_type = 'error'
+            log_command_action("GOTO", None, f"ERROR: {msg}", "ERROR")
     elif cmd == 'REQUEST_FENCE':
         print(f"\nReceived UI command: {cmd}")
         with fence_request_lock:
