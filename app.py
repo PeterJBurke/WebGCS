@@ -1007,57 +1007,59 @@ def handle_send_command(data):
                                "INFO")
             
             # First, set the mode to GUIDED using direct SET_MODE method
-            if 'GUIDED' in AP_CUSTOM_MODES:
-                guided_mode = AP_CUSTOM_MODES['GUIDED']
-                base_mode = mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+            if 'GUIDED' not in AP_CUSTOM_MODES:
+                raise Exception("GUIDED mode not available in AP_CUSTOM_MODES")
                 
-                print(f"Setting mode to GUIDED (Custom Mode: {guided_mode}) using direct method")
-                log_command_action("SET_MODE", f"Mode: GUIDED ({guided_mode})", "Setting mode via direct command", "INFO")
-                
-                # Use direct SET_MODE message instead of command
-                if mavlink_connection:
-                    target_sys = mavlink_connection.target_system
-                    target_comp = mavlink_connection.target_component
-                    mavlink_connection.mav.set_mode_send(
-                        target_sys,
-                        base_mode,
-                        guided_mode
-                    )
-                    # Wait briefly for mode to change
-                    time.sleep(1)
-                    
-                    # Now use NAV_WAYPOINT instead of DO_REPOSITION
-                    print(f"Sending NAV_WAYPOINT command to Lat:{lat:.6f}, Lon:{lon:.6f}, Alt:{alt:.1f}m")
-                    log_command_action("NAV_WAYPOINT", 
-                                       f"Lat: {lat:.7f}, Lon: {lon:.7f}, Alt: {alt:.1f}m",
-                                       "Sending waypoint for guided navigation", 
-                                       "INFO")
-                    
-                    success, msg_send = send_mavlink_command(
-                        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                        p1=0,       # Hold time (ignored for ArduPilot GUIDED waypoints)
-                        p2=0,       # Accept radius (ignored for ArduPilot GUIDED waypoints)
-                        p3=0,       # Pass radius (ignored for ArduPilot GUIDED waypoints)
-                        p4=0,       # Yaw (ignored for ArduPilot GUIDED waypoints)
-                        p5=lat,     # Latitude
-                        p6=lon,     # Longitude
-                        p7=alt      # Altitude
-                    )
-                    
-                    success = True  # Consider the command sent successfully if we get this far
-                    msg_send = "GoTo command sent using NAV_WAYPOINT"
-                else:
-                    raise Exception("No MAVLink connection")
-            else:
-                raise Exception("GUIDED mode not available")
-                
-            cmd_type = 'info' if success else 'error'
-            msg = f'GoTo sent (Lat:{lat:.6f}, Lon:{lon:.6f}, Alt:{alt:.1f}m).' if success else f'GoTo Failed: {msg_send}'
-        except (ValueError, TypeError, KeyError) as e:
+            if not mavlink_connection:
+                raise Exception("No MAVLink connection")
+            
+            # Set the mode to GUIDED
+            guided_mode = AP_CUSTOM_MODES['GUIDED']
+            print(f"Setting mode to GUIDED (Custom Mode: {guided_mode}) using direct method")
+            log_command_action("SET_MODE", f"Mode: GUIDED ({guided_mode})", "Setting mode via direct command", "INFO")
+            
+            mavlink_connection.mav.set_mode_send(
+                mavlink_connection.target_system,
+                mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                guided_mode
+            )
+            
+            # Wait briefly for mode to change
+            time.sleep(1)
+            
+            # Log the GoTo command
+            print(f"Sending position target to Lat:{lat:.6f}, Lon:{lon:.6f}, Alt:{alt:.1f}m")
+            log_command_action("SET_POSITION_TARGET_GLOBAL_INT", 
+                               f"Lat: {lat:.7f}, Lon: {lon:.7f}, Alt: {alt:.1f}m",
+                               "Sending position target for guided navigation", 
+                               "INFO")
+            
+            # Use SET_POSITION_TARGET_GLOBAL_INT for guided mode
+            mavlink_connection.mav.set_position_target_global_int_send(
+                0,       # time_boot_ms (not used)
+                mavlink_connection.target_system,  # target system
+                mavlink_connection.target_component,  # target component
+                mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,  # frame
+                0b110111111000,  # type_mask (only position)
+                int(lat * 1e7),  # lat_int - latitude in 1e7 degrees
+                int(lon * 1e7),  # lon_int - longitude in 1e7 degrees
+                float(alt),      # altitude in meters
+                0, 0, 0,  # velocity x, y, z (not used)
+                0, 0, 0,  # acceleration x, y, z (not used)
+                0, 0      # yaw, yaw_rate (not used)
+            )
+            
+            success = True
+            msg_send = "GoTo command sent using SET_POSITION_TARGET_GLOBAL_INT"
+            cmd_type = 'info'
+            msg = f'GoTo sent (Lat:{lat:.6f}, Lon:{lon:.6f}, Alt:{alt:.1f}m)'
+            
+        except Exception as e:
             success = False
-            msg = f'Invalid GoTo parameters: {e}'
+            msg = f'Error sending GoTo command: {str(e)}'
             cmd_type = 'error'
             log_command_action("GOTO", None, f"ERROR: {msg}", "ERROR")
+            traceback.print_exc()
     elif cmd == 'REQUEST_FENCE':
         print(f"\nReceived UI command: {cmd}")
         with fence_request_lock:
