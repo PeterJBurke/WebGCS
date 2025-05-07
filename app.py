@@ -1,3 +1,13 @@
+# *** ADDED: Windows Console Encoding Fix ***
+import sys
+import os
+if sys.platform == 'win32':
+    import codecs
+    if sys.stdout.encoding != 'utf-8':
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    if sys.stderr.encoding != 'utf-8':
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 # *** ADDED: Explicit Monkey Patching ***
 from gevent import monkey
 monkey.patch_all()

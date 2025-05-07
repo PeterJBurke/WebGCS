@@ -1,9 +1,10 @@
 import time
 import sys
 from pymavlink import mavutil
+from config import DRONE_TCP_ADDRESS, DRONE_TCP_PORT
 
-# *** MODIFIED: Use Drone's TCP Address and Port ***
-connection_string = 'tcp:192.168.1.247:5678'
+# Use Drone's TCP Address and Port from config
+connection_string = f'tcp:{DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}'
 source_system_id = 254 # ID for this GCS script
 
 print(f"Attempting to connect to drone MAVLink via TCP at: {connection_string}")
