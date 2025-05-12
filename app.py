@@ -327,6 +327,9 @@ def handle_heartbeat(msg): # master will be accessed as a global
 
     log_heartbeat_details(msg)
 
+    # Emit an event to the frontend when a heartbeat is processed for any system
+    socketio.emit('heartbeat_received', {'sysid': sysid})
+
 def handle_mavlink_message(msg):
     """Processes various MAVLink messages and updates drone_state."""
     # print(f"--- ENTERED handle_mavlink_message with msg type: {msg.get_type()} (ID: {msg.get_msgId()}) ---") # <-- REMOVED PRINT
