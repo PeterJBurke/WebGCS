@@ -81,6 +81,21 @@
             filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5));
             z-index: 1000 !important;
         }
+        /* New styles for status header */
+        .status-header-row {
+            display: flex;
+            align-items: center; /* Vertically align 'Status' title and MAVLink IP box */
+            gap: 15px; /* Space between 'Status' title and MAVLink IP box */
+        }
+        .status-header-row h2 {
+            margin: 0; /* Remove default H2 margins for cleaner alignment */
+        }
+        .status hr {
+            margin-top: 8px;    /* Space after the status-header-row */
+            margin-bottom: 8px; /* Space before the status-grid */
+            border: 0;
+            border-top: 1px solid #ccc; /* Light gray line */
+        }
     </style>
 </head>
 <body>
@@ -105,11 +120,16 @@
 
             <div class="info-controls-section">
                 <div class="status">
-                    <h2>Status</h2>
+                    <div class="status-header-row">
+                        <h2>Status</h2>
+                        <!-- MAVLink IP Display Element MOVED HERE -->
+                        <div class="status-item"><strong>MAVLink IP:</strong> <span id="mavlink-ip" class="mavlink-ip-address">--.--.--.--</span></div>
+                    </div>
+                    <hr>
                     <div class="status-grid">
                         <div class="status-row">
                             <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
-                            <!-- *** ADDED: EKF Status Display Element *** -->
+                            <!-- EKF Status Display Element -->
                             <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
                         </div>
                     </div>
@@ -230,6 +250,7 @@
         const latValueSpan = document.getElementById('lat-value');
         const lonValueSpan = document.getElementById('lon-value');
         const ekfStatusSpan = document.getElementById('ekf-status');
+        const mavlinkIpSpan = document.getElementById('mavlink-ip');
         const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")};
         const modeSelect=document.getElementById("mode-select");
         const DEG_TO_RAD = Math.PI / 180;
@@ -316,10 +337,17 @@
         });
 
         socket.on("telemetry_update", (state) => {
-            console.log("Telemetry update received:", state);
             const isConnected = state.connected;
             document.getElementById("status-connection").textContent = isConnected ? "Drone Connected" : "Drone Disconnected";
             document.getElementById("status-connection").className = isConnected ? "connected" : "disconnected";
+            
+            // Update MAVLink IP display
+            if (mavlinkIpSpan && state.mavlink_target_ip) {
+                mavlinkIpSpan.textContent = state.mavlink_target_ip;
+            } else if (mavlinkIpSpan) {
+                mavlinkIpSpan.textContent = '--.--.--.--'; // Default if not provided
+            }
+
             setControlsDisabled(!isConnected);
 
             const heartIconElement = document.getElementById('heartbeat-indicator');
@@ -350,11 +378,6 @@
             const sats = state.satellites_visible ?? 0; 
             const hdop = state.hdop ?? 99.9; 
             
-            console.log("Updating display values:", {
-                mode, voltage, current, armed, 
-                lat, lon, fix, sats, hdop
-            });
-            
             batteryValueSpan.textContent = voltage.toFixed(2); 
             modeValueSpan.textContent = mode; 
             armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED"; 
@@ -382,12 +405,6 @@
             const heading = state.heading || 0; 
             const pitch = (state.pitch || 0) * RAD_TO_DEG; 
             const roll = (state.roll || 0) * RAD_TO_DEG;
-            
-            console.log("Updating PFD values:", {
-                airspeed, altRel, heading,
-                pitch: pitch.toFixed(1), 
-                roll: roll.toFixed(1)
-            });
             
             drawAttitudeIndicator(pitch, roll, heading); 
             drawAirspeedTape(airspeed); 
@@ -564,6 +581,7 @@
             // *** ADDED: Initialize heart and EKF status ***
             const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
             if(ekfStatusSpan) { ekfStatusSpan.textContent = 'INIT'; ekfStatusSpan.className = 'ekf-status ekf-error'; }
+            if(mavlinkIpSpan) { mavlinkIpSpan.textContent = '--.--.--.--'; } // Initialize with actual or default
             setControlsDisabled(true);
             setTimeout(() => { 
                 try { 
