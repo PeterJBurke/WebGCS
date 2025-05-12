@@ -213,7 +213,21 @@ def process_heartbeat(msg):
     autopilot_str = mavutil.mavlink.enums['MAV_AUTOPILOT'][msg.autopilot].name if msg.autopilot in mavutil.mavlink.enums['MAV_AUTOPILOT'] else str(msg.autopilot)
     armed_str = "ARMED" if drone_state['armed'] else "DISARMED"
     status_str = mavutil.mavlink.enums['MAV_STATE'][msg.system_status].name if msg.system_status in mavutil.mavlink.enums['MAV_STATE'] else str(msg.system_status)
-    print(f"[{timestamp_str}] HEARTBEAT SYS:{sysid} COMP:{compid} T:{type_str} AP:{autopilot_str} M:{drone_state['mode']} ARM:{armed_str} S:{status_str} V:{msg.mavlink_version}")
+    
+    separator = "=" * 80 # 80 characters for the separator line
+    heartbeat_details = (
+        f"[{timestamp_str}] HEARTBEAT\n"
+        f"  SYS: {sysid}\n"
+        f"  COMP: {compid}\n"
+        f"  Type: {type_str}\n"
+        f"  Autopilot: {autopilot_str}\n"
+        f"  Mode: {drone_state['mode']}\n"
+        f"  Armed: {armed_str}\n"
+        f"  Status: {status_str}\n"
+        f"  MAVLink Version: {msg.mavlink_version}"
+    )
+    print(heartbeat_details)
+    print(separator)
     
     # Emit an event for the UI to indicate a heartbeat was received
     socketio.emit('heartbeat_received', {'sysid': sysid, 'compid': compid})
