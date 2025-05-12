@@ -29,6 +29,8 @@ from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_socketio import SocketIO, emit
 import datetime
 import socket
+import atexit
+import logging # Cascade Added import
 
 # Import configuration
 from config import (
@@ -44,11 +46,12 @@ from config import (
     TELEMETRY_UPDATE_INTERVAL,
     AP_CUSTOM_MODES,
     AP_MODE_NAME_TO_ID,
-    MAVLINK_DIALECT,             # Added import
+    MAVLINK_DIALECT,              # Added MAVLink dialect
     RECONNECTION_ATTEMPT_DELAY,   # Added import
     DEBUG,                        # Added import
     DRONE_BAUD_RATE,              # Added import
-    MAVLINK_SOURCE_SYSTEM         # Added import
+    MAVLINK_SOURCE_SYSTEM,        # Added import
+    REQUEST_STREAM_RATE_HZ
 )
 
 # --- Configuration ---
@@ -62,11 +65,32 @@ MAV_AUTOPILOT_ENUM = mavutil.mavlink.enums['MAV_AUTOPILOT']
 MAV_AUTOPILOT_STR = {v: k for k, v in MAV_AUTOPILOT_ENUM.items()}
 MAV_MODE_FLAG_ENUM = mavutil.mavlink.enums['MAV_MODE_FLAG']
 
-# --- Logging Helper ---
+# Create a reverse map for ArduPilot custom modes for easier lookup by number
+ARDUPILOT_MODE_NAME_MAP = {v: k for k, v in AP_CUSTOM_MODES.items()} if AP_CUSTOM_MODES else {}
+
+# --- Logging Configuration ---
+# Cascade Added: Configure standard logging
+logging.basicConfig(
+    level=logging.DEBUG,  # Set to DEBUG to capture all levels
+    format='%(asctime)s [%(levelname)-8s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[logging.FileHandler("webgcs_debug.log", mode='w')] # 'w' overwrites log on each start
+)
+
+# --- Logging Helper (using standard logging) ---
 def log_message(message, level="INFO"):
-    """Prints a standardized log message with timestamp and level."""
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] {level:<8} | {message}")
+    """Logs a message using the standard logging module."""
+    level = level.upper() # Ensure level is uppercase for logger methods
+    if level == "DEBUG":
+        logging.debug(message)
+    elif level == "WARNING":
+        logging.warning(message)
+    elif level == "ERROR":
+        logging.error(message)
+    elif level == "CRITICAL":
+        logging.critical(message)
+    else: # Default to INFO
+        logging.info(message)
 
 # --- Constants for MAVLink connection ---
 CONNECTION_ATTEMPT_TIMEOUT_S = 5 # Timeout for establishing initial connection
@@ -178,100 +202,145 @@ def log_command_action(command_name, params=None, details=None, level="INFO"):
     print("="*80)
     return log_message
 
-def process_heartbeat(msg):
-    """Process HEARTBEAT message with enhanced logging for mode changes"""
-    # No longer using global last_heartbeat_time, update drone_state directly
-    # last_heartbeat_time = time.time()
-    
-    with drone_state_lock:
-        drone_state['last_heartbeat_time'] = time.time() # Update drone_state
-        prev_mode = drone_state.get('mode', 'UNKNOWN')
-        prev_armed = drone_state.get('armed', False)
-        
-        # Update drone state
-        drone_state['connected'] = True
-        drone_state['armed'] = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
-        
-        if master and msg.get_srcSystem() == master.target_system:
-            custom_mode_str = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
-            new_mode = custom_mode_str[0] if custom_mode_str else 'UNKNOWN'
-            drone_state['mode'] = new_mode
-            
-            # Log mode or armed state changes
-            if new_mode != prev_mode:
-                log_command_action("MODE_CHANGE", None, f"Mode changed from {prev_mode} to {new_mode}")
-                
-            if drone_state['armed'] != prev_armed:
-                status = "ARMED" if drone_state['armed'] else "DISARMED"
-                log_command_action("ARM_STATUS", None, f"Vehicle {status}")
-    
-    # Detailed human-readable log for heartbeat at INFO level - d892ba4 style
+def log_heartbeat_details(msg):
+    global drone_state # For reading
     timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")
     sysid = msg.get_srcSystem()
     compid = msg.get_srcComponent()
+
+    current_sys_state = drone_state.get(sysid, {}) 
+    mode_to_log = current_sys_state.get('mode', 'NOT_SET_IN_STATE')
+    armed_to_log = current_sys_state.get('armed', False) 
+    
+    armed_str = "ARMED" if armed_to_log else "DISARMED"
     type_str = mavutil.mavlink.enums['MAV_TYPE'][msg.type].name if msg.type in mavutil.mavlink.enums['MAV_TYPE'] else str(msg.type)
     autopilot_str = mavutil.mavlink.enums['MAV_AUTOPILOT'][msg.autopilot].name if msg.autopilot in mavutil.mavlink.enums['MAV_AUTOPILOT'] else str(msg.autopilot)
-    armed_str = "ARMED" if drone_state['armed'] else "DISARMED"
     status_str = mavutil.mavlink.enums['MAV_STATE'][msg.system_status].name if msg.system_status in mavutil.mavlink.enums['MAV_STATE'] else str(msg.system_status)
     
-    separator = "=" * 80 # 80 characters for the separator line
+    separator = "=" * 80 
     heartbeat_details = (
-        f"[{timestamp_str}] HEARTBEAT\n"
+        f"[{timestamp_str}] HEARTBEAT_DETAILS (for SYSID {sysid})\n"
         f"  SYS: {sysid}\n"
         f"  COMP: {compid}\n"
         f"  Type: {type_str}\n"
         f"  Autopilot: {autopilot_str}\n"
-        f"  Mode: {drone_state['mode']}\n"
-        f"  Armed: {armed_str}\n"
-        f"  Status: {status_str}\n"
+        f"  Mode (from drone_state[{sysid}]): {mode_to_log}\n" 
+        f"  Armed (from drone_state[{sysid}]): {armed_str}\n" 
+        f"  Status (from msg): {status_str}\n"
         f"  MAVLink Version: {msg.mavlink_version}"
     )
-    # print(heartbeat_details)
-    # print(separator)
-    
-    # Emit an event for the UI to indicate a heartbeat was received
-    socketio.emit('heartbeat_received', {'sysid': sysid, 'compid': compid})
+    print(heartbeat_details)
+    print(separator)
 
-    # Conditional detailed print based on DEBUG flag from config
-    if DEBUG:
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        sysid = msg.get_srcSystem()
-        compid = msg.get_srcComponent()
-        mav_type = MAV_TYPE_STR.get(msg.type, f"UNKNOWN_TYPE({msg.type})")
-        autopilot = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN_AP({msg.autopilot})")
-        system_status = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN_STATE({msg.system_status})")
-        
-        # Extract base mode flags
-        mode_flags = []
-        for flag_bit, flag_name in MAV_MODE_FLAG_ENUM.items():
-            if isinstance(flag_bit, int) and msg.base_mode & flag_bit:
-                mode_flags.append(flag_name.name)
-        mode_flags_str = ", ".join(mode_flags) if mode_flags else "NONE"
-        
-        # Get custom mode string
-        custom_mode_str = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
-        custom_mode_name = custom_mode_str[0] if custom_mode_str else f"UNKNOWN({msg.custom_mode})"
-        
-        print(f"\n{'='*30} HEARTBEAT (Detailed) {'='*30}")
-        print(f"[{timestamp}] HEARTBEAT from System:{sysid} Component:{compid}")
-        print(f"├── Vehicle Type: {mav_type}")
-        print(f"├── Autopilot: {autopilot}")
-        print(f"├── System Status: {system_status}")
-        print(f"├── Mode Flags: {mode_flags_str}")
-        print(f"├── Custom Mode: {custom_mode_name} (Value: {msg.custom_mode})")
-        print(f"├── Mavlink Version: {msg.mavlink_version}")
-        print(f"└── Armed: {'YES' if drone_state['armed'] else 'NO'}")
-        print(f"{'='*70}")
+def handle_heartbeat(msg): # master will be accessed as a global
+    """Handles incoming HEARTBEAT messages, updates drone_state, and logs details."""
+    global drone_state, master # Ensure master is accessible
+
+    sysid = msg.get_srcSystem()
+
+    if sysid not in drone_state:
+        drone_state[sysid] = {
+            'mode': 'INITIALIZING',
+            'armed': False
+        }
     
-    drone_state_changed = True
+    new_mode_num = msg.custom_mode
+    autopilot_type = msg.autopilot
+    is_armed = bool(msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED)
+
+    new_mode_str = f"ModeNum_{new_mode_num}" # Default if not found
+
+    if autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_ARDUPILOTMEGA:
+        new_mode_str = ARDUPILOT_MODE_NAME_MAP.get(new_mode_num, f"Unknown_AP_Mode_{new_mode_num}")
+    elif autopilot_type == mavutil.mavlink.MAV_AUTOPILOT_PX4:
+        # Placeholder for PX4 main modes if needed - PX4 uses base_mode primarily for standard modes
+        # For PX4 custom modes, MAV_MODE_FLAG_CUSTOM_MODE_ENABLED in base_mode is checked,
+        # and custom_mode holds a PX4-specific value.
+        # This example focuses on ArduPilot custom modes for now.
+        # We'd need a PX4 specific custom_mode map if we were to decode them.
+        # Fallback to MAVLink standard mode mapping if custom bit not set, or just use number.
+
+        # Attempt to get standard mode string from base_mode bits (excluding custom flag)
+        standard_mode_bits = msg.base_mode & ~mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+        standard_mode_str = mavutil.mode_string_v10(standard_mode_bits) # Tries to map standard bits
+        if standard_mode_str and standard_mode_str != "MAV_MODE_MANUAL_ARMED": # mode_string_v10 can be vague
+            new_mode_str = standard_mode_str
+        
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
+            new_mode_str = f"PX4_Custom({new_mode_num})" # Simple representation for PX4 custom mode
+        # If no better string found, it remains ModeNum_X or the basic standard_mode_str
+
+    else: # Other autopilots or unknown
+        # Generic attempt to map standard modes from base_mode
+        standard_mode_bits = msg.base_mode & ~mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+        standard_mode_str = mavutil.mode_string_v10(standard_mode_bits)
+        if standard_mode_str and standard_mode_str != "MAV_MODE_MANUAL_ARMED":
+            new_mode_str = standard_mode_str
+        else:
+            new_mode_str = f"UnknownAutopilot_ModeNum_{new_mode_num}"
+
+    # Update drone_state
+    state_changed_loc = False
+    if drone_state[sysid].get('mode') != new_mode_str:
+        drone_state[sysid]['mode'] = new_mode_str
+        state_changed_loc = True
+
+    if drone_state[sysid].get('armed') != is_armed:
+        drone_state[sysid]['armed'] = is_armed
+        state_changed_loc = True
+
+    drone_state[sysid].update({
+        'last_heartbeat': time.time(),
+        'autopilot': msg.autopilot,
+        'type': msg.type,
+        'system_status': msg.system_status,
+        'mavlink_version': msg.mavlink_version,
+        'base_mode': msg.base_mode, 
+        'custom_mode_raw': new_mode_num 
+    })
+
+    # If this heartbeat is from the primary target system, update the top-level state
+    if master and hasattr(master, 'target_system') and sysid == master.target_system:
+        log_message(f"HEARTBEAT_CHECK_TOP_LEVEL: Checking for top-level update from SYSID {sysid}. State changed locally: {state_changed_loc}", level="INFO") # Cascade Changed Log
+        # Update the top-level drone_state based on changes detected for this system ID
+        if state_changed_loc: 
+            current_primary_target_state = drone_state[sysid]
+            drone_state.update({ 
+                'mode': current_primary_target_state.get('mode'),
+                'armed': current_primary_target_state.get('armed'),
+                'last_heartbeat': current_primary_target_state.get('last_heartbeat'),
+                'autopilot': current_primary_target_state.get('autopilot'),
+                'type': current_primary_target_state.get('type'),
+                'system_status': current_primary_target_state.get('system_status'),
+                'mavlink_version': current_primary_target_state.get('mavlink_version'),
+                'base_mode': current_primary_target_state.get('base_mode'),
+                'custom_mode_raw': current_primary_target_state.get('custom_mode_raw')
+                # Note: 'connected' status is handled elsewhere (e.g., connect/disconnect logic)
+            })
+            log_message(f"HEARTBEAT_TOP_LEVEL_UPDATE: Updated top-level drone_state from SYSID {sysid}", level="DEBUG") # Cascade Changed Log
+
+    # Log if any change occurred for this specific sysid
+    if state_changed_loc:
+        log_message(f"HEARTBEAT_STATE_CHANGE: SYSID {sysid}: Mode changed to '{drone_state[sysid]['mode']}', Armed changed to: {drone_state[sysid]['armed']}", level="INFO") # Cascade Changed Log
+    
+    log_message(f"HEARTBEAT_OUT: drone_state[{sysid}] is now: Mode='{drone_state[sysid]['mode']}', Armed={drone_state[sysid]['armed']}", level="DEBUG") # Cascade Changed Log
+
+    log_heartbeat_details(msg)
 
 def handle_mavlink_message(msg):
     """Processes various MAVLink messages and updates drone_state."""
+    # print(f"--- ENTERED handle_mavlink_message with msg type: {msg.get_type()} (ID: {msg.get_msgId()}) ---") # <-- REMOVED PRINT
     global drone_state, drone_state_changed, data_streams_requested, home_position_requested
     msg_type = msg.get_type()
 
+    # --- Add Debug Log Here ---
+    msg_id = msg.get_msgId()
+    # msg_type = msg.get_type() # Redundant, already assigned above
+    log_message(f"Received MAVLink Msg: Type={msg_type}, ID={msg_id}", level="DEBUG") # Cascade Changed Log Level
+    # --- End Debug Log ---
+
     if msg_type == 'HEARTBEAT':
-        process_heartbeat(msg)
+        handle_heartbeat(msg) # MODIFIED CALL to new function
         return # process_heartbeat handles its own state change flag
 
     # For other messages, acquire lock to modify drone_state
@@ -344,7 +413,7 @@ def handle_mavlink_message(msg):
             
             severity_enum = mavutil.mavlink.enums.get('MAV_SEVERITY', {})
             severity = severity_enum.get(msg.severity, mavutil.mavlink.MAV_SEVERITY_INFO).name.replace('MAV_SEVERITY_', '')
-            print(f"STATUSTEXT [{severity}]: {message_text}")
+            log_message(f"STATUSTEXT [{severity}]: {message_text}", level=severity) # Cascade Changed Print to Log
             if msg.severity <= mavutil.mavlink.MAV_SEVERITY_WARNING: # WARNING, ERROR, CRITICAL, ALERT, EMERGENCY
                  log_level = "warning" if msg.severity == mavutil.mavlink.MAV_SEVERITY_WARNING else "error"
                  emit_status_message(f"Drone: {message_text}", log_level)
@@ -373,8 +442,6 @@ def connect_mavlink():
         temp_master = mavutil.mavlink_connection(
             connection_string, 
             autoreconnect=True, 
-            source_system=255, # Standard GCS system ID, was also in d892ba4 implicitly or explicitly
-            # source_component=190, # REMOVED - Let pymavlink default or drone decide
             baud=115200, # Not strictly for TCP, but doesn't hurt. Was commented out in d892ba4 snippet.
             # dialect=MAVLINK_DIALECT # REMOVED - Let pymavlink auto-detect/default
         )
@@ -404,9 +471,8 @@ def connect_mavlink():
         home_position_requested = False
         log_message(f"MAVLink: Connection established to {connection_string}", "SUCCESS")
         emit_status_message(f"Connected to MAVLink at {connection_string}", "success")
-        request_data_streams()
-        # request_fence_points() # Commented out
-        # request_mission_items() # Commented out
+        
+        # Removed request_data_streams() call
     except Exception as e:
         print(f"MAVLink connection to {connection_string} failed: {e}")
         master = None
@@ -414,64 +480,6 @@ def connect_mavlink():
         emit_status_message(f"Failed to connect to MAVLink at {connection_string}. Retrying...", "error")
         print(f"MAVLink disconnected or connection failed. Retrying in {RECONNECTION_ATTEMPT_DELAY} seconds...")
         time.sleep(RECONNECTION_ATTEMPT_DELAY) # Use imported constant
-
-def request_data_streams(req_rate_hz=REQUEST_STREAM_RATE_HZ):
-    """Requests necessary data streams from the flight controller using MAV_CMD_SET_MESSAGE_INTERVAL."""
-    global data_streams_requested, master, home_position_requested
-    
-    if not master or not drone_state.get("connected", False) or master.target_system == 0:
-        log_message("Cannot request data streams: MAVLink not connected or target system unknown.", "WARNING")
-        return
-
-    target_sys = master.target_system
-    target_comp = master.target_component if master.target_component != 0 else 1 
-    log_message(f"Requesting all data streams via SET_MESSAGE_INTERVAL from SYSID {target_sys} COMPID {target_comp}", "INFO")
-
-    streams_to_request = {
-        mavutil.mavlink.MAVLINK_MSG_ID_HEARTBEAT: 1,
-        mavutil.mavlink.MAVLINK_MSG_ID_SYS_STATUS: 1,
-        mavutil.mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT: req_rate_hz,
-        mavutil.mavlink.MAVLINK_MSG_ID_ATTITUDE: req_rate_hz * 2 if req_rate_hz * 2 <= 50 else 50,
-        mavutil.mavlink.MAVLINK_MSG_ID_VFR_HUD: req_rate_hz,
-        mavutil.mavlink.MAVLINK_MSG_ID_GPS_RAW_INT: 1,
-        mavutil.mavlink.MAVLINK_MSG_ID_HOME_POSITION: 0, # Request once
-        mavutil.mavlink.MAVLINK_MSG_ID_STATUSTEXT: 1,
-    }
-
-    try:
-        for msg_id, rate_hz_val in streams_to_request.items():
-            if msg_id == mavutil.mavlink.MAVLINK_MSG_ID_HOME_POSITION and home_position_requested and rate_hz_val == 0:
-                log_message(f"Skipping HOME_POSITION (MsgID {msg_id}) request as it's already received.", "DEBUG")
-                continue
-
-            interval_us = int(1e6 / rate_hz_val) if rate_hz_val > 0 else 0
-            # For MAVLINK_MSG_ID_HOME_POSITION with rate_hz_val == 0, interval_us becomes 0, which is correct for one-shot request.
-            # If rate_hz_val < 0 (to stop stream), interval_us should be -1. We are not using this here.
-            
-            msg_name = mavutil.mavlink.enums['MAVLINK_MSG'][msg_id].name if msg_id in mavutil.mavlink.enums['MAVLINK_MSG'] else f'MsgID {msg_id}'
-            log_message(f"Req: {msg_name} at {rate_hz_val}Hz (Interval: {interval_us}us)", "INFO")
-            
-            master.mav.command_long_send(
-                target_sys, 
-                target_comp, 
-                mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 
-                0,                      # Confirmation
-                float(msg_id),          # param1: Message ID to control
-                float(interval_us),     # param2: Interval in microseconds (-1 to disable, 0 to request once/default rate)
-                0.0,                    # param3: Unused
-                0.0,                    # param4: Unused
-                0.0,                    # param5: Unused
-                0.0,                    # param6: Unused
-                0.0                     # param7: Unused
-            )
-            gevent.sleep(0.05) # Small delay between requests
-        
-        data_streams_requested = True
-        log_message("All data stream requests sent.", "INFO")
-
-    except Exception as req_err: 
-        log_message(f"Error requesting data streams: {req_err}", "ERROR")
-        data_streams_requested = False
 
 def send_mavlink_command(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0, confirmation=0, target_system=None, target_component=None):
     """
@@ -510,81 +518,66 @@ def send_mavlink_command(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0, conf
 
 def process_command_ack(msg):
     """Process and log COMMAND_ACK messages with enhanced details"""
-    cmd = msg.command
+    command_id = msg.command
     result = msg.result
     
     # Get command name for logging
-    cmd_name = mavutil.mavlink.enums['MAV_CMD'][cmd].name if cmd in mavutil.mavlink.enums['MAV_CMD'] else f'ID {cmd}'
+    cmd_name = mavutil.mavlink.enums['MAV_CMD'][command_id].name if command_id in mavutil.mavlink.enums['MAV_CMD'] else f'UNKNOWN_CMD_ID_{command_id}'
     
     # Get result name
-    result_name = MAV_RESULT_STR.get(result, 'UNKNOWN')
+    result_text = MAV_RESULT_STR.get(result, 'UNKNOWN_RESULT')
     
-    # Skip logging and emitting MAV_CMD_REQUEST_MESSAGE commands with UNKNOWN results
-    if cmd == mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE and result_name == 'UNKNOWN':
-        # Just remove from pending commands silently
-        if cmd in pending_commands:
-            del pending_commands[cmd]
+    # Determine log level and refine explanation
+    log_level = "INFO"
+    explanation = f"Command {cmd_name} ({command_id}) {result_text}"
+
+    if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+        explanation = f"Command {cmd_name} ({command_id}) ACCEPTED by vehicle"
+    elif result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
+        log_level = "WARNING" # Keep as WARNING for temporary rejections
+        explanation = f"Command {cmd_name} ({command_id}) TEMPORARILY REJECTED by vehicle (may be in wrong state)"
+    elif result == mavutil.mavlink.MAV_RESULT_DENIED:
+        log_level = "ERROR"
+        explanation = f"Command {cmd_name} ({command_id}) DENIED by vehicle"
+    else: # Other non-accepted results
+        log_level = "ERROR"
+        explanation = f"Command {cmd_name} ({command_id}) {result_text} (Result Code: {result})"
+
+    # Skip logging MAV_CMD_REQUEST_MESSAGE commands with specific UNKNOWN results if desired (current logic does this)
+    if command_id == mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE and result_text == 'UNKNOWN_RESULT': # Check against updated result_text
+        if command_id in pending_commands:
+            del pending_commands[command_id]
         return
     
     # Log with detailed explanation
-    explanation = "Command acknowledged with"
-    if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-        explanation = "Command ACCEPTED by vehicle"
-        level = "INFO"
-    elif result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
-        explanation = "Command TEMPORARILY REJECTED - vehicle might be in wrong state"
-        level = "WARNING"
-    elif result == mavutil.mavlink.MAV_RESULT_DENIED:
-        explanation = "Command DENIED - vehicle rejected the command"
-        level = "ERROR"
-    elif result == mavutil.mavlink.MAV_RESULT_UNSUPPORTED:
-        explanation = "Command UNSUPPORTED - vehicle does not support this command"
-        level = "ERROR"
-    elif result == mavutil.mavlink.MAV_RESULT_FAILED:
-        explanation = "Command FAILED during execution"
-        level = "ERROR"
-    elif result == mavutil.mavlink.MAV_RESULT_IN_PROGRESS:
-        explanation = "Command accepted and IN PROGRESS"
-        level = "INFO"
-    else:
-        # Modified to provide more informative message for UNKNOWN result
-        if master and result_name == 'UNKNOWN' and len(master.mav.command_ack_queue) > 0:
-            # If we have pending commands and receive an UNKNOWN result, it's likely accepted
-            explanation = "Command ACCEPTED by vehicle"
-            level = "INFO"
-        else:
-            explanation = "Command response UNKNOWN - vehicle might be using different protocol"
-            level = "WARNING"
+    log_message(explanation, level=log_level) # Use the derived log_level
     
-    # Create a better display text for results
-    display_result = result_name
-    if result_name == 'UNKNOWN' and explanation == "Command ACCEPTED by vehicle":
-        display_result = f"{result_name} - {explanation}"
-    elif result_name == 'UNKNOWN' and explanation == "Command response UNKNOWN - vehicle might be using different protocol":
-        display_result = f"{result_name} - {explanation}"
-    elif result == mavutil.mavlink.MAV_RESULT_UNSUPPORTED:
-        display_result = f"{result_name} - {explanation}"
-    elif result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
-        display_result = f"{result_name} - {explanation}"
-    elif result == mavutil.mavlink.MAV_RESULT_DENIED:
-        display_result = f"{result_name} - {explanation}"
-    elif result == mavutil.mavlink.MAV_RESULT_FAILED:
-        display_result = f"{result_name} - {explanation}"
-    
-    log_command_action(f"ACK_{cmd_name}", f"Result: {display_result}", explanation, level)
-    
-    # Remove from pending commands if it exists
-    if cmd in pending_commands:
-        del pending_commands[cmd]
-    
-    # Emit to frontend
-    socketio.emit('command_ack_received', {
-        'command': cmd,
+    # Update last_command_ack (This part seems to be missing from the snippet but should be present)
+    # Ensure this part aligns with your existing logic for updating drone_state and emitting to UI
+    global last_command_ack, drone_state_changed, drone_state_lock
+    with drone_state_lock:
+        last_command_ack = {
+            'command': command_id,
+            'command_name': cmd_name,
+            'result': result,
+            'result_text': result_text,
+            'timestamp': time.time()
+        }
+        drone_state_changed = True # Notify telemetry loop
+
+    # Emit command result to UI
+    socketio.emit('command_result', {
+        'command_id': command_id,
         'command_name': cmd_name,
         'result': result,
-        'result_text': display_result,
-        'explanation': explanation
+        'result_text': result_text,
+        'success': result == mavutil.mavlink.MAV_RESULT_ACCEPTED
     })
+    log_message(f"ACK_PROCESS: Finished processing ACK for {cmd_name} ({command_id})", level="DEBUG") # Cascade Added Log
+
+    # Remove from pending commands if it was tracked
+    if command_id in pending_commands:
+        del pending_commands[command_id]
 
 def mavlink_receive_loop():
     """Background thread for MAVLink connection, message receiving, and reconnection logic."""
@@ -603,18 +596,19 @@ def mavlink_receive_loop():
                 drone_state_changed = True
 
         try:
-            with mavlink_connection_lock:
+            with mavlink_connection_lock: # Ensure exclusive access
                 target_ip = current_mavlink_target_ip
                 target_port = current_mavlink_target_port
             conn_str = f"tcp:{target_ip}:{target_port}"
             log_message(f"MAVLink: Attempting connection to {conn_str}...")
 
             try:
-                with gevent.Timeout(CONNECTION_ATTEMPT_TIMEOUT_S):
-                    temp_master_conn = mavutil.mavlink_connection(
-                        conn_str, baud=DRONE_BAUD_RATE, source_system=MAVLINK_SOURCE_SYSTEM,
-                        autoreconnect=False, dialect=MAVLINK_DIALECT
-                    )
+                log_message("MAVLink: Calling mavutil.mavlink_connection...", "DEBUG") 
+                temp_master_conn = mavutil.mavlink_connection(
+                    conn_str, baud=DRONE_BAUD_RATE,
+                    autoreconnect=False 
+                )
+                log_message("MAVLink: mavutil.mavlink_connection call finished.", "DEBUG") 
             except gevent.Timeout:
                 log_message(f"MAVLink: Connection to {conn_str} timed out after {CONNECTION_ATTEMPT_TIMEOUT_S}s.", "WARNING")
                 raise ConnectionError("Connection attempt timed out")
@@ -623,18 +617,22 @@ def mavlink_receive_loop():
                 raise ConnectionError(f"Socket/OS error: {se}") from se
 
             if mavlink_thread_stop_event.is_set(): break
-            if not temp_master_conn: raise ConnectionError("temp_master_conn is None after attempt.")
+            if not temp_master_conn: 
+                log_message("MAVLink: temp_master_conn is None after connection attempt block.", "ERROR") 
+                raise ConnectionError("temp_master_conn is None after attempt.")
 
             log_message(f"MAVLink: Waiting for heartbeat from {conn_str}...")
             hb_msg = None
-            for _ in range(HEARTBEAT_WAIT_ITERATIONS):
+            for i in range(HEARTBEAT_WAIT_ITERATIONS):
+                log_message(f"MAVLink: Heartbeat wait iteration {i+1}/{HEARTBEAT_WAIT_ITERATIONS} starting...", "DEBUG") 
                 if mavlink_thread_stop_event.is_set():
                     log_message("MAVLink: Stop event received while waiting for heartbeat.", "DEBUG")
                     raise gevent.GreenletExit("Stop event received")
                 hb_msg = temp_master_conn.wait_heartbeat(timeout=HEARTBEAT_WAIT_PER_ITERATION_S)
+                log_message(f"MAVLink: Heartbeat wait iteration {i+1} finished. Got msg: {bool(hb_msg)}", "DEBUG") 
                 if hb_msg:
                     break
-                log_message(f"MAVLink: Heartbeat wait iteration for {conn_str}, retrying...", "DEBUG")
+                # log_message(f"MAVLink: Heartbeat wait iteration for {conn_str}, retrying...", "DEBUG") # Covered by loop logs
             
             if mavlink_thread_stop_event.is_set() or not hb_msg:
                 if temp_master_conn: temp_master_conn.close()
@@ -657,41 +655,71 @@ def mavlink_receive_loop():
                 home_position_requested = False
                 log_message(f"MAVLink: Connection established to {conn_str}", "SUCCESS")
                 emit_status_message(f"Connected to MAVLink at {conn_str}", "success")
-                request_data_streams()
-                # request_fence_points() # Commented out
-                # request_mission_items() # Commented out
+                
+                log_message(f"Processing first received heartbeat: {hb_msg}", "DEBUG") 
+                handle_mavlink_message(hb_msg)
+
+                # --- Use REQUEST_DATA_STREAM instead of SET_MESSAGE_INTERVAL ---
+                stream_rate_hz = 4 # Request streams at 4 Hz
+                target_sys = master.target_system
+                target_comp = master.target_component # Use the specific component ID from heartbeat
+                log_message(f"Requesting MAV_DATA_STREAM_ALL at {stream_rate_hz} Hz from SYSID {target_sys} COMPID {target_comp} using REQUEST_DATA_STREAM", "INFO")
+                master.mav.request_data_stream_send(
+                    target_sys, 
+                    target_comp, 
+                    mavutil.mavlink.MAV_DATA_STREAM_ALL, # Request all streams
+                    stream_rate_hz,  # Rate in Hz
+                    1  # Start sending (1)
+                )
+                data_streams_requested = True # Mark streams as requested
+                # --- End of REQUEST_DATA_STREAM logic ---
+                
+                log_message("MAVLink: Entering message processing loop.", "INFO")
             connection_successful = True
 
             # Main message processing loop
-            log_message("MAVLink: Entering message processing loop.")
             telemetry_loop_active = True # Signal that the main loop is active
 
             while not mavlink_thread_stop_event.is_set():
-                # Check for stop event before blocking call
-                if mavlink_thread_stop_event.is_set():
-                    log_message("MAVLink: Stop event detected before recv_match.", "DEBUG")
-                    break
+                # Check connection health
+                if master is None:
+                    log_message("MAVLink connection lost in receive loop.", "WARNING")
+                    drone_state["connected"] = False
+                    emit_status_message("MAVLink connection lost.", "error")
+                    break # Exit inner loop to attempt reconnection
 
-                msg = master.recv_match(blocking=False, timeout=0.01) # Non-blocking with short timeout
+                # Wait for the next MAVLink message with blocking call
+                msg = None
+                try:
+                    # Use blocking call similar to commit a510637
+                    msg = master.recv_match(blocking=True, timeout=1.0)
+                except socket.error as e:
+                    log_message(f"Socket error during recv_match: {e}", "ERROR")
+                    master = None # Force reconnection attempt
+                    drone_state["connected"] = False
+                    emit_status_message(f"MAVLink socket error: {e}", "error")
+                    continue # Skip to next loop iteration to reconnect
+                except Exception as e:
+                    log_message(f"Unexpected error during recv_match: {e}", "ERROR")
+                    # Consider if reconnection is needed based on error type
+                    gevent.sleep(0.1) # Short pause before continuing
+                    continue
 
                 if msg:
-                    # Remove direct logging from the loop; handling and specific logging (like for HEARTBEAT)
-                    # will occur in handle_mavlink_message and its sub-functions.
+                    # DEBUG: Print raw message if needed
+                    # if msg.get_type() not in ['BAD_DATA']: log_message(f"RAW MSG: {msg}", "TRACE")
+                    
+                    # Process the received message
                     handle_mavlink_message(msg)
-                else:
-                    # This will log if no message is received in the 0.01s timeout
-                    # log_message("LOOP: master.recv_match returned None", "TRACE") # Potentially too verbose, use TRACE or DEBUG
-                    # It's normal for recv_match to return None with timeout
-                    # Yield control to allow other greenlets to run, crucial for responsiveness.
-                    gevent.sleep(0.01)
+                    log_message(f"RECEIVE_LOOP: Handled message type {msg.get_type()}. Waiting for next...", level="DEBUG") # Cascade Added Log
+                # else: # No message received within timeout
+                    # No sleep needed here as recv_match(blocking=True) handles the waiting
+                    # gevent.sleep(0.001) # REMOVED
+                    # pass
 
-                # Explicitly check stop event again after potential processing or sleep
-                if mavlink_thread_stop_event.is_set():
-                    log_message("MAVLink: Stop event detected after recv_match/sleep.", "DEBUG")
-                    break
-
-            log_message("MAVLink: Exited message processing loop.", "DEBUG")
-
+            # Loop exited (likely due to stop event or connection loss)
+            log_message("MAVLink receive loop exiting.", "INFO")
+            telemetry_loop_active = False
         except gevent.Timeout as t:
             log_message(f"MAVLink: Timeout in main loop: {t}", "WARNING")
         except ConnectionError as ce: # Catch our specific ConnectionErrors (timeout, no heartbeat, socket error)
@@ -1083,16 +1111,40 @@ def stop_mavlink_thread():
             drone_state_changed = True
     return True
 
+# --- Main Execution Block ---
 if __name__ == '__main__':
+    # Add a short delay to allow the OS to release the port if restarting quickly
+    time.sleep(2) # Increased delay to 2 seconds
+    
     print(f"Starting server on http://{WEB_SERVER_HOST}:{WEB_SERVER_PORT}")
     # Start the background threads
+    # Note: mavlink_receive_loop now starts the MAVLink connection attempt
     mav_thread = threading.Thread(target=mavlink_receive_loop, daemon=True) # Corrected function name
     mav_thread.start()
 
     print("Starting periodic telemetry update thread...")
     telemetry_update_thread = gevent.spawn(periodic_telemetry_update)
-    socketio.run(app, 
-                host=WEB_SERVER_HOST, 
-                port=WEB_SERVER_PORT, 
-                debug=True,
-                use_reloader=False)  # Disable reloader to prevent duplicate threads
+    
+    try:
+        socketio.run(app, 
+                    host=WEB_SERVER_HOST, 
+                    port=WEB_SERVER_PORT, 
+                    debug=True,
+                    use_reloader=False)  # Disable reloader to prevent duplicate threads
+    finally:
+        # --- Add Cleanup Logic Here ---
+        log_message("Server process ending. Stopping background tasks...", "INFO")
+        stop_mavlink_thread() # Ensure MAVLink connection and thread are stopped
+        
+        if telemetry_update_thread and not telemetry_update_thread.dead:
+            log_message("Attempting to kill telemetry update greenlet...", "DEBUG")
+            try:
+                telemetry_update_thread.kill(block=False) # Non-blocking kill attempt
+                log_message("Telemetry update greenlet kill signal sent.", "DEBUG")
+            except Exception as e:
+                log_message(f"Error killing telemetry greenlet: {e}", "WARNING")
+        else:
+            log_message("Telemetry update greenlet already stopped or not initialized.", "DEBUG")
+            
+        log_message("Cleanup complete.", "INFO")
+        # --- End Cleanup Logic ---
