@@ -226,8 +226,8 @@ def process_heartbeat(msg):
         f"  Status: {status_str}\n"
         f"  MAVLink Version: {msg.mavlink_version}"
     )
-    print(heartbeat_details)
-    print(separator)
+    # print(heartbeat_details)
+    # print(separator)
     
     # Emit an event for the UI to indicate a heartbeat was received
     socketio.emit('heartbeat_received', {'sysid': sysid, 'compid': compid})
@@ -328,7 +328,20 @@ def handle_mavlink_message(msg):
             changed_in_this_handler = True
         
         elif msg_type == 'STATUSTEXT':
-            message_text = "".join(chr(c) for c in msg.text if c != 0) # Convert to string and remove null terminators
+            if isinstance(msg.text, bytes):
+                try:
+                    # Decode bytes, stopping at the first null terminator
+                    message_text = msg.text.split(b'\x00', 1)[0].decode('utf-8', errors='replace')
+                except Exception as e:
+                    message_text = f"Error decoding STATUSTEXT (bytes): {e}"
+                    log_message(f"STATUSTEXT decode (bytes) error: {e} on data: {msg.text!r}", "ERROR")
+            elif isinstance(msg.text, str):
+                # Already a string, stop at the first null terminator
+                message_text = msg.text.split('\x00', 1)[0]
+            else:
+                message_text = "Unknown STATUSTEXT format"
+                log_message(f"STATUSTEXT has unexpected msg.text type: {type(msg.text)} content: {msg.text!r}", "WARNING")
+            
             severity_enum = mavutil.mavlink.enums.get('MAV_SEVERITY', {})
             severity = severity_enum.get(msg.severity, mavutil.mavlink.MAV_SEVERITY_INFO).name.replace('MAV_SEVERITY_', '')
             print(f"STATUSTEXT [{severity}]: {message_text}")
@@ -443,9 +456,13 @@ def request_data_streams(req_rate_hz=REQUEST_STREAM_RATE_HZ):
                 target_comp, 
                 mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 
                 0,                      # Confirmation
-                msg_id,                 # param1: Message ID to control
-                interval_us,            # param2: Interval in microseconds (-1 to disable, 0 to request once/default rate)
-                0,0,0,0,0               # Unused params
+                float(msg_id),          # param1: Message ID to control
+                float(interval_us),     # param2: Interval in microseconds (-1 to disable, 0 to request once/default rate)
+                0.0,                    # param3: Unused
+                0.0,                    # param4: Unused
+                0.0,                    # param5: Unused
+                0.0,                    # param6: Unused
+                0.0                     # param7: Unused
             )
             gevent.sleep(0.05) # Small delay between requests
         
@@ -455,6 +472,41 @@ def request_data_streams(req_rate_hz=REQUEST_STREAM_RATE_HZ):
     except Exception as req_err: 
         log_message(f"Error requesting data streams: {req_err}", "ERROR")
         data_streams_requested = False
+
+def send_mavlink_command(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0, confirmation=0, target_system=None, target_component=None):
+    """
+    Sends a MAVLink COMMAND_LONG message.
+    Returns (True, "Command sent successfully") or (False, "Error message").
+    """
+    global master, drone_state, app # Added app for app.logger
+
+    if not drone_state.get("connected") or not master:
+        log_command_action(f"CMD_SEND_FAIL (No Connection)", f"CmdID:{command}", "MAVLink connection is not active.", "ERROR")
+        return False, "MAVLink connection is not active."
+
+    effective_target_system = target_system if target_system is not None else drone_state.get("system_id", 1)
+    effective_target_component = target_component if target_component is not None else drone_state.get("component_id", 1)
+    
+    if effective_target_system == 0:
+        log_command_action(f"CMD_SEND_FAIL (Invalid Target)", f"CmdID:{command}", "Target system ID is 0. Refusing to broadcast.", "ERROR")
+        return False, "Target system ID is 0. Refusing to broadcast."
+
+    try:
+        log_command_action(f"SENDING_CMD", f"CmdID:{command}, P:[{p1:.2f},{p2:.2f},{p3:.2f},{p4:.2f},{p5:.2f},{p6:.2f},{p7:.2f}] TargetSYS:{effective_target_system} TargetCOMP:{effective_target_component}", "Attempting to send command.", "DEBUG")
+        master.mav.command_long_send(
+            effective_target_system,       # target_system
+            effective_target_component,    # target_component
+            command,                       # command ID (e.g., mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM)
+            confirmation,                  # confirmation
+            p1, p2, p3, p4, p5, p6, p7     # params
+        )
+        log_command_action(f"CMD_SENT_OK", f"CmdID:{command}", "command_long_send executed.", "INFO")
+        return True, "Command sent successfully."
+    except Exception as e:
+        error_msg = f"Failed to send MAVLink command {command}: {str(e)}"
+        log_command_action(f"CMD_SEND_ERROR", f"CmdID:{command}", error_msg, "ERROR")
+        app.logger.error(error_msg)
+        return False, error_msg
 
 def process_command_ack(msg):
     """Process and log COMMAND_ACK messages with enhanced details"""
