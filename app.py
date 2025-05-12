@@ -86,7 +86,8 @@ drone_state = {
     'home_lat': None, 'home_lon': None,
     'ekf_flags': 0,
     'ekf_status_report': 'EKF INIT',
-    'mavlink_target_ip': DRONE_TCP_ADDRESS  # Added MAVLink target IP
+    'mavlink_target_ip': DRONE_TCP_ADDRESS,  # Added MAVLink target IP
+    'mavlink_target_port': DRONE_TCP_PORT   # Added MAVLink target port
 }
 data_streams_requested = False
 home_position_requested = False

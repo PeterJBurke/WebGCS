@@ -123,7 +123,7 @@
                     <div class="status-header-row">
                         <h2>Status</h2>
                         <!-- MAVLink IP Display Element MOVED HERE -->
-                        <div class="status-item"><strong>MAVLink IP:</strong> <span id="mavlink-ip" class="mavlink-ip-address">--.--.--.--</span></div>
+                        <div class="status-item"><strong>MAVLink IP:</strong> <span id="mavlink-ip" class="mavlink-ip-address">--.--.--.--:----</span></div>
                     </div>
                     <hr>
                     <div class="status-grid">
@@ -342,10 +342,12 @@
             document.getElementById("status-connection").className = isConnected ? "connected" : "disconnected";
             
             // Update MAVLink IP display
-            if (mavlinkIpSpan && state.mavlink_target_ip) {
-                mavlinkIpSpan.textContent = state.mavlink_target_ip;
+            if (mavlinkIpSpan && state.mavlink_target_ip && state.mavlink_target_port) {
+                mavlinkIpSpan.textContent = `${state.mavlink_target_ip}:${state.mavlink_target_port}`;
+            } else if (mavlinkIpSpan && state.mavlink_target_ip) {
+                mavlinkIpSpan.textContent = state.mavlink_target_ip; // Fallback if port is missing
             } else if (mavlinkIpSpan) {
-                mavlinkIpSpan.textContent = '--.--.--.--'; // Default if not provided
+                mavlinkIpSpan.textContent = '--.--.--.--:----'; // Default if not provided
             }
 
             setControlsDisabled(!isConnected);
@@ -581,7 +583,7 @@
             // *** ADDED: Initialize heart and EKF status ***
             const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
             if(ekfStatusSpan) { ekfStatusSpan.textContent = 'INIT'; ekfStatusSpan.className = 'ekf-status ekf-error'; }
-            if(mavlinkIpSpan) { mavlinkIpSpan.textContent = '--.--.--.--'; } // Initialize with actual or default
+            if(mavlinkIpSpan) { mavlinkIpSpan.textContent = '--.--.--.--:----'; } // Initialize with actual or default
             setControlsDisabled(true);
             setTimeout(() => { 
                 try { 
