@@ -112,6 +112,11 @@ socketio = SocketIO(app,
 master = None
 mav_thread = None
 telemetry_update_thread = None
+
+# --- Flask Routes ---
+@app.route('/')
+def index():
+    return render_template("index.html", version="v2.63-Desktop-TCP-AckEkf")
 drone_state_changed = False # Flag to indicate drone_state has changed and needs to be emitted
 drone_state_lock = threading.Lock()
 connection_event = Event()  # Added to coordinate connection attempts
@@ -590,6 +595,8 @@ def mavlink_receive_loop():
     log_message("MAVLink receive loop starting...")
 
     while not mavlink_thread_stop_event.is_set():
+        log_message(f"Thread Status: Alive. Current Target: {current_mavlink_target_ip}:{current_mavlink_target_port}. Connected: {drone_state.get('connected', False)}. Thread ID: {threading.get_ident()}", "INFO")
+        time.sleep(1) # Log status every second
         connection_successful = False
         temp_master_conn = None # Use a temporary var for the connection in this loop iteration
 
@@ -619,9 +626,10 @@ def mavlink_receive_loop():
                 log_message(f"MAVLink: Socket/OS error connecting to {conn_str}: {se}", "ERROR")
                 raise ConnectionError(f"Socket/OS error: {se}") from se
 
-            if mavlink_thread_stop_event.is_set(): break
-            if not temp_master_conn: 
-                log_message("MAVLink: temp_master_conn is None after connection attempt block.", "ERROR") 
+            if mavlink_thread_stop_event.is_set():
+                break
+            if not temp_master_conn:
+                log_message("MAVLink: temp_master_conn is None after connection attempt block.", "ERROR")
                 raise ConnectionError("temp_master_conn is None after attempt.")
 
             log_message(f"MAVLink: Waiting for heartbeat from {conn_str}...")
@@ -659,7 +667,7 @@ def mavlink_receive_loop():
                 log_message(f"MAVLink: Connection established to {conn_str}", "SUCCESS")
                 emit_status_message(f"Connected to MAVLink at {conn_str}", "success")
                 
-                log_message(f"Processing first received heartbeat: {hb_msg}", "DEBUG") 
+                log_message(f"Processing first received heartbeat: {hb_msg}", "DEBUG")
                 handle_mavlink_message(hb_msg)
 
                 # --- Use REQUEST_DATA_STREAM instead of SET_MESSAGE_INTERVAL ---
@@ -668,8 +676,8 @@ def mavlink_receive_loop():
                 target_comp = master.target_component # Use the specific component ID from heartbeat
                 log_message(f"Requesting MAV_DATA_STREAM_ALL at {stream_rate_hz} Hz from SYSID {target_sys} COMPID {target_comp} using REQUEST_DATA_STREAM", "INFO")
                 master.mav.request_data_stream_send(
-                    target_sys, 
-                    target_comp, 
+                    target_sys,
+                    target_comp,
                     mavutil.mavlink.MAV_DATA_STREAM_ALL, # Request all streams
                     stream_rate_hz,  # Rate in Hz
                     1  # Start sending (1)
@@ -684,43 +692,24 @@ def mavlink_receive_loop():
             telemetry_loop_active = True # Signal that the main loop is active
 
             while not mavlink_thread_stop_event.is_set():
-                # Check connection health
-                if master is None:
-                    log_message("MAVLink connection lost in receive loop.", "WARNING")
-                    drone_state["connected"] = False
-                    emit_status_message("MAVLink connection lost.", "error")
-                    break # Exit inner loop to attempt reconnection
-
-                # Wait for the next MAVLink message with blocking call
-                msg = None
+                log_message(f"[DEBUG] Top of MAVLink receive loop. Target: {current_mavlink_target_ip}:{current_mavlink_target_port}. Connected: {drone_state.get('connected', False)}. Thread ID: {threading.get_ident()}", "DEBUG")
                 try:
-                    # Use blocking call similar to commit a510637
-                    msg = master.recv_match(blocking=True, timeout=1.0)
-                except socket.error as e:
-                    log_message(f"Socket error during recv_match: {e}", "ERROR")
-                    master = None # Force reconnection attempt
-                    drone_state["connected"] = False
-                    emit_status_message(f"MAVLink socket error: {e}", "error")
-                    continue # Skip to next loop iteration to reconnect
+                    if master is None:
+                        log_message("MAVLink connection lost in receive loop.", "WARNING")
+                        drone_state["connected"] = False
+                        emit_status_message("MAVLink connection lost.", "error")
+                        break
+                    # Wait for next MAVLink message
+                    msg = master.recv_match(blocking=True, timeout=MESSAGE_RECEIVE_TIMEOUT_S)
+                    if msg is not None:
+                        log_message(f"[DEBUG] Received MAVLink message: {msg.get_type()}", "DEBUG")
+                        handle_mavlink_message(msg)
+                    else:
+                        log_message("[DEBUG] No MAVLink message received (timeout)", "DEBUG")
                 except Exception as e:
-                    log_message(f"Unexpected error during recv_match: {e}", "ERROR")
-                    # Consider if reconnection is needed based on error type
-                    gevent.sleep(0.1) # Short pause before continuing
-                    continue
+                    log_message(f"[ERROR] Exception in MAVLink receive loop: {e}\n{traceback.format_exc()}", "ERROR")
+                log_message(f"[DEBUG] End of MAVLink receive loop iteration", "DEBUG")
 
-                if msg:
-                    # DEBUG: Print raw message if needed
-                    # if msg.get_type() not in ['BAD_DATA']: log_message(f"RAW MSG: {msg}", "TRACE")
-                    
-                    # Process the received message
-                    handle_mavlink_message(msg)
-                    log_message(f"RECEIVE_LOOP: Handled message type {msg.get_type()}. Waiting for next...", level="DEBUG") # Cascade Added Log
-                # else: # No message received within timeout
-                    # No sleep needed here as recv_match(blocking=True) handles the waiting
-                    # gevent.sleep(0.001) # REMOVED
-                    # pass
-
-            # Loop exited (likely due to stop event or connection loss)
             log_message("MAVLink receive loop exiting.", "INFO")
             telemetry_loop_active = False
         except gevent.Timeout as t:
@@ -729,7 +718,7 @@ def mavlink_receive_loop():
             log_message(f"MAVLink: ConnectionError in main loop: {ce}", "ERROR")
             # Ensure drone_state reflects disconnection if a connection attempt fails here
             with drone_state_lock:
-                if drone_state.get('connected', True): # If it was true or not set
+                if drone_state.get('connected', True): 
                     drone_state['connected'] = False
                     drone_state_changed = True
             emit_status_message(f"Failed to connect to MAVLink: {ce}", "error")
@@ -741,7 +730,6 @@ def mavlink_receive_loop():
                 drone_state_changed = True
             emit_status_message(f"MAVLink system error: {e_outer}", "error")
             # Fall through to the reconnection delay logic
-        
         finally:
             # Cleanup for this attempt if temp_master_conn was created and is not the current master
             with mavlink_connection_lock:
@@ -753,43 +741,42 @@ def mavlink_receive_loop():
                     log_message(f"MAVLink: Closing master connection (ID: {id(master)}) due to loop exit without success.", "DEBUG")
                     master.close()
                     master = None # Clear global master
-                    with drone_state_lock:
-                        if drone_state.get('connected', False):
-                             drone_state['connected'] = False
-                             drone_state_changed = True
-            if telemetry_loop_active and not connection_successful:
-                log_message("MAVLink: Setting telemetry_loop_active to False as connection lost/failed.")
-                telemetry_loop_active = False
+            with drone_state_lock:
+                if drone_state.get('connected', False):
+                    drone_state['connected'] = False
+                    drone_state_changed = True
+                if telemetry_loop_active and not connection_successful:
+                    log_message("MAVLink: Setting telemetry_loop_active to False as connection lost/failed.")
+                    telemetry_loop_active = False
+
         # End of main try/except/finally for one connection attempt cycle
 
         # --- Reconnection Delay Logic (if not stopping) ---
         if not mavlink_thread_stop_event.is_set():
-            if not connection_successful: # Only log retry if connection failed
-                 log_message(f"MAVLink: Disconnected or connection failed. Retrying in {RECONNECTION_ATTEMPT_DELAY}s...")
-                 emit_status_message(f"MAVLink connection lost. Retrying...", "warning")
-            
-            for _ in range(RECONNECTION_ATTEMPT_DELAY):
-                if mavlink_thread_stop_event.is_set():
-                    log_message("MAVLink: Stop event during reconnection delay. Exiting loop.")
-                    break
-                gevent.sleep(1)
-            
-            if mavlink_thread_stop_event.is_set():
-                break # Break from the main while loop
+            if not connection_successful:
+                log_message(f"MAVLink: Disconnected or connection failed. Retrying in {RECONNECTION_ATTEMPT_DELAY}s...")
+                emit_status_message(f"MAVLink connection lost. Retrying...", "warning")
+                for _ in range(RECONNECTION_ATTEMPT_DELAY):
+                    if mavlink_thread_stop_event.is_set():
+                        log_message("MAVLink: Stop event during reconnection delay. Exiting loop.")
+                        break
+                    gevent.sleep(1)
         else:
             log_message("MAVLink: Stop event detected after connection attempt cycle. Terminating loop.")
-            break # Ensure exit if stop event was set
-    
+            break
+
     # Final cleanup before thread exits completely
     with mavlink_connection_lock:
         if master:
             log_message(f"MAVLink: Final cleanup, closing master connection (ID: {id(master)}). Thread exiting.")
             master.close()
             master = None
+
     with drone_state_lock:
         if drone_state.get('connected', False):
             drone_state['connected'] = False
             drone_state_changed = True
+
     telemetry_loop_active = False
     log_message("MAVLink receive loop terminated.")
 
@@ -798,54 +785,34 @@ def periodic_telemetry_update():
     """Periodically send telemetry updates to web clients."""
     global drone_state_changed
     update_count = 0
-    
+
     while True:
         try:
             if drone_state_changed:
                 with drone_state_lock:
                     socketio.emit('telemetry_update', drone_state)
                     drone_state_changed = False
-                    update_count += 1
+                update_count += 1
             gevent.sleep(TELEMETRY_UPDATE_INTERVAL)
         except Exception as e:
             print(f"Error in telemetry update: {e}")
             gevent.sleep(1)
 
 
-# --- Flask Routes and SocketIO Handlers ---
-@app.route('/')
-def index():
-    return render_template("index.html", version="v2.63-Desktop-TCP-AckEkf")
-
-@app.route('/static/<path:path>')
-def send_static(path):
-    return send_from_directory('static', path)
-
-@app.route('/favicon.ico')
-def favicon():
-    # Return "204 No Content" which tells the browser there is no icon without causing an error
-    return '', 204
-
-@app.route('/mavlink_dump')
-def mavlink_dump():
-    return render_template("mavlink_dump.html", version="v2.63-Desktop-TCP-AckEkf")
-
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
     # Send initial state immediately to the newly connected client
     with mavlink_connection_lock:
-        current_state_copy = drone_state.copy() # Ensure thread-safe copy
+        current_state_copy = drone_state.copy()  # Ensure thread-safe copy
         # The drone_state already uses current_mavlink_target_ip/port, 
         # but we explicitly set it here from globals for clarity and to ensure it's the most recent if accessed before drone_state is updated by mav_thread
         current_state_copy['mavlink_target_ip'] = current_mavlink_target_ip
         current_state_copy['mavlink_target_port'] = current_mavlink_target_port
+
     socketio.emit('telemetry_update', current_state_copy, room=request.sid)
     emit_status_message("Web client connected.", "info", room=request.sid)
 
-@socketio.on('disconnect')
-def handle_disconnect():
-    print('Client disconnected')
 
 @socketio.on('update_mavlink_target')
 def handle_update_mavlink_target(data):
@@ -871,39 +838,62 @@ def handle_update_mavlink_target(data):
 
     # Signal current MAVLink thread to stop
     mavlink_thread_stop_event.set()
-
-    with mavlink_connection_lock: # Ensure exclusive access
-        if mav_thread and mav_thread.is_alive():
-            print("Stopping current MAVLink thread...")
-            # The mavlink_thread itself handles closing 'master' when stop_event is set.
-            # We just need to join it.
-            mav_thread.join(timeout=10) # Wait for the thread to terminate (10s timeout)
-            if mav_thread.is_alive():
-                print("ERROR: MAVLink thread did not terminate in time!")
-                emit_status_message("Error: Could not stop existing MAVLink connection. Please restart the server.", "error")
-                # Not clearing stop_event here, as the old thread might still be lingering
-                return # Prevent starting a new thread if old one is stuck
+    try:
+        with mavlink_connection_lock: # Ensure exclusive access
+            if mav_thread and mav_thread.is_alive():
+                print("Stopping current MAVLink thread...")
+                # The mavlink_thread itself handles closing 'master' when stop_event is set.
+                # We just need to join it.
+                mav_thread.join(timeout=10) # Wait for the thread to terminate (10s timeout)
+                if mav_thread.is_alive():
+                    print("ERROR: MAVLink thread did not terminate in time!")
+                    emit_status_message("Error: Could not stop existing MAVLink connection. Please restart the server.", "error")
+                    # Not clearing stop_event here, as the old thread might still be lingering
+                    return # Prevent starting a new thread if old one is stuck
+                else:
+                    print("Current MAVLink thread stopped.")
             else:
-                print("Current MAVLink thread stopped.")
-        else:
-            print("No active MAVLink thread to stop or thread already stopped.")
+                print("No active MAVLink thread to stop or thread already stopped.")
+    except Exception as ex:
+        print(f"Exception while stopping MAVLink thread: {ex}")
+        emit_status_message(f"Exception while stopping MAVLink thread: {ex}", "error")
 
-        # Update target and drone_state (under lock)
-        current_mavlink_target_ip = new_ip
-        current_mavlink_target_port = new_port
-        drone_state['mavlink_target_ip'] = current_mavlink_target_ip
-        drone_state['mavlink_target_port'] = current_mavlink_target_port
-        drone_state['connected'] = False # New target, not yet connected
-        # No need to close master here, mavlink_thread's cleanup should handle it when stop_event is set.
-        master = None # Ensure master is None before new thread starts
-        
+    # Update target and drone_state (under lock)
+    current_mavlink_target_ip = new_ip
+    current_mavlink_target_port = new_port
+    drone_state['mavlink_target_ip'] = current_mavlink_target_ip
+    drone_state['mavlink_target_port'] = current_mavlink_target_port
+    drone_state['connected'] = False # New target, not yet connected
+    # No need to close master here, mavlink_thread's cleanup should handle it when stop_event is set.
+    master = None # Ensure master is None before new thread starts
+
     # Emit an immediate update to the UI to show the new target and disconnected status
     socketio.emit('telemetry_update', drone_state.copy())
     emit_status_message(f"MAVLink target updated to {new_ip}:{new_port}. Attempting connection...", "info")
 
     # Clear the stop event and start a new MAVLink thread
     mavlink_thread_stop_event.clear()
-    
+
+    mav_thread = threading.Thread(target=mavlink_receive_loop, daemon=True) # Corrected function name
+    mav_thread.start()
+    print(f"New MAVLink thread started for {current_mavlink_target_ip}:{current_mavlink_target_port}")
+
+    # Update target and drone_state (under lock)
+    current_mavlink_target_ip = new_ip
+    current_mavlink_target_port = new_port
+    drone_state['mavlink_target_ip'] = current_mavlink_target_ip
+    drone_state['mavlink_target_port'] = current_mavlink_target_port
+    drone_state['connected'] = False # New target, not yet connected
+    # No need to close master here, mavlink_thread's cleanup should handle it when stop_event is set.
+    master = None # Ensure master is None before new thread starts
+
+    # Emit an immediate update to the UI to show the new target and disconnected status
+    socketio.emit('telemetry_update', drone_state.copy())
+    emit_status_message(f"MAVLink target updated to {new_ip}:{new_port}. Attempting connection...", "info")
+
+    # Clear the stop event and start a new MAVLink thread
+    mavlink_thread_stop_event.clear()
+
     mav_thread = threading.Thread(target=mavlink_receive_loop, daemon=True) # Corrected function name
     mav_thread.start()
     print(f"New MAVLink thread started for {current_mavlink_target_ip}:{current_mavlink_target_port}")
@@ -912,11 +902,9 @@ def handle_update_mavlink_target(data):
 def handle_command(data):
     global fence_request_pending, mission_request_pending
     cmd = data.get('command')
-    
     # Log the command receipt
     log_data = {k: v for k, v in data.items() if k != 'command'}  # Get all params except command
     log_command_action(f"RECEIVED_{cmd}", str(log_data) if log_data else None, "Command received from UI", "INFO")
-    
     print(f"UI Command Received: {cmd} Data: {data}")
     success = False
     msg = f'{cmd} processing...'
@@ -1106,12 +1094,12 @@ def stop_mavlink_thread():
             log_message("stop_mavlink_thread: Closing master connection.", "DEBUG")
             master.close()
             master = None
-    with drone_state_lock:
         if drone_state.get('connected', False) or drone_state.get('mavlink_target_ip') is not None:
-            drone_state['connected'] = False
-            # drone_state['mavlink_target_ip'] = None # Cleared by new connection attempt or UI
-            # drone_state['mavlink_target_port'] = None
-            drone_state_changed = True
+            with drone_state_lock:
+                drone_state['connected'] = False
+                # drone_state['mavlink_target_ip'] = None # Cleared by new connection attempt or UI
+                # drone_state['mavlink_target_port'] = None
+                drone_state_changed = True
     return True
 
 # --- Main Execution Block ---
