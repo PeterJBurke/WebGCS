@@ -211,6 +211,58 @@
             className: 'target-marker' // Add class for easier styling/debugging
         });
         const socket = io();
+
+        // MAVLink constants
+        const MAV_MODE_FLAG_SAFETY_ARMED = 128;
+
+        // ArduPilot Custom Flight Modes (from config.py)
+        const AP_CUSTOM_MODES_JS = {
+            0: 'STABILIZE',
+            1: 'ACRO',
+            2: 'ALT_HOLD',
+            3: 'AUTO',
+            4: 'GUIDED',
+            5: 'LOITER',
+            6: 'RTL',
+            9: 'LAND',
+            16: 'POS_HOLD',
+            17: 'BRAKE',
+            18: 'THROW',
+            19: 'AVOID_ADSB',
+            20: 'GUIDED_NOGPS',
+            21: 'SMART_RTL',
+            22: 'FLOWHOLD',
+            23: 'FOLLOW',
+            24: 'ZIGZAG',
+            25: 'SYSTEMID',
+            26: 'AUTOROTATE',
+            27: 'AUTO_RTL'
+        };
+
+        // MAVLink Autopilot types (subset, add more if needed)
+        const MAV_AUTOPILOT_GENERIC = 0;
+        const MAV_AUTOPILOT_ARDUPILOTMEGA = 3; // Value for ArduPilot
+
+
+        function getModeString(autopilot, type, custom_mode) {
+            console.log('[getModeString] Inputs - Autopilot:', autopilot, 'Type:', type, 'Custom mode:', custom_mode);
+            // For ArduPilot, use AP_CUSTOM_MODES_JS
+            if (autopilot === MAV_AUTOPILOT_ARDUPILOTMEGA) {
+                if (AP_CUSTOM_MODES_JS.hasOwnProperty(custom_mode)) {
+                    const mode = AP_CUSTOM_MODES_JS[custom_mode];
+                    console.log('[getModeString] Output (ArduPilot Found):', mode);
+                    return mode;
+                }
+                const fallbackCustom = `CUSTOM(${custom_mode})`;
+                console.log('[getModeString] Output (ArduPilot CUSTOM Fallback):', fallbackCustom);
+                return fallbackCustom;
+            }
+            // Generic or other autopilots might not use custom_mode the same way
+            const fallbackUnknown = `MODE_UNKNOWN (A:${autopilot} T:${type} CM:${custom_mode})`;
+            console.log('[getModeString] Output (Generic Fallback):', fallbackUnknown);
+            return fallbackUnknown;
+        }
+
         const messagesDiv = document.getElementById('messages');
         const ahCanvas = document.getElementById('attitude-canvas'), ahCtx = ahCanvas.getContext('2d');
         const asiCanvas = document.getElementById('asi-canvas'), asiCtx = asiCanvas.getContext('2d');
@@ -580,6 +632,7 @@
 
         // *** ADDED: Handle COMMAND_ACK feedback ***
         socket.on("command_ack_received", (data) => {
+            console.log("ACK Received (full data):", JSON.parse(JSON.stringify(data)));
             console.log("ACK Received:", data);
             let message = `CMD ${data.command_name}: ${data.result_text}`;
             let type = 'ack'; // Default style for generic/in-progress ACKs
@@ -592,6 +645,18 @@
                 type = 'ack-fail'; // Red for failure
             }
             addMessage(message, type);
+
+            // Re-enable the corresponding control based on ui_command_key
+            if (data.ui_command_key) {
+                const controlToEnable = commandControls[data.ui_command_key];
+                if (controlToEnable) {
+                    controlToEnable.disabled = false;
+                }
+                // Specifically re-enable modeSelect if the command was SET_MODE
+                if (data.ui_command_key === 'SET_MODE' && modeSelect) {
+                    modeSelect.disabled = false;
+                }
+            }
             // Note: Re-enabling buttons on ACK is tricky if multiple commands of the same type are sent quickly.
             // The simple 'command_result' handler might still be needed for basic send failures.
         });
@@ -599,6 +664,10 @@
         // Heartbeat animation trigger
         socket.on("mavlink_message", (msg) => {
             if (msg && msg.mavpackettype === 'HEARTBEAT') {
+                // --- Start of HUD Update Block ---
+                console.log('[HEARTBEAT] Raw:', JSON.parse(JSON.stringify(msg)));
+                console.log('[HEARTBEAT] Parsed - Autopilot:', msg.autopilot, 'Type:', msg.type, 'Custom mode:', msg.custom_mode, 'Base mode:', msg.base_mode);
+
                 const heartIcon = document.getElementById('heartbeat-indicator');
                 if (heartIcon) {
                     if (!heartIcon.classList.contains('beating')) {
@@ -608,6 +677,76 @@
                         }, { once: true });
                     }
                 }
+
+                // Update Arm Status
+                const isArmed = (msg.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) !== 0;
+                const armString = isArmed ? 'ARMED' : 'DISARMED';
+                console.log('[HEARTBEAT] Arm status - isArmed:', isArmed, 'armString:', armString);
+
+                const armStatusValueEl = document.getElementById('arm_status_value');
+                if (armStatusValueEl) {
+                    armStatusValueEl.textContent = armString;
+                    console.log('[HEARTBEAT] Set arm_status_value.textContent to:', armString);
+                } else {
+                    console.warn('[HEARTBEAT] Element with ID "arm_status_value" not found.');
+                }
+
+                const hudArmStatusEl = document.getElementById('hud_arm_status');
+                if (hudArmStatusEl) {
+                    hudArmStatusEl.textContent = armString;
+                    console.log('[HEARTBEAT] Set hud_arm_status.textContent to:', armString);
+                } else {
+                    console.warn('[HEARTBEAT] Element with ID "hud_arm_status" not found.');
+                }
+                
+                // Attempt to update PFD overlay for arming status
+                if (typeof updatePfdOverlay === "function") { // Check if function exists
+                    updatePfdOverlay({ arming_status: armString });
+                    console.log('[HEARTBEAT] Called updatePfdOverlay for arming_status:', armString);
+                } else {
+                    const pfdArmEl = document.getElementById('arming-status-overlay'); 
+                    if (pfdArmEl) {
+                        pfdArmEl.textContent = armString;
+                        console.log('[HEARTBEAT] Directly set arming-status-overlay to:', armString);
+                    } else {
+                        // console.warn('[HEARTBEAT] Element with ID "arming-status-overlay" not found for direct update.');
+                    }
+                }
+
+                // Update Mode
+                const modeString = getModeString(msg.autopilot, msg.type, msg.custom_mode);
+                console.log('[HEARTBEAT] Result from getModeString:', modeString);
+
+                const modeValueEl = document.getElementById('mode_value');
+                if (modeValueEl) {
+                    modeValueEl.textContent = modeString;
+                    console.log('[HEARTBEAT] Set mode_value.textContent to:', modeString);
+                } else {
+                    console.warn('[HEARTBEAT] Element with ID "mode_value" not found.');
+                }
+
+                const hudModeEl = document.getElementById('hud_mode');
+                if (hudModeEl) {
+                    hudModeEl.textContent = modeString;
+                    console.log('[HEARTBEAT] Set hud_mode.textContent to:', modeString);
+                } else {
+                    console.warn('[HEARTBEAT] Element with ID "hud_mode" not found.');
+                }
+
+                // Attempt to update PFD overlay for mode
+                if (typeof updatePfdOverlay === "function") { // Check if function exists
+                    updatePfdOverlay({ mode: modeString });
+                    console.log('[HEARTBEAT] Called updatePfdOverlay for mode:', modeString);
+                } else {
+                    const pfdModeEl = document.getElementById('mode-overlay');
+                    if (pfdModeEl) {
+                        pfdModeEl.textContent = "Mode: " + modeString;
+                        console.log('[HEARTBEAT] Directly set mode-overlay to: Mode:', modeString);
+                    } else {
+                        // console.warn('[HEARTBEAT] Element with ID "mode-overlay" not found for direct update.');
+                    }
+                }
+                // --- End of HUD Update Block ---
             }
         });
 
