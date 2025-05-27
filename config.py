@@ -6,7 +6,7 @@ load_dotenv()
 
 # Drone Connection Settings
 # At home 192.168.1.247
-DRONE_TCP_ADDRESS = os.getenv('DRONE_TCP_ADDRESS', '192.168.193.46')  # Drone IP address
+DRONE_TCP_ADDRESS = os.getenv('DRONE_TCP_ADDRESS', '192.168.193.63')  # Drone IP address
 DRONE_TCP_PORT = os.getenv('DRONE_TCP_PORT', '5678')  # Drone port
 MAVLINK_CONNECTION_STRING = f'tcp:{DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}'
 
