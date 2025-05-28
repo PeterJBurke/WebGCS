@@ -134,7 +134,8 @@ def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function
 def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
                                 mavlink_connection_string_config, heartbeat_timeout_config,
                                 request_stream_rate_hz_config, command_ack_timeout_config,
-                                message_processor_callbacks, feature_callbacks, log_function, notify_state_changed_cb):
+                                message_processor_callbacks, feature_callbacks, log_function, notify_state_changed_cb,
+                                app_shared_state):
     """Main loop for receiving MAVLink messages and managing connection state."""
     global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance
 
@@ -170,13 +171,33 @@ def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
             continue # Attempt to reconnect
 
         check_pending_command_timeouts(sio, command_ack_timeout_config, log_function)
-        
-        # Placeholders for complex feature execution (e.g., mission/fence downloads)
-        # These would be called based on state flags set by their respective request handlers
-        # if feature_callbacks.get('execute_fence_request_if_pending'):
-        #     feature_callbacks['execute_fence_request_if_pending']()
-        # if feature_callbacks.get('execute_mission_request_if_pending'):
-        #     feature_callbacks['execute_mission_request_if_pending']()
+
+        # Execute pending fence request if flag is set
+        if app_shared_state.get('fence_request_pending', False):
+            if callable(feature_callbacks.get('EXECUTE_FENCE_REQUEST')):
+                try:
+                    log_function("MAVLINK_LOOP_EVENT", details="Executing pending fence request from mavlink_receive_loop_runner.")
+                    feature_callbacks['EXECUTE_FENCE_REQUEST']()
+                except Exception as e:
+                    log_function("EXECUTE_FENCE_REQUEST_ERROR", details=f"Error in EXECUTE_FENCE_REQUEST: {e}", level="ERROR")
+                    # Optionally reset flag here if appropriate, or let the handler do it
+                    # app_shared_state['fence_request_pending'] = False 
+            else:
+                log_function("MAVLINK_LOOP_WARNING", details="'EXECUTE_FENCE_REQUEST' callback not found or not callable.", level="WARNING")
+
+        # Execute pending mission request if flag is set
+        if app_shared_state.get('mission_request_pending', False):
+            if callable(feature_callbacks.get('EXECUTE_MISSION_REQUEST')):
+                try:
+                    log_function("MAVLINK_LOOP_EVENT", details="Executing pending mission request from mavlink_receive_loop_runner.")
+                    feature_callbacks['EXECUTE_MISSION_REQUEST']()
+                except Exception as e:
+                    log_function("EXECUTE_MISSION_REQUEST_ERROR", details=f"Error in EXECUTE_MISSION_REQUEST: {e}", level="ERROR")
+                    # Optionally reset flag here
+                    # app_shared_state['mission_request_pending'] = False
+            else:
+                log_function("MAVLINK_LOOP_WARNING", details="'EXECUTE_MISSION_REQUEST' callback not found or not callable.", level="WARNING")
+
 
         try:
             if not mavlink_connection_instance:
