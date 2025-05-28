@@ -111,6 +111,8 @@
                             <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
                             <!-- *** ADDED: EKF Status Display Element *** -->
                             <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
+                            <div class="status-item"><strong>Mode:</strong> <span id="mode_value">---</span></div>
+                            <div class="status-item"><strong>Arm Status:</strong> <span id="arm_status_value">---</span></div>
                         </div>
                     </div>
                 </div>
@@ -493,7 +495,7 @@
         commandControls.TAKEOFF.addEventListener("click",function(){const e=document.getElementById("takeoff-alt"),t=parseFloat(e.value);if(isNaN(t)||t<=0||t>1e3)return addMessage("Invalid takeoff altitude (must be > 0 and <= 1000).","warning"),void e.focus();if(confirm(`Takeoff to ${t}m?`)){this.disabled=!0;socket.emit("send_command",{command:"TAKEOFF",altitude:t})}});
         commandControls.LAND.addEventListener("click",function(){if(confirm("LAND drone?")){this.disabled=!0;socket.emit("send_command",{command:"LAND"})}});
         commandControls.RTL.addEventListener("click",function(){if(confirm("Return-To-Launch (RTL)?")){this.disabled=!0;socket.emit("send_command",{command:"RTL"})}});
-        commandControls.SET_MODE.addEventListener("click",function(){const e=modeSelect.value;if(!e)return void addMessage("Please select a flight mode.","warning");if(confirm(`Set mode to ${e}?`)){this.disabled=!0;modeSelect.disabled=!0;socket.emit("send_command",{command:"SET_MODE",mode_string:e})}});
+        commandControls.SET_MODE.addEventListener("click",function(){const e=modeSelect.value;if(!e)return void addMessage("Please select a flight mode.","warning");if(confirm(`Set mode to ${e}?`)){this.disabled=!0;modeSelect.disabled=!0;socket.emit("send_command",{command:"SET_MODE",mode_name:e})}});
         commandControls.GOTO.addEventListener("click",function(){const e=document.getElementById("goto-lat"),t=document.getElementById("goto-lon"),o=document.getElementById("goto-alt"),a=parseFloat(e.value),n=parseFloat(t.value),i=parseFloat(o.value);let s=!0,l="Invalid GoTo parameters: ";if(isNaN(a)||a<-90||a>90){s=!1;l+=" Latitude invalid.";e.focus()}else if(isNaN(n)||n<-180||n>180){s=!1;l+=" Longitude invalid.";t.focus()}else if(isNaN(i)||i<-100||i>5e3){s=!1;l+=" Altitude invalid.";o.focus()}if(!s)return void addMessage(l,"warning");if(confirm(`Go to Lat: ${a.toFixed(6)}, Lon: ${n.toFixed(6)}, Alt: ${i.toFixed(1)}m?`)){this.disabled=!0;socket.emit("send_command",{command:"GOTO",lat:a,lon:n,alt:i})}});
         commandControls["clear-goto"].addEventListener("click",function(){document.getElementById("goto-lat").value="";document.getElementById("goto-lon").value="";document.getElementById("goto-alt").value="10";addMessage("GoTo fields cleared.","info")});
         commandControls["center-map"].addEventListener("click",function(){if(droneMarker){map.setView(droneMarker.getLatLng(),map.getZoom()<14?16:map.getZoom());addMessage("Map centered on drone.","info")}else{addMessage("Drone location not available to center map.","warning")}});
@@ -691,13 +693,13 @@
                     console.warn('[HEARTBEAT] Element with ID "arm_status_value" not found.');
                 }
 
-                const hudArmStatusEl = document.getElementById('hud_arm_status');
-                if (hudArmStatusEl) {
-                    hudArmStatusEl.textContent = armString;
-                    console.log('[HEARTBEAT] Set hud_arm_status.textContent to:', armString);
-                } else {
-                    console.warn('[HEARTBEAT] Element with ID "hud_arm_status" not found.');
-                }
+                // const hudArmStatusEl = document.getElementById('hud_arm_status');
+                // if (hudArmStatusEl) {
+                //     hudArmStatusEl.textContent = armString;
+                //     console.log('[HEARTBEAT] Set hud_arm_status.textContent to:', armString);
+                // } else {
+                //     // console.warn('[HEARTBEAT] Element with ID "hud_arm_status" not found.');
+                // }
                 
                 // Attempt to update PFD overlay for arming status
                 if (typeof updatePfdOverlay === "function") { // Check if function exists
@@ -725,13 +727,13 @@
                     console.warn('[HEARTBEAT] Element with ID "mode_value" not found.');
                 }
 
-                const hudModeEl = document.getElementById('hud_mode');
-                if (hudModeEl) {
-                    hudModeEl.textContent = modeString;
-                    console.log('[HEARTBEAT] Set hud_mode.textContent to:', modeString);
-                } else {
-                    console.warn('[HEARTBEAT] Element with ID "hud_mode" not found.');
-                }
+                // const hudModeEl = document.getElementById('hud_mode');
+                // if (hudModeEl) {
+                //     hudModeEl.textContent = modeString;
+                //     console.log('[HEARTBEAT] Set hud_mode.textContent to:', modeString);
+                // } else {
+                //     // console.warn('[HEARTBEAT] Element with ID "hud_mode" not found.');
+                // }
 
                 // Attempt to update PFD overlay for mode
                 if (typeof updatePfdOverlay === "function") { // Check if function exists

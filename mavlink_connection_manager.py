@@ -134,7 +134,7 @@ def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function
 def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
                                 mavlink_connection_string_config, heartbeat_timeout_config,
                                 request_stream_rate_hz_config, command_ack_timeout_config,
-                                message_processor_callbacks, feature_callbacks, log_function):
+                                message_processor_callbacks, feature_callbacks, log_function, notify_state_changed_cb):
     """Main loop for receiving MAVLink messages and managing connection state."""
     global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance
 
@@ -217,8 +217,7 @@ def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
                     sio
                 )
                 if drone_state_was_changed_by_heartbeat:
-                    with drone_state_lock:
-                        sio.emit('update_drone_state', dict(drone_state))
+                    notify_state_changed_cb()
 
             # Handle other specific messages using callbacks from message_processor_callbacks
             elif msg_type in message_processor_callbacks: # Use elif to avoid double processing HEARTBEAT
@@ -229,9 +228,8 @@ def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
                     try:
                         changed = message_processor_callbacks[msg_type](msg, drone_state, drone_state_lock, mavlink_connection_instance, log_function, sio)
                         if changed:
-                            # If the callback indicates a change, emit update_drone_state
-                            with drone_state_lock:
-                                sio.emit('update_drone_state', dict(drone_state))
+                            # If the callback indicates a change, call the notification callback
+                            notify_state_changed_cb()
                         
                         # If this was a COMMAND_ACK, remove it from pending commands
                         if msg_type == 'COMMAND_ACK':
