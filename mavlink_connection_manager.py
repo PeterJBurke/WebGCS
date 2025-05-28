@@ -6,7 +6,18 @@ from gevent.event import Event
 import gevent # For gevent.sleep
 
 # Import from our own modules
-from mavlink_message_processor import process_heartbeat
+from mavlink_message_processor import (
+    process_heartbeat,
+    process_global_position_int,
+    process_command_ack,
+    process_vfr_hud,
+    process_sys_status,
+    process_gps_raw_int,
+    process_attitude,
+    process_home_position,
+    process_statustext,
+    process_mission_current
+)
 
 # Module-level state for MAVLink connection
 mavlink_connection_instance = None
@@ -14,6 +25,21 @@ last_heartbeat_time_instance = 0
 data_streams_requested_instance = False
 pending_commands_instance = collections.OrderedDict() # Stores cmd_id: timestamp
 connection_event_instance = Event() # Used to signal connection status
+
+# Dictionary mapping MAVLink message types to their handler functions
+MAVLINK_MESSAGE_HANDLERS = {
+    'HEARTBEAT': process_heartbeat,
+    'GLOBAL_POSITION_INT': process_global_position_int,
+    'COMMAND_ACK': process_command_ack,
+    'VFR_HUD': process_vfr_hud,
+    'SYS_STATUS': process_sys_status,
+    'GPS_RAW_INT': process_gps_raw_int,
+    'ATTITUDE': process_attitude,
+    'HOME_POSITION': process_home_position,
+    'STATUSTEXT': process_statustext,
+    'MISSION_CURRENT': process_mission_current,
+    # Add other message types and their handlers here
+}
 
 def get_mavlink_connection():
     """Returns the current MAVLink connection instance."""
@@ -131,13 +157,27 @@ def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function
     for cmd_id in timed_out_commands:
         pending_commands_instance.pop(cmd_id, None)
 
-def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
-                                mavlink_connection_string_config, heartbeat_timeout_config,
-                                request_stream_rate_hz_config, command_ack_timeout_config,
-                                message_processor_callbacks, feature_callbacks, log_function, notify_state_changed_cb,
-                                app_shared_state):
+def mavlink_receive_loop_runner(
+    mavlink_connection_string_config,  # From app.py: MAVLINK_CONNECTION_STRING
+    drone_state,                       # From app.py: drone_state (dict)
+    drone_state_lock,                  # From app.py: drone_state_lock (Lock object)
+    passed_pending_commands,           # From app.py: pending_commands (dict)
+    passed_connection_event,           # From app.py: get_connection_event()
+    log_function,                      # From app.py: log_command_action
+    sio,                               # From app.py: socketio instance
+    notify_state_changed_cb,           # From app.py: set_drone_state_changed_flag
+    app_shared_state,                  # From app.py: app_shared_state (dict)
+    execute_fence_request_cb,          # From app.py: _execute_fence_request
+    execute_mission_request_cb,        # From app.py: _execute_mission_request
+    heartbeat_timeout_config,          # From app.py: HEARTBEAT_TIMEOUT
+    request_stream_rate_hz_config,     # From app.py: REQUEST_STREAM_RATE_HZ
+    command_ack_timeout_config         # From app.py: COMMAND_ACK_TIMEOUT
+):
     """Main loop for receiving MAVLink messages and managing connection state."""
     global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance
+    # Assign the passed pending_commands and connection_event to the module's global instances
+    pending_commands_instance = passed_pending_commands
+    connection_event_instance = passed_connection_event
 
     print("MAVLink receive loop thread started.")
     while True:
@@ -199,96 +239,89 @@ def mavlink_receive_loop_runner(drone_state, drone_state_lock, sio,
                 log_function("MAVLINK_LOOP_WARNING", details="'EXECUTE_MISSION_REQUEST' callback not found or not callable.", level="WARNING")
 
 
+        drone_state_changed_iteration = False # Reset for this iteration
         try:
             if not mavlink_connection_instance:
                 gevent.sleep(0.1) # Wait if connection is temporarily None
                 continue
             
             msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.05) # Short non-blocking timeout
+
             if not msg:
-                gevent.sleep(0.01) # Minimal sleep if no message, to yield CPU
-                continue
+                # No message received in this attempt, loop will sleep at the end
+                pass
+            elif msg.get_srcSystem() == mavlink_connection_instance.target_system:
+                msg_type = msg.get_type()
+                handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
 
-            msg_type = msg.get_type()
+                if handler:
+                    try:
+                        changed_by_handler = handler(
+                            msg,
+                            drone_state,
+                            drone_state_lock,
+                            mavlink_connection_instance.mav, # Pass the .mav object
+                            log_function, # Passed as log_cmd_action_cb in handlers
+                            sio
+                        )
+                        if changed_by_handler:
+                            drone_state_changed_iteration = True
+                    except Exception as e:
+                        log_function("HANDLER_EXCEPTION", {"msg_type": msg_type}, f"Error in {msg_type} handler: {e}", level="ERROR")
+                # else:
+                    # Optional: log unhandled message types if verbose logging is desired
+                    # if msg_type not in ['BAD_DATA']:
+                    #     log_function("UNHANDLED_MAVLINK_MSG", {"msg_type": msg_type}, f"No specific handler for: {msg_type}")
 
-            # DEBUG: Log position-related messages (verbose, commented out as per user request)
-            # if msg_type == 'GLOBAL_POSITION_INT':
-            #     print(f"DEBUG: Received GLOBAL_POSITION_INT: lat={msg.lat}, lon={msg.lon}, alt={msg.alt}, relative_alt={msg.relative_alt}")
-            # elif msg_type == 'GPS_RAW_INT':
-            #     print(f"DEBUG: Received GPS_RAW_INT: lat={msg.lat}, lon={msg.lon}, alt={msg.alt}")
+                # Specific post-handler logic for certain messages that affect connection state or command tracking
+                if msg_type == 'HEARTBEAT':
+                    last_heartbeat_time_instance = time.time()
+                    if drone_state.get('was_just_connected_by_heartbeat', False):
+                        # This flag is set by process_heartbeat if it changed 'connected' to True
+                        log_function("MAVLINK_EVENT", details="Drone connected (heartbeat processed).")
+                        # drone_state_changed_iteration would have been set true by process_heartbeat
+                        with drone_state_lock:
+                            drone_state.pop('was_just_connected_by_heartbeat', None) # Clear the flag
+                    connection_event_instance.set() # Signal that we are actively connected
 
-            # Update last_heartbeat_time for any HEARTBEAT message from the target system
-            if msg.get_srcSystem() == mavlink_connection_instance.target_system and msg_type == 'HEARTBEAT':
-                last_heartbeat_time_instance = time.time()
-                # Explicitly mark connected on first valid heartbeat from target
-                if not drone_state['connected']:
-                    with drone_state_lock:
-                        drone_state['connected'] = True
-                    print("Drone formally connected (heartbeat received).")
-                    sio.emit('drone_connected')
-
-                # Call the dedicated HEARTBEAT processor
-                # The log_function here is log_command_action from app.py
-                drone_state_was_changed_by_heartbeat = process_heartbeat(
-                    msg, 
-                    drone_state, 
-                    drone_state_lock, 
-                    mavlink_connection_instance, 
-                    log_function,  # This is log_command_action from app.py
-                    sio
-                )
-                if drone_state_was_changed_by_heartbeat:
+                elif msg_type == 'COMMAND_ACK':
+                    command_id_from_ack = msg.command
+                    # process_command_ack handles logging and emitting SocketIO events for the ACK itself.
+                    # We still need to remove the command from pending_commands_instance here.
+                    if command_id_from_ack in pending_commands_instance:
+                        pending_commands_instance.pop(command_id_from_ack, None)
+            
+            # If drone_state was changed by any message handler in this iteration, notify app.py
+            if drone_state_changed_iteration:
+                if callable(notify_state_changed_cb):
                     notify_state_changed_cb()
 
-            # Handle other specific messages using callbacks from message_processor_callbacks
-            elif msg_type in message_processor_callbacks: # Use elif to avoid double processing HEARTBEAT
-                # Example: message_processor_callbacks[msg_type](msg, drone_state, drone_state_lock, mavlink_connection_instance, log_function, sio)
-                # This part needs to be adapted based on how message_processor_callbacks is structured and used.
-                # For now, we assume it's a dictionary of functions.
-                if callable(message_processor_callbacks[msg_type]):
-                    try:
-                        changed = message_processor_callbacks[msg_type](msg, drone_state, drone_state_lock, mavlink_connection_instance, log_function, sio)
-                        if changed:
-                            # If the callback indicates a change, call the notification callback
-                            notify_state_changed_cb()
-                        
-                        # If this was a COMMAND_ACK, remove it from pending commands
-                        if msg_type == 'COMMAND_ACK':
-                            command_id_from_ack = msg.command
-                            if command_id_from_ack in pending_commands_instance:
-                                # Use a try-except for cmd_name_for_log in case MAV_CMD enum isn't exhaustive or key is bad
-                                try:
-                                    cmd_name_for_log = mavutil.mavlink.enums['MAV_CMD'][command_id_from_ack].name
-                                except KeyError:
-                                    cmd_name_for_log = f'ID {command_id_from_ack}'
-                                print(f"DEBUG: Removing command {cmd_name_for_log} (ID: {command_id_from_ack}) from pending_commands_instance due to ACK.")
-                                del pending_commands_instance[command_id_from_ack]
-                            # else: # Optional: Log if ACK received for a non-pending command
-                            #     try:
-                            #         cmd_name_for_log = mavutil.mavlink.enums['MAV_CMD'][command_id_from_ack].name
-                            #     except KeyError:
-                            #         cmd_name_for_log = f'ID {command_id_from_ack}'
-                            #     print(f"DEBUG: Received ACK for {cmd_name_for_log} (ID: {command_id_from_ack}) which was not in pending_commands_instance.")
-                                
-                    except Exception as e:
-                        print(f"Error processing message type {msg_type} via callback: {e}")
-            
-            elif msg_type in feature_callbacks: # For messages part of complex features like mission/fence downloads
-                # Ensure the callback exists and is callable
-                if callable(feature_callbacks[msg_type]):
-                    try:
-                        # The signature for feature_callbacks might be simpler, e.g., not needing log_function or full mavlink_conn
-                        # Adjust as per the actual design of these callbacks
-                        changed_by_feature = feature_callbacks[msg_type](msg, drone_state, drone_state_lock, sio, pending_commands_instance) # Example signature
-                        if changed_by_feature:
-                             with drone_state_lock:
-                                sio.emit('update_drone_state', dict(drone_state))
-                    except Exception as e:
-                        print(f"Error processing message type {msg_type} via feature_callback: {e}")
-            
-            # Generic message emission for frontend logging/display (optional)
-            # This could be too verbose for all messages.
-            # sio.emit('mavlink_message', {'type': msg_type, 'data': msg.to_dict()})
+        except mavutil.mavlink.MAVError as e:
+            log_function("MAVLINK_RECV_ERROR", details=f"MAVLink receive error: {e}", level="ERROR")
+            if mavlink_connection_instance:
+                mavlink_connection_instance.close()
+            mavlink_connection_instance = None
+            last_heartbeat_time_instance = 0
+            data_streams_requested_instance = False
+            connection_event_instance.clear()
+            with drone_state_lock:
+                drone_state['connected'] = False
+            sio.emit('drone_disconnected', {'reason': 'MAVLink receive error'})
+            gevent.sleep(1) # Wait a bit before trying to reconnect
+            continue # To the start of the while loop to attempt reconnection
+        except Exception as e:
+            log_function("MAVLINK_LOOP_UNEXPECTED_ERROR", details=f"Unexpected error in MAVLink receive loop: {e}", level="CRITICAL")
+            if mavlink_connection_instance:
+                mavlink_connection_instance.close()
+            mavlink_connection_instance = None
+            last_heartbeat_time_instance = 0
+            data_streams_requested_instance = False
+            connection_event_instance.clear()
+            with drone_state_lock:
+                drone_state['connected'] = False
+            sio.emit('drone_disconnected', {'reason': 'Unexpected loop error'})
+            gevent.sleep(5) # Longer sleep for unexpected errors
+            continue # To the start of the while loop
         except Exception as e:
             print(f"Error in MAVLink receive loop: {e}. Attempting to recover.")
             # import traceback

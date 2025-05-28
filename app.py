@@ -139,18 +139,6 @@ def _schedule_mission_request():
             pass # Already pending
 
 # --- MAVLink Helper Functions ---
-def get_ekf_status_report(flags):
-    if not (flags & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_ANGULAR_RATE_CONTROL): return "EKF INIT (Gyro)"
-    if not (flags & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_ATTITUDE_STABILIZATION): return "EKF INIT (Att)"
-    ekf_flags_bits = flags >> 16
-    if not (ekf_flags_bits & mavutil.mavlink.EKF_ATTITUDE): return "EKF Bad Att"
-    if not (ekf_flags_bits & mavutil.mavlink.EKF_VELOCITY_HORIZ): return "EKF Bad Vel(H)"
-    if not (ekf_flags_bits & mavutil.mavlink.EKF_VELOCITY_VERT): return "EKF Bad Vel(V)"
-    if not (ekf_flags_bits & mavutil.mavlink.EKF_POS_HORIZ_ABS):
-        if not (ekf_flags_bits & mavutil.mavlink.EKF_POS_HORIZ_REL): return "EKF Bad Pos(H)"
-    if not (ekf_flags_bits & mavutil.mavlink.EKF_POS_VERT_ABS): return "EKF Bad Pos(V)"
-    if not (ekf_flags_bits & mavutil.mavlink.EKF_PRED_POS_HORIZ_REL): return "EKF Variance (H)"
-    return "EKF OK"
 
 def log_command_action(command_name, params=None, details=None, level="INFO"):
     """Log command details to terminal in a standardized format with state tracking"""
@@ -240,35 +228,9 @@ from socketio_handlers import init_socketio_handlers
 if __name__ == '__main__':
     print(f"Starting server on http://{WEB_SERVER_HOST}:{WEB_SERVER_PORT}")
     # Start the background threads
-    # Placeholder for message processor and feature callbacks
-    # This dictionary will be passed to mavlink_receive_loop_runner
-    message_processor_callbacks = {
-        'HEARTBEAT': process_heartbeat, 
-        'GLOBAL_POSITION_INT': process_global_position_int,
-        'COMMAND_ACK': process_command_ack,
-        # 'SYS_STATUS': process_sys_status, # Example
-    }
+    mavlink_thread = gevent.spawn(mavlink_receive_loop_runner, MAVLINK_CONNECTION_STRING, drone_state, drone_state_lock, pending_commands, get_connection_event(), log_command_action, socketio, set_drone_state_changed_flag, app_shared_state, _execute_fence_request, _execute_mission_request, HEARTBEAT_TIMEOUT, REQUEST_STREAM_RATE_HZ, COMMAND_ACK_TIMEOUT)
 
-    feature_callbacks = {
-        'EXECUTE_FENCE_REQUEST': _execute_fence_request, # Now imported
-        'EXECUTE_MISSION_REQUEST': _execute_mission_request # Now imported
-    }
 
-    mavlink_thread = threading.Thread(
-        target=mavlink_receive_loop_runner,
-        args=(
-            drone_state, drone_state_lock, socketio,
-            MAVLINK_CONNECTION_STRING, HEARTBEAT_TIMEOUT,
-            REQUEST_STREAM_RATE_HZ, COMMAND_ACK_TIMEOUT,
-            message_processor_callbacks,
-            feature_callbacks,
-            log_command_action,
-            set_drone_state_changed_flag,
-            app_shared_state # Pass app_shared_state
-        ),
-        daemon=True
-    )
-    mavlink_thread.start()
 
     telemetry_update_thread = threading.Thread(target=periodic_telemetry_update, daemon=True)
     telemetry_update_thread.start()
