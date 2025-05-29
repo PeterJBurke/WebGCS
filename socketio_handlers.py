@@ -198,9 +198,9 @@ def init_socketio_handlers(socketio_instance, app_context):
                 alt = float(data.get('altitude', 5.0))
                 if not (0 < alt <= 1000):
                     raise ValueError("Altitude must be > 0 and <= 1000")
-                success, msg_send = _send_mavlink_command_handler(mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, p7=alt)
+                success = _send_command_to_bridge('TAKEOFF', altitude=alt)
                 cmd_type = 'info' if success else 'error'
-                msg = f'Takeoff to {alt:.1f}m command sent.' if success else f'Takeoff Failed: {msg_send}'
+                msg = f'Takeoff to {alt:.1f}m command sent to telemetry bridge...' if success else f'Failed to send TAKEOFF command to telemetry bridge'
             except (ValueError, TypeError) as e:
                 success = False
                 msg = f"TAKEOFF Error: Invalid altitude '{data.get('altitude')}'. Details: {e}"

@@ -8,6 +8,7 @@ while also making the telemetry data available to the WebGCS application.
 import time
 import sys
 import json
+import os
 import threading
 from pymavlink import mavutil
 
@@ -131,6 +132,17 @@ def process_home_position(msg):
         telemetry_data['home_lat'] = msg.latitude / 1e7
         telemetry_data['home_lon'] = msg.longitude / 1e7
 
+def process_statustext(msg):
+    """Process STATUSTEXT message."""
+    # Print the status text with severity
+    severity_levels = ["EMERGENCY", "ALERT", "CRITICAL", "ERROR", "WARNING", "NOTICE", "INFO", "DEBUG"]
+    severity = severity_levels[msg.severity] if msg.severity < len(severity_levels) else f"UNKNOWN({msg.severity})"
+    print(f"STATUSTEXT [{severity}]: {msg.text}")
+    
+    # Check for specific pre-arm errors
+    if "PreArm" in msg.text or "Arm" in msg.text or "arm" in msg.text:
+        print(f">>> ARM-RELATED MESSAGE: {msg.text}")
+
 def print_telemetry_summary():
     """Print a summary of the telemetry data."""
     with telemetry_lock:
@@ -168,39 +180,45 @@ def save_telemetry_to_file():
 
 
 def check_for_commands():
-    """Check for commands from the WebGCS application."""
-    command_file = 'command.json'
+    """Check for commands in the command file."""
+    command_file = "command.json"
     while True:
         try:
+            # Check if the command file exists
             if os.path.exists(command_file):
+                # Read the command file
                 with open(command_file, 'r') as f:
-                    command_data = json.load(f)
-                
+                    try:
+                        command_data = json.load(f)
+                    except json.JSONDecodeError:
+                        print(f"Error decoding JSON from {command_file}")
+                        os.remove(command_file)
+                        continue
+
                 # Process the command
                 command = command_data.get('command')
                 if command == 'SET_MODE':
-                    mode_name = command_data.get('mode_name', '').upper()
-                    if mode_name in AP_CUSTOM_MODES:
-                        mode_id = AP_CUSTOM_MODES[mode_name]
-                        print(f"\nReceived SET_MODE command: {mode_name} (ID: {mode_id})")
-                        execute_set_mode(mode_name, mode_id)
+                    mode_name = command_data.get('mode_name')
+                    if mode_name:
+                        execute_set_mode_command(mode_name)
                     else:
-                        print(f"\nError: Unknown mode '{mode_name}'")
+                        print("Missing mode_name for SET_MODE command")
                 elif command == 'ARM':
-                    print("\nReceived ARM command")
-                    execute_arm_command(True)
-                elif command == 'DISARM':
-                    print("\nReceived DISARM command")
-                    execute_arm_command(False)
-                
-                # Delete the command file after processing
+                    arm = command_data.get('arm', False)
+                    execute_arm_command(arm)
+                elif command == 'TAKEOFF':
+                    altitude = command_data.get('altitude', 5.0)
+                    execute_takeoff_command(float(altitude))
+                else:
+                    print(f"Unknown command: {command}")
+
+                # Delete the command file
                 os.remove(command_file)
-            
-            # Sleep for a short time
-            time.sleep(0.1)
         except Exception as e:
             print(f"Error checking for commands: {e}")
-            time.sleep(1)
+        
+        # Sleep for a short time
+        time.sleep(0.5)
 
 
 def execute_set_mode(mode_name, mode_id):
@@ -240,32 +258,142 @@ def execute_arm_command(arm):
     """Execute an ARM or DISARM command."""
     global mav
     try:
-        # Send the ARM/DISARM command
+        action = "ARM" if arm else "DISARM"
+        print(f"\n----- Attempting to {action} the drone -----")
+        
+        # First check if there are any pre-arm check failures by requesting STATUSTEXT messages
+        if arm:
+            print("Checking for pre-arm failures before attempting to arm...")
+            # Request STATUSTEXT messages at higher rate
+            mav.mav.command_long_send(
+                mav.target_system,
+                mav.target_component,
+                mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL,
+                0, # Confirmation
+                mavutil.mavlink.MAVLINK_MSG_ID_STATUSTEXT,
+                100000, # 10Hz (100,000 microseconds)
+                0, 0, 0, 0, 0  # params 3-7 not used
+            )
+            
+            # Wait a moment to receive any status messages
+            start_time = time.time()
+            while time.time() - start_time < 2:
+                msg = mav.recv_match(type='STATUSTEXT', blocking=False)
+                if msg:
+                    print(f"STATUS: {msg.text}")
+                time.sleep(0.1)
+        
+        # Send the ARM/DISARM command with force flag if arming
+        force_arm = 21196 if arm else 0  # Magic number to force arm
         mav.mav.command_long_send(
             mav.target_system,
             mav.target_component,
             mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
             0,  # Confirmation
             1 if arm else 0,  # 1 to arm, 0 to disarm
-            0, 0, 0, 0, 0, 0  # Unused parameters
+            force_arm,  # Force arming/disarming (bypass preflight checks)
+            0, 0, 0, 0, 0  # Unused parameters
         )
-        action = "ARM" if arm else "DISARM"
-        print(f"{action} command sent")
+        print(f"{action} command sent with {'FORCE' if arm else 'normal'} flag")
         
         # Wait for command acknowledgment
+        print(f"Waiting for {action} command acknowledgment...")
         ack = mav.recv_match(type='COMMAND_ACK', blocking=True, timeout=5)
-        if ack and ack.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
-            if ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-                print(f"{action} command accepted!")
-                return True
+        if ack:
+            print(f"Received ACK for command={ack.command}, result={ack.result}")
+            if ack.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
+                if ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                    print(f"{action} command accepted!")
+                    return True
+                else:
+                    print(f"{action} command failed with result code: {ack.result}")
+                    # Try to translate the result code
+                    result_codes = {
+                        mavutil.mavlink.MAV_RESULT_ACCEPTED: "ACCEPTED",
+                        mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED: "TEMPORARILY_REJECTED",
+                        mavutil.mavlink.MAV_RESULT_DENIED: "DENIED",
+                        mavutil.mavlink.MAV_RESULT_UNSUPPORTED: "UNSUPPORTED",
+                        mavutil.mavlink.MAV_RESULT_FAILED: "FAILED"
+                    }
+                    result_str = result_codes.get(ack.result, f"Unknown result code: {ack.result}")
+                    print(f"Result meaning: {result_str}")
+                    return False
             else:
-                print(f"{action} command failed with result: {ack.result}")
+                print(f"Received ACK for different command: {ack.command}")
                 return False
         else:
-            print(f"No acknowledgment received for {action} command")
+            print(f"No acknowledgment received for {action} command after 5 seconds")
             return False
     except Exception as e:
         print(f"Error executing {action} command: {e}")
+        return False
+
+def execute_takeoff_command(altitude):
+    """Execute a TAKEOFF command."""
+    global mav
+    try:
+        print(f"\n----- Attempting TAKEOFF to {altitude:.1f}m -----")
+        
+        # Check if drone is in GUIDED mode (required for takeoff)
+        last_heartbeat = mav.recv_match(type='HEARTBEAT', blocking=False)
+        current_mode = ''
+        if last_heartbeat:
+            base_mode = last_heartbeat.base_mode
+            custom_mode = last_heartbeat.custom_mode
+            current_mode = mavutil.mode_string_v10(base_mode, custom_mode)
+            
+        if 'GUIDED' not in current_mode:
+            print(f"WARNING: Drone is not in GUIDED mode (current: {current_mode}). Setting GUIDED mode first.")
+            execute_set_mode('GUIDED')
+            time.sleep(1)  # Give time for mode change to take effect
+        
+        # Check if drone is armed
+        is_armed = False
+        last_heartbeat = mav.recv_match(type='HEARTBEAT', blocking=False)
+        if last_heartbeat and hasattr(last_heartbeat, 'base_mode'):
+            is_armed = (last_heartbeat.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+        
+        if not is_armed:
+            print("WARNING: Drone is not armed. Attempting to arm first.")
+            if not execute_arm_command(True):
+                print("Failed to arm. Takeoff aborted.")
+                return False
+            # Wait for arm to take effect
+            time.sleep(1)
+        
+        # Send takeoff command
+        print(f"Sending TAKEOFF command to altitude {altitude:.1f}m")
+        mav.mav.command_long_send(
+            mav.target_system,
+            mav.target_component,
+            mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+            0,  # Confirmation
+            0, 0, 0, 0, 0, 0,  # param1-6 (ignored)
+            altitude  # param7 = altitude
+        )
+        
+        # Wait for command acknowledgment
+        ack = mav.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
+        if ack:
+            if ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                print(f"TAKEOFF command accepted! Taking off to {altitude:.1f}m")
+                return True
+            else:
+                result_codes = {
+                    mavutil.mavlink.MAV_RESULT_DENIED: "DENIED",
+                    mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED: "TEMPORARILY_REJECTED",
+                    mavutil.mavlink.MAV_RESULT_UNSUPPORTED: "UNSUPPORTED",
+                    mavutil.mavlink.MAV_RESULT_FAILED: "FAILED"
+                }
+                result_text = result_codes.get(ack.result, f"Unknown ({ack.result})")
+                print(f"TAKEOFF command REJECTED: {result_text}")
+                return False
+        else:
+            print("No acknowledgment received for TAKEOFF command")
+            return False
+            
+    except Exception as e:
+        print(f"Error executing TAKEOFF command: {e}")
         return False
 
 def main():
@@ -352,6 +480,8 @@ def main():
                     process_attitude(msg)
                 elif msg_type == "HOME_POSITION":
                     process_home_position(msg)
+                elif msg_type == "STATUSTEXT":
+                    process_statustext(msg)
             
             # Periodically print a summary of telemetry data
             current_time = time.time()

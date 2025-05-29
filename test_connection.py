@@ -2,7 +2,7 @@ from pymavlink import mavutil
 import time
 
 # Connection settings
-connection_string = 'tcp:192.168.1.247:5678'
+connection_string = 'tcp:192.168.193.63:5678'
 
 print(f"Attempting to connect to {connection_string}")
 try:
