@@ -371,10 +371,15 @@
 
         socket.on("telemetry_update", (state) => {
             console.log("Telemetry update received:", state);
+            console.log("Detailed telemetry data:", JSON.stringify(state, null, 2));
+            
             const isConnected = state.connected;
             document.getElementById("status-connection").textContent = isConnected ? "Drone Connected" : "Drone Disconnected";
             document.getElementById("status-connection").className = isConnected ? "connected" : "disconnected";
             setControlsDisabled(!isConnected);
+            
+            // Add debug message to the UI
+            addMessage(`Telemetry update: Connected=${isConnected}, Mode=${state.mode}, Lat=${state.lat}, Lon=${state.lon}`, "info");
 
             const heartIconElement = document.getElementById('heartbeat-indicator');
             if (heartIconElement) { heartIconElement.classList.toggle('connected-state', isConnected); }

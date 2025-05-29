@@ -16,11 +16,51 @@ _AP_MODE_NAME_TO_ID = None
 _schedule_fence_request_in_app = None
 _schedule_mission_request_in_app = None
 
+# --- Function to send commands to the telemetry bridge script ---
+def _send_command_to_bridge(command, **params):
+    """
+    Sends a command to the telemetry bridge script by writing to a command.json file.
+    
+    Args:
+        command: Command name (e.g., 'SET_MODE', 'ARM', 'DISARM')
+        **params: Additional parameters for the command
+        
+    Returns:
+        bool: True if command was sent successfully, False otherwise
+    """
+    import json
+    import os
+    
+    try:
+        # Create command data
+        command_data = {
+            'command': command,
+            **params
+        }
+        
+        # Write command data to file
+        with open('command.json', 'w') as f:
+            json.dump(command_data, f)
+        
+        _log_command_action(command, params, f"Command sent to telemetry bridge: {command}", "INFO")
+        return True
+    except Exception as e:
+        _log_command_action(command, params, f"Error sending command to telemetry bridge: {e}", "ERROR")
+        return False
+
 # --- Helper function (adapted from app.py's send_mavlink_command) ---
-def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0):
+def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p7=0, confirmation=0):
     """
     Sends a MAVLink command_long.
     This is a helper for the SocketIO handlers and uses context variables.
+    
+    Args:
+        command: MAVLink command ID (e.g., MAV_CMD_COMPONENT_ARM_DISARM)
+        p1-p7: Command parameters
+        confirmation: Confirmation parameter (0-255, incremented on retransmission)
+        
+    Returns:
+        tuple: (success, message)
     """
     global _pending_commands_dict
 
@@ -43,16 +83,38 @@ def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p
     try:
         params_str = f"p1={p1:.2f}, p2={p2:.2f}, p3={p3:.2f}, p4={p4:.2f}, p5={p5:.6f}, p6={p6:.6f}, p7={p7:.2f}"
         _log_command_action(cmd_name, params_str, f"To SYS:{target_sys} COMP:{target_comp}", "INFO")
-        # print(f"Sending CMD {cmd_name} ({command}) to SYS:{target_sys} COMP:{target_comp} | Params: {params_str}") # Redundant with log_command_action
+        
+        # Send the command
+        current_mavlink_connection.mav.command_long_send(
+            target_sys, 
+            target_comp, 
+            command, 
+            confirmation,  # Confirmation parameter
+            p1, p2, p3, p4, p5, p6, p7
+        )
 
-        current_mavlink_connection.mav.command_long_send(target_sys, target_comp, command, 0, p1, p2, p3, p4, p5, p6, p7)
-
+        # Track command in pending_commands_dict if it's not a stream request
         if command not in [mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE]:
-            _pending_commands_dict[command] = time.time()
+            # If the command is not already in _pending_commands_dict with a dict value (from caller),
+            # add it with a simple timestamp
+            if command not in _pending_commands_dict or not isinstance(_pending_commands_dict[command], dict):
+                _pending_commands_dict[command] = time.time()
+            
+            # Limit the size of pending_commands_dict
             if len(_pending_commands_dict) > 30:
-                oldest_cmd = next(iter(_pending_commands_dict))
-                print(f"Warning: Pending cmd limit, removing oldest: {oldest_cmd}")
-                del _pending_commands_dict[oldest_cmd]
+                # Find the oldest command (by timestamp)
+                oldest_cmd = None
+                oldest_time = float('inf')
+                
+                for cmd_id, value in _pending_commands_dict.items():
+                    cmd_time = value if isinstance(value, float) else value.get('timestamp', float('inf'))
+                    if cmd_time < oldest_time:
+                        oldest_time = cmd_time
+                        oldest_cmd = cmd_id
+                
+                if oldest_cmd is not None:
+                    print(f"Warning: Pending cmd limit, removing oldest: {oldest_cmd}")
+                    del _pending_commands_dict[oldest_cmd]
 
         success_msg = f"CMD {cmd_name} sent."
         return (True, success_msg)
@@ -113,13 +175,24 @@ def init_socketio_handlers(socketio_instance, app_context):
             return
 
         if cmd == 'ARM':
-            success, msg_send = _send_mavlink_command_handler(mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, p1=1)
-            cmd_type = 'info' if success else 'error'
-            msg = f'ARM command sent.' if success else f'ARM Failed: {msg_send}'
+            # Check if current mode is armable
+            current_mode = _drone_state.get('mode', 'UNKNOWN')
+            if current_mode == 'RTL':
+                success = False
+                msg = f'ARM Failed: RTL mode is not armable. Please change to an armable mode like GUIDED or STABILIZE first.'
+                cmd_type = 'error'
+                _log_command_action("ARM_REJECTED", {"current_mode": current_mode}, 
+                                   f"ARM command rejected: {current_mode} mode not armable", "ERROR")
+            else:
+                # Send the ARM command to the telemetry bridge
+                success = _send_command_to_bridge('ARM')
+                cmd_type = 'info' if success else 'error'
+                msg = f'ARM command sent to telemetry bridge...' if success else f'Failed to send ARM command to telemetry bridge'
         elif cmd == 'DISARM':
-            success, msg_send = _send_mavlink_command_handler(mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, p1=0)
+            # Send the DISARM command to the telemetry bridge
+            success = _send_command_to_bridge('DISARM')
             cmd_type = 'info' if success else 'error'
-            msg = f'DISARM command sent.' if success else f'DISARM Failed: {msg_send}'
+            msg = f'DISARM command sent to telemetry bridge...' if success else f'Failed to send DISARM command to telemetry bridge'
         elif cmd == 'TAKEOFF':
             try:
                 alt = float(data.get('altitude', 5.0))
@@ -144,12 +217,13 @@ def init_socketio_handlers(socketio_instance, app_context):
         elif cmd == 'SET_MODE':
             mode_name = data.get('mode_name', '').upper()
             if mode_name in _AP_MODE_NAME_TO_ID:
-                mode_id = _AP_MODE_NAME_TO_ID[mode_name]
-                success, msg_send = _send_mavlink_command_handler(mavutil.mavlink.MAV_CMD_DO_SET_MODE,
-                                                              p1=mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-                                                              p2=mode_id)
+                # Send the SET_MODE command to the telemetry bridge
+                success = _send_command_to_bridge('SET_MODE', mode_name=mode_name)
                 cmd_type = 'info' if success else 'error'
-                msg = f'SET_MODE to {mode_name} command sent.' if success else f'SET_MODE Failed: {msg_send}'
+                msg = f'SET_MODE to {mode_name} command sent to telemetry bridge...' if success else f'Failed to send SET_MODE command to telemetry bridge'
+                
+                _log_command_action("SET_MODE_REQUEST", {"mode_name": mode_name}, 
+                                   f"Attempting to set mode to {mode_name}", "INFO")
             else:
                 success = False
                 msg = f"SET_MODE Failed: Unknown mode '{mode_name}'"

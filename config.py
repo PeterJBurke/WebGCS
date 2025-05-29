@@ -46,4 +46,4 @@ AP_CUSTOM_MODES = {
 }
 
 # Create reverse mapping for mode names to IDs
-AP_MODE_NAME_TO_ID = {v: k for k, v in AP_CUSTOM_MODES.items()} 
+AP_MODE_NAME_TO_ID = {k: v for k, v in AP_CUSTOM_MODES.items()} 

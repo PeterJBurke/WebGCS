@@ -31,6 +31,31 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
     Returns:
         bool: True if the drone_state was changed, False otherwise.
     """
+    
+    # Log heartbeat in human-readable format
+    system_status_str = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN({msg.system_status})")
+    vehicle_type_str = MAV_TYPE_STR.get(msg.type, f"UNKNOWN({msg.type})")
+    autopilot_type_str = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN({msg.autopilot})")
+    
+    # Decode base mode flags
+    base_mode_flags = []
+    for flag_name, flag_value in MAV_MODE_FLAG_ENUM.items():
+        if msg.base_mode & flag_value:
+            base_mode_flags.append(flag_name.replace('MAV_MODE_FLAG_', ''))
+    base_mode_str = ", ".join(base_mode_flags) if base_mode_flags else "NONE"
+    
+    # Get custom mode string
+    custom_mode_str_list = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
+    custom_mode_str = custom_mode_str_list[0] if custom_mode_str_list else f'CUSTOM_MODE({msg.custom_mode})'
+    
+    # Format armed status
+    armed_status = "ARMED" if (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) else "DISARMED"
+    
+    # Print heartbeat info
+    print(f"HEARTBEAT: SysID={msg.get_srcSystem()} CompID={msg.get_srcComponent()} | "
+          f"Type={vehicle_type_str} | Autopilot={autopilot_type_str} | "
+          f"Status={system_status_str} | Mode={custom_mode_str} | {armed_status} | "
+          f"Base Mode Flags=[{base_mode_str}]")
     drone_state_changed_local = False
 
     with drone_state_lock:
@@ -71,6 +96,15 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
     # Emit event for UI animation - now sending generic mavlink_message
     # Only emit for our drone (already filtered by mavlink_receive_loop_runner, but good for clarity)
     if sio_instance and mavlink_conn and msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0):
+        # Log telemetry data for debugging
+        with drone_state_lock:
+            print(f"Current Telemetry: Connected={drone_state.get('connected', False)}, "
+                  f"Armed={drone_state.get('armed', False)}, "
+                  f"Mode={drone_state.get('mode', 'UNKNOWN')}, "
+                  f"Lat={drone_state.get('lat', 0.0):.6f}, "
+                  f"Lon={drone_state.get('lon', 0.0):.6f}, "
+                  f"Alt={drone_state.get('alt_rel', 0.0):.1f}m")
+        
         sio_instance.emit('mavlink_message', msg.to_dict()) # Send the whole message dictionary
 
     return drone_state_changed_local
@@ -336,19 +370,28 @@ def process_statustext(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd
 
     Args:
         msg: The MAVLink STATUSTEXT message object.
-        drone_state: The shared dictionary holding drone state (not directly used).
-        drone_state_lock: Threading lock for accessing drone_state (not directly used).
+        drone_state: The shared dictionary holding drone state.
+        drone_state_lock: Threading lock for accessing drone_state.
         mavlink_conn: The MAVLink connection object.
         log_cmd_action_cb: Callback to the log_command_action function (used for logging).
         sio_instance: The SocketIO instance for emitting events.
 
     Returns:
-        bool: False, as this handler primarily emits an event, not changes drone_state.
+        bool: True if drone_state was modified, False otherwise.
     """
+    drone_state_changed = False
+    
     if mavlink_conn and msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0):
         severity_val = msg.severity
         severity_str = MAV_SEVERITY_STR.get(severity_val, f'UNKNOWN_SEVERITY_{severity_val}')
         text_content = msg.text
+        
+        # Store the statustext in drone_state for reference by other functions
+        with drone_state_lock:
+            drone_state['last_statustext'] = text_content
+            drone_state['last_statustext_time'] = time.time()
+            drone_state['last_statustext_severity'] = severity_str
+            drone_state_changed = True
         
         # Log the message to the server console as well
         log_level = "INFO"
@@ -370,7 +413,7 @@ def process_statustext(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd
                 'text': text_content
             })
             
-    return False # Does not change drone_state directly
+    return drone_state_changed  # Return True if drone_state was modified
 
 def process_mission_current(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_action_cb, sio_instance):
     """Processes MISSION_CURRENT message and updates drone_state.
@@ -426,20 +469,12 @@ def process_command_ack(msg, drone_state, drone_state_lock, mavlink_conn, log_cm
     result = msg.result
     
     # Get command name for logging
-    # Ensure mavutil.mavlink.enums['MAV_CMD'] is accessible or pass it if not globally available
     cmd_name = mavutil.mavlink.enums['MAV_CMD'][cmd].name if cmd in mavutil.mavlink.enums['MAV_CMD'] else f'ID {cmd}'
     
-    # Get result name (MAV_RESULT_STR needs to be imported or passed if not available)
-    # Assuming MAV_RESULT_STR is available via mavlink_utils import in this module
+    # Get result name from MAV_RESULT_STR mapping
     result_name = MAV_RESULT_STR.get(result, 'UNKNOWN')
     
-    # Skip logging and emitting MAV_CMD_REQUEST_MESSAGE commands with UNKNOWN results
-    # This logic about pending_commands needs to be handled by the caller (mavlink_connection_manager)
-    # if cmd == mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE and result_name == 'UNKNOWN':
-    #     # if mavlink_conn and cmd in mavlink_conn.pending_commands_instance: # Accessing pending_commands via mavlink_conn
-    #     #     del mavlink_conn.pending_commands_instance[cmd]
-    #     return False # No state change, no significant ACK to report
-    
+    # Determine explanation and level based on result
     explanation = "Command acknowledged with"
     level = "INFO"
     if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
@@ -458,39 +493,131 @@ def process_command_ack(msg, drone_state, drone_state_lock, mavlink_conn, log_cm
         level = "ERROR"
     elif result == mavutil.mavlink.MAV_RESULT_IN_PROGRESS:
         explanation = "Command accepted and IN PROGRESS"
-    # The logic for 'UNKNOWN' result and command_ack_queue is complex and tied to mavlink_connection state
-    # For now, simplifying this part. The original logic was:
-    # else:
-    #     if result_name == 'UNKNOWN' and mavlink_conn and len(mavlink_conn.mav.command_ack_queue) > 0:
-    #         explanation = "Command ACCEPTED by vehicle (inferred from queue)"
-    #     else:
-    #         explanation = "Command response UNKNOWN"
-    #         level = "WARNING"
-    else: # Simplified else for now
+    else: 
         explanation = f"Command response: {result_name}"
         if result_name == 'UNKNOWN': level = "WARNING"
 
+    # Format the display result
     display_result = result_name # Default display
-    # More detailed display_result logic can be reinstated if needed
     if explanation != f"Command response: {result_name}": # If custom explanation was set
         display_result = f"{result_name} - {explanation}"
 
+    # Log the command acknowledgment
     log_cmd_action_cb(f"ACK_{cmd_name}", f"Result: {display_result} (Raw: {result})", explanation, level)
     
-    # Removal from pending_commands should be handled by mavlink_connection_manager after this processor returns
-    # if mavlink_conn and cmd in mavlink_conn.pending_commands_instance:
-    #     del mavlink_conn.pending_commands_instance[cmd]
+    # Extract UI command information from pending_commands
+    ui_command_key = None
+    ui_command_details = {}
+    pending_command_info = None
     
-    # Emit to frontend using the passed sio_instance
-    if sio_instance:
-        ui_command_key = None
-        # mavlink_conn is an instance of MavlinkConnectionManager
-        # mavlink_conn.pending_commands refers to the global pending_commands dict from app.py
-        if mavlink_conn and hasattr(mavlink_conn, 'pending_commands') and mavlink_conn.pending_commands:
-            pending_command_info = mavlink_conn.pending_commands.get(cmd) # cmd is msg.command
-            if pending_command_info:
+    # Check if we have pending_commands_instance in mavlink_connection_manager
+    if hasattr(mavlink_conn, 'pending_commands_instance'):
+        pending_commands = mavlink_conn.pending_commands_instance
+        if cmd in pending_commands:
+            pending_command_info = pending_commands[cmd]
+            
+            # Handle both dictionary and timestamp formats
+            if isinstance(pending_command_info, dict):
                 ui_command_key = pending_command_info.get('ui_command_name')
+                # Copy any additional details for the UI
+                ui_command_details = {k: v for k, v in pending_command_info.items() 
+                                    if k not in ['timestamp', 'ui_command_name']}
+    
+    # Special handling for specific commands
+    if cmd == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
+        # Check if this is an ARM or DISARM command based on pending_command_info
+        if ui_command_key == 'ARM':
+            if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                with drone_state_lock:
+                    drone_state['armed'] = True
+                log_cmd_action_cb("ARM_SUCCESS", None, "Vehicle successfully ARMED", "INFO")
+                if sio_instance:
+                    sio_instance.emit('status_message', {
+                        'text': 'Vehicle successfully ARMED', 
+                        'type': 'success'
+                    })
+            else:
+                # ARM failed, provide helpful feedback
+                failure_reason = "Unknown reason"
+                
+                # Check if there's a recent STATUSTEXT message about arming failure
+                rtl_not_armable = False
+                with drone_state_lock:
+                    last_statustext = drone_state.get('last_statustext', '')
+                    if 'RTL mode not armable' in last_statustext:
+                        rtl_not_armable = True
+                        failure_reason = "RTL mode not armable. Please change to an armable mode like GUIDED or STABILIZE first."
+                
+                if not rtl_not_armable:  # If no specific statustext found, use generic messages
+                    if result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
+                        failure_reason = "Vehicle not ready to arm (check pre-arm checks)"
+                    elif result == mavutil.mavlink.MAV_RESULT_DENIED:
+                        failure_reason = "Arming denied (check current mode, safety switch, GPS lock, or other pre-arm requirements)"
+                
+                log_cmd_action_cb("ARM_FAILED", None, f"Failed to ARM: {failure_reason}", "ERROR")
+                if sio_instance:
+                    sio_instance.emit('status_message', {
+                        'text': f'Failed to ARM: {failure_reason}', 
+                        'type': 'error'
+                    })
+        
+        elif ui_command_key == 'DISARM':
+            if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                with drone_state_lock:
+                    drone_state['armed'] = False
+                log_cmd_action_cb("DISARM_SUCCESS", None, "Vehicle successfully DISARMED", "INFO")
+                if sio_instance:
+                    sio_instance.emit('status_message', {
+                        'text': 'Vehicle successfully DISARMED', 
+                        'type': 'success'
+                    })
+            else:
+                # DISARM failed, provide helpful feedback
+                failure_reason = "Unknown reason"
+                if result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
+                    failure_reason = "Vehicle not ready to disarm (might be in flight)"
+                elif result == mavutil.mavlink.MAV_RESULT_DENIED:
+                    failure_reason = "Disarming denied (vehicle might be in flight)"
+                
+                log_cmd_action_cb("DISARM_FAILED", None, f"Failed to DISARM: {failure_reason}", "ERROR")
+                if sio_instance:
+                    sio_instance.emit('status_message', {
+                        'text': f'Failed to DISARM: {failure_reason}', 
+                        'type': 'error'
+                    })
+    
+    elif cmd == mavutil.mavlink.MAV_CMD_DO_SET_MODE:
+        # Handle SET_MODE acknowledgment
+        mode_name = ui_command_details.get('mode_name', 'UNKNOWN')
+        
+        if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+            log_cmd_action_cb("SET_MODE_SUCCESS", {"mode_name": mode_name}, 
+                             f"Successfully set mode to {mode_name}", "INFO")
+            if sio_instance:
+                sio_instance.emit('status_message', {
+                    'text': f'Successfully set mode to {mode_name}', 
+                    'type': 'success'
+                })
+        else:
+            # SET_MODE failed, provide helpful feedback
+            failure_reason = "Unknown reason"
+            if result == mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED:
+                failure_reason = f"Vehicle not ready for {mode_name} mode (check mode requirements)"
+            elif result == mavutil.mavlink.MAV_RESULT_DENIED:
+                failure_reason = f"Mode {mode_name} denied (check vehicle state and mode requirements)"
+            elif result == mavutil.mavlink.MAV_RESULT_UNSUPPORTED:
+                failure_reason = f"Mode {mode_name} not supported by this vehicle"
+            
+            log_cmd_action_cb("SET_MODE_FAILED", {"mode_name": mode_name}, 
+                             f"Failed to set mode to {mode_name}: {failure_reason}", "ERROR")
+            if sio_instance:
+                sio_instance.emit('status_message', {
+                    'text': f'Failed to set mode to {mode_name}: {failure_reason}', 
+                    'type': 'error'
+                })
 
+    # Emit the command acknowledgment to the frontend
+    if sio_instance:
         sio_instance.emit('command_ack_received', {
             'command': cmd,  # MAVLink command ID (e.g., 176)
             'command_name': cmd_name,  # MAVLink command name string (e.g., "MAV_CMD_DO_SET_MODE")
@@ -498,7 +625,10 @@ def process_command_ack(msg, drone_state, drone_state_lock, mavlink_conn, log_cm
             'result': result,
             'result_text': display_result,
             'explanation': explanation,
-            'level': level
+            'level': level,
+            'details': ui_command_details  # Additional command-specific details
         })
-        
-    return False # COMMAND_ACK itself doesn't change drone_state directly
+    
+    # Return False since COMMAND_ACK itself doesn't typically change drone_state directly
+    # (Any state changes would have been made in the special handling sections above)
+    return False

@@ -26,6 +26,9 @@ data_streams_requested_instance = False
 pending_commands_instance = collections.OrderedDict() # Stores cmd_id: timestamp
 connection_event_instance = Event() # Used to signal connection status
 
+# Initialize feature callbacks dictionary
+feature_callbacks = {}
+
 # Dictionary mapping MAVLink message types to their handler functions
 MAVLINK_MESSAGE_HANDLERS = {
     'HEARTBEAT': process_heartbeat,
@@ -62,7 +65,7 @@ def connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_con
     """
     global mavlink_connection_instance, data_streams_requested_instance, pending_commands_instance, connection_event_instance
     
-    print("Attempting to create new MAVLink connection object...")
+    print(f"Attempting to create new MAVLink connection to: {mavlink_connection_string_config}")
     # Note: mavlink_connection_instance should be None when this is called,
     # or the caller should have handled closing the old one.
 
@@ -77,12 +80,66 @@ def connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_con
     connection_event_instance.clear()
 
     try:
-        mavlink_connection_instance = mavutil.mavlink_connection(mavlink_connection_string_config)
-        print(f"MAVLink connection established: {mavlink_connection_string_config}")
-        connection_event_instance.set() # Signal that connection attempt was made (success or fail soon)
+        print(f"Creating MAVLink connection with simplified parameters...")
+        # Create the MAVLink connection with simplified settings (like simple_monitor.py)
+        mavlink_connection_instance = mavutil.mavlink_connection(
+            mavlink_connection_string_config,
+            autoreconnect=True,  # Enable auto-reconnect for robustness
+            source_system=255,   # Use default source system ID
+            source_component=0   # Use default source component ID
+            # Removed retries and timeout to match simple_monitor.py approach
+        )
+        
+        print(f"MAVLink connection object created: {mavlink_connection_string_config}")
+        print("Waiting for heartbeat to confirm connection...")
+        
+        # Wait for heartbeat to confirm connection is working
+        # Using a longer timeout to ensure we get a heartbeat
+        msg = mavlink_connection_instance.recv_match(type='HEARTBEAT', blocking=True, timeout=15)
+        if not msg:
+            print("No heartbeat received within timeout period, connection not confirmed")
+            mavlink_connection_instance.close()
+            mavlink_connection_instance = None
+            return False
+        
+        print(f"Received initial heartbeat from system {msg.get_srcSystem()}, confirming connection")
+        
+        # Extract mode information from heartbeat
+        custom_mode = msg.custom_mode
+        custom_mode_str = "UNKNOWN"
+        for mode_name, mode_id in AP_CUSTOM_MODES.items():
+            if mode_id == custom_mode:
+                custom_mode_str = mode_name
+                break
+        
+        # Check if armed
+        armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+        armed_str = "ARMED" if armed else "DISARMED"
+        
+        print(f"Drone is in {custom_mode_str} mode and is {armed_str}")
+        
+        # Set target system based on the received heartbeat
+        mavlink_connection_instance.target_system = msg.get_srcSystem()
+        mavlink_connection_instance.target_component = msg.get_srcComponent()
+        print(f"Set target system to {mavlink_connection_instance.target_system}, component {mavlink_connection_instance.target_component}")
+        
+        # Update drone state to connected and set initial mode and armed status
+        with drone_state_lock:
+            drone_state['connected'] = True
+            drone_state['was_just_connected_by_heartbeat'] = True
+            drone_state['mode'] = custom_mode_str
+            drone_state['armed'] = armed
+            drone_state['system_status'] = msg.system_status
+        
+        connection_event_instance.set() # Signal that connection is successful
         return True
     except Exception as e:
         print(f"MAVLink connection error: {e}")
+        if mavlink_connection_instance:
+            try:
+                mavlink_connection_instance.close()
+            except:
+                pass
         mavlink_connection_instance = None
         return False
 
@@ -174,10 +231,16 @@ def mavlink_receive_loop_runner(
     command_ack_timeout_config         # From app.py: COMMAND_ACK_TIMEOUT
 ):
     """Main loop for receiving MAVLink messages and managing connection state."""
-    global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance
+    global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance, feature_callbacks
     # Assign the passed pending_commands and connection_event to the module's global instances
     pending_commands_instance = passed_pending_commands
     connection_event_instance = passed_connection_event
+    
+    # Initialize feature callbacks
+    feature_callbacks = {
+        'EXECUTE_FENCE_REQUEST': execute_fence_request_cb,
+        'EXECUTE_MISSION_REQUEST': execute_mission_request_cb
+    }
 
     print("MAVLink receive loop thread started.")
     while True:
@@ -245,11 +308,18 @@ def mavlink_receive_loop_runner(
                 gevent.sleep(0.1) # Wait if connection is temporarily None
                 continue
             
-            msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.05) # Short non-blocking timeout
+            # Use a slightly longer timeout but still non-blocking
+            # This is similar to the approach in test_heartbeat.py
+            msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.1) # Slightly longer non-blocking timeout
 
             if not msg:
                 # No message received in this attempt, loop will sleep at the end
-                pass
+                # Periodically log that we're waiting for messages (every 5 seconds)
+                current_time = time.time()
+                if not hasattr(mavlink_receive_loop_runner, 'last_waiting_log_time') or \
+                   current_time - mavlink_receive_loop_runner.last_waiting_log_time > 5:
+                    print(f"Waiting for MAVLink messages... (Connected: {drone_state.get('connected', False)}, Target System: {mavlink_connection_instance.target_system if mavlink_connection_instance else 'None'})")
+                    mavlink_receive_loop_runner.last_waiting_log_time = current_time
             elif msg.get_srcSystem() == mavlink_connection_instance.target_system:
                 msg_type = msg.get_type()
                 handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)

@@ -10,7 +10,7 @@ if sys.platform == 'win32':
 
 # *** ADDED: Explicit Monkey Patching ***
 from gevent import monkey
-monkey.patch_all()
+# monkey.patch_all()
 
 import sys
 import time
@@ -173,18 +173,89 @@ def log_command_action(command_name, params=None, details=None, level="INFO"):
 
 # _execute_mission_request has been moved to request_handlers.py
 
+def read_telemetry_from_file():
+    """Read telemetry data from the file created by the telemetry bridge script."""
+    try:
+        import json
+        import os
+        
+        telemetry_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'telemetry_data.json')
+        
+        if os.path.exists(telemetry_file):
+            with open(telemetry_file, 'r') as f:
+                data = json.load(f)
+                print(f"Read telemetry data from file: connected={data.get('connected')}, mode={data.get('mode')}, armed={data.get('armed')}")
+                return data, True
+        else:
+            print(f"Telemetry file not found: {telemetry_file}")
+            return None, False
+    except Exception as e:
+        print(f"Error reading telemetry data from file: {e}")
+        return None, False
+
 def periodic_telemetry_update():
     """Periodically send telemetry updates to web clients."""
     global drone_state_changed
     update_count = 0
+    last_debug_time = time.time()
+    last_file_check_time = 0
     
     while True:
         try:
+            current_time = time.time()
+            
+            # Check for telemetry data from file every 1 second
+            if current_time - last_file_check_time >= 1:
+                file_data, success = read_telemetry_from_file()
+                if success and file_data:
+                    with drone_state_lock:
+                        # Update drone_state with data from file
+                        for key, value in file_data.items():
+                            if key in drone_state:
+                                drone_state[key] = value
+                        
+                        # Set connected flag based on the file data's connected status
+                        drone_state['connected'] = file_data.get('connected', False)
+                        
+                        # Double-check connected flag based on heartbeat time
+                        last_heartbeat_time = file_data.get('last_heartbeat_time', 0)
+                        if current_time - last_heartbeat_time > 5:  # Consider disconnected if no heartbeat within 5 seconds
+                            drone_state['connected'] = False
+                        
+                        # Signal that drone_state has changed
+                        drone_state_changed = True
+                        
+                        # Print debug info about the connection status
+                        print(f"Connection status from file: {file_data.get('connected')}, Updated status: {drone_state['connected']}")
+                        print(f"Last heartbeat time: {last_heartbeat_time}, Current time: {current_time}, Diff: {current_time - last_heartbeat_time}s")
+                
+                last_file_check_time = current_time
+            
+            # Log telemetry status every 5 seconds for debugging
+            if current_time - last_debug_time >= 5:
+                with drone_state_lock:
+                    connected = drone_state.get('connected', False)
+                    armed = drone_state.get('armed', False)
+                    mode = drone_state.get('mode', 'UNKNOWN')
+                    lat = drone_state.get('lat', 0.0)
+                    lon = drone_state.get('lon', 0.0)
+                    alt_rel = drone_state.get('alt_rel', 0.0)
+                    
+                    print(f"\n[TELEMETRY DEBUG] Update count: {update_count}, State changed: {drone_state_changed}")
+                    print(f"[TELEMETRY DEBUG] Connected: {connected}, Armed: {armed}, Mode: {mode}")
+                    print(f"[TELEMETRY DEBUG] Position: Lat={lat:.6f}, Lon={lon:.6f}, Alt={alt_rel:.1f}m")
+                    print(f"[TELEMETRY DEBUG] Full drone_state: {drone_state}\n")
+                
+                last_debug_time = current_time
+            
+            # Send telemetry update if state has changed
             if drone_state_changed:
                 with drone_state_lock:
+                    print(f"Sending telemetry update to web clients (update #{update_count+1})")
                     socketio.emit('telemetry_update', drone_state)
                     drone_state_changed = False
                     update_count += 1
+            
             gevent.sleep(TELEMETRY_UPDATE_INTERVAL)
         except Exception as e:
             print(f"Error in telemetry update: {e}")
@@ -209,6 +280,16 @@ def favicon():
 def mavlink_dump():
     return render_template("mavlink_dump.html", version="v2.63-Desktop-TCP-AckEkf")
 
+@app.route('/health')
+def health_check():
+    return jsonify({
+        'status': 'ok',
+        'timestamp': time.time(),
+        'drone_connected': drone_state.get('connected', False),
+        'drone_mode': drone_state.get('mode', 'UNKNOWN'),
+        'drone_armed': drone_state.get('armed', False)
+    })
+
 # handle_connect moved to socketio_handlers.py
 
 # handle_disconnect moved to socketio_handlers.py
@@ -227,14 +308,13 @@ from socketio_handlers import init_socketio_handlers
 
 if __name__ == '__main__':
     print(f"Starting server on http://{WEB_SERVER_HOST}:{WEB_SERVER_PORT}")
-    # Start the background threads
-    mavlink_thread = gevent.spawn(mavlink_receive_loop_runner, MAVLINK_CONNECTION_STRING, drone_state, drone_state_lock, pending_commands, get_connection_event(), log_command_action, socketio, set_drone_state_changed_flag, app_shared_state, _execute_fence_request, _execute_mission_request, HEARTBEAT_TIMEOUT, REQUEST_STREAM_RATE_HZ, COMMAND_ACK_TIMEOUT)
-
-
-
+    
+    # Start telemetry update thread first to ensure UI updates work
     telemetry_update_thread = threading.Thread(target=periodic_telemetry_update, daemon=True)
     telemetry_update_thread.start()
-
+    print("Telemetry update thread started")
+    
+    # Initialize contexts for handlers before starting MAVLink
     # Prepare context for and initialize SocketIO handlers
     app_context = {
         'log_command_action': log_command_action,
@@ -245,6 +325,7 @@ if __name__ == '__main__':
         'schedule_fence_request_in_app': _schedule_fence_request,
         'schedule_mission_request_in_app': _schedule_mission_request
     }
+    
     # Prepare context for and initialize request_handlers
     request_handlers_context = {
         'socketio': socketio,
@@ -257,7 +338,101 @@ if __name__ == '__main__':
         'mission_request_lock': mission_request_lock
     }
     init_request_handlers(request_handlers_context)
-
     socketio_handlers.init_socketio_handlers(socketio, app_context)
+    
+    # Start MAVLink connection in a separate thread with timeout handling
+    def start_mavlink_connection():
+        try:
+            # Print connection details for debugging
+            print(f"Attempting to connect to drone at {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} via {MAVLINK_CONNECTION_STRING}")
+            
+            # Function to handle connection attempts with retries
+            def connection_handler():
+                # Set connection parameters
+                MAX_ATTEMPTS = 3
+                ATTEMPT_TIMEOUT = 10  # Seconds per attempt
+                RETRY_DELAY = 2       # Seconds between attempts
+                
+                for attempt in range(1, MAX_ATTEMPTS + 1):
+                    print(f"MAVLink connection attempt {attempt}/{MAX_ATTEMPTS} to {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}...")
+                    
+                    # Start the MAVLink connection thread
+                    mavlink_thread = gevent.spawn(mavlink_receive_loop_runner, 
+                                                MAVLINK_CONNECTION_STRING, 
+                                                drone_state, 
+                                                drone_state_lock, 
+                                                pending_commands, 
+                                                get_connection_event(), 
+                                                log_command_action, 
+                                                socketio, 
+                                                set_drone_state_changed_flag, 
+                                                app_shared_state, 
+                                                _execute_fence_request, 
+                                                _execute_mission_request, 
+                                                HEARTBEAT_TIMEOUT, 
+                                                REQUEST_STREAM_RATE_HZ, 
+                                                COMMAND_ACK_TIMEOUT)
+                    
+                    # Monitor this connection attempt
+                    start_time = time.time()
+                    connected = False
+                    
+                    while time.time() - start_time < ATTEMPT_TIMEOUT:
+                        # Check if connection is established
+                        with drone_state_lock:
+                            if drone_state['connected']:
+                                print(f"✓ MAVLink connection established to {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} in {time.time() - start_time:.2f} seconds")
+                                return mavlink_thread
+                        # Sleep briefly to avoid excessive CPU usage
+                        time.sleep(0.2)
+                    
+                    # If we get here, this attempt timed out
+                    print(f"✗ MAVLink connection attempt {attempt} timed out after {ATTEMPT_TIMEOUT} seconds")
+                    
+                    # Wait before next attempt
+                    if attempt < MAX_ATTEMPTS:
+                        print(f"Waiting {RETRY_DELAY} seconds before next attempt...")
+                        time.sleep(RETRY_DELAY)
+                
+                print(f"All {MAX_ATTEMPTS} connection attempts to {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} failed")
+                print("The web interface will still be accessible, but no telemetry data will be shown until a connection is established.")
+                return None
+            
+            # Start connection handler in a separate thread
+            connection_thread = threading.Thread(target=connection_handler, daemon=True)
+            connection_thread.start()
+            
+            # Return a placeholder thread - the actual thread will be managed by the connection_handler
+            return True
+        except Exception as e:
+            print(f"Error starting MAVLink thread: {e}")
+            print("Continuing without MAVLink connection. The web interface will still be accessible.")
+            return None
+    
+    # Start MAVLink connection in a separate thread
+    mavlink_connection_thread = threading.Thread(target=start_mavlink_connection, daemon=True)
+    mavlink_connection_thread.start()
 
-    socketio.run(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT, debug=False, use_reloader=False)  # Disable reloader to prevent duplicate threads
+    # Contexts already initialized above
+
+    print(">>> Attempting to start Flask-SocketIO server...")
+    try:
+        print(f">>> Starting Flask-SocketIO server on 0.0.0.0:{WEB_SERVER_PORT}...")
+        # Use a separate thread for the server to avoid blocking
+        def run_server():
+            try:
+                socketio.run(app, host='0.0.0.0', port=WEB_SERVER_PORT, debug=False, use_reloader=False)
+                print(">>> Flask-SocketIO server finished (SHOULD NOT HAPPEN if running normally).")
+            except Exception as e:
+                print(f">>> EXCEPTION during socketio.run: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Start the server in the main thread (this is important for Flask-SocketIO)
+        run_server()
+    except Exception as e:
+        print(f">>> EXCEPTION during server setup: {e}")
+        import traceback
+        traceback.print_exc()
+    finally:
+        print(">>> socketio.run block finished or exited (e.g. via exception or normal termination).")
