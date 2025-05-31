@@ -153,52 +153,13 @@ def request_data_streams(req_rate_hz_config, home_position_is_known):
         print("No MAVLink connection or target system to request streams.")
         return
 
-    print(f"Requesting data streams (home known: {home_position_is_known})...")
-    target_sys = mavlink_connection_instance.target_system
-    target_comp = mavlink_connection_instance.target_component
-
-    # Define messages and their desired rates in Hz
-    # Use rates from config or sensible defaults if not all are in REQUEST_STREAM_RATE_HZ
-    messages_to_request = {
-        mavutil.mavlink.MAVLINK_MSG_ID_HEARTBEAT: 1,  # Already handled by ArduPilot, but good to ensure
-        mavutil.mavlink.MAVLINK_MSG_ID_SYS_STATUS: 1,
-        mavutil.mavlink.MAVLINK_MSG_ID_GPS_RAW_INT: 1, # Or GLOBAL_POSITION_INT at higher rate
-        mavutil.mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT: req_rate_hz_config, # Higher rate for position
-        mavutil.mavlink.MAVLINK_MSG_ID_ATTITUDE: req_rate_hz_config, # Higher rate for attitude
-        mavutil.mavlink.MAVLINK_MSG_ID_VFR_HUD: req_rate_hz_config, # Contains relative altitude, ground/airspeed
-        mavutil.mavlink.MAVLINK_MSG_ID_HOME_POSITION: 0.2, # Request slowly until received
-        # mavutil.mavlink.MAVLINK_MSG_ID_STATUSTEXT: 1, # For important messages - often event-driven
-        # mavutil.mavlink.MAVLINK_MSG_ID_COMMAND_ACK: 5, # Ensure ACKs are streamed - event-driven, not streamed
-        # Add other messages as needed, e.g.:
-        # mavutil.mavlink.MAVLINK_MSG_ID_MISSION_CURRENT: 1,
-        # mavutil.mavlink.MAVLINK_MSG_ID_RC_CHANNELS: 2, # If RC input display is needed
-    }
-
-    try:
-        for msg_id, rate_hz in messages_to_request.items():
-            interval_us = int(1e6 / rate_hz) if rate_hz > 0 else 0 # 0 to stop, -1 to leave unchanged
-            
-            # If home position is already known, stop requesting it (or set to very low rate)
-            if msg_id == mavutil.mavlink.MAVLINK_MSG_ID_HOME_POSITION and home_position_is_known:
-                interval_us = -1 # Set to -1 to leave rate unchanged (effectively stop if it was being requested)
-                                 # Or set to 0 to explicitly stop: int(1e6 / 0.05) for once every 20s if you want to keep it very slow
-
-            if interval_us != -1: # Send command if interval is not -1 (leave unchanged)
-                print(f"  Requesting MSG ID {msg_id} at {rate_hz} Hz (Interval: {interval_us} us)")
-                mavlink_connection_instance.mav.command_long_send(
-                    target_sys, target_comp,
-                    mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL,
-                    0, # Confirmation
-                    msg_id,
-                    interval_us,
-                    0, 0, 0, 0, 0  # params 3-7 not used
-                )
-                gevent.sleep(0.05) # Small delay between requests, as per original app.py
-        data_streams_requested_instance = True
-        print("Data streams request sequence completed.")
-    except Exception as e:
-        print(f"Error requesting data streams: {e}")
-        data_streams_requested_instance = False
+    print(f"TESTING: NOT requesting any message intervals - letting autopilot use defaults!")
+    
+    # COMPLETELY DISABLE ALL MESSAGE INTERVAL REQUESTS FOR TESTING
+    # Let the autopilot send messages at its default rates without any interference
+    
+    print("TESTING MODE: No message interval requests - using autopilot defaults!")
+    data_streams_requested_instance = True  # Mark as done so we don't keep trying
 
 def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function):
     """Checks for timed-out MAVLink commands and emits SocketIO events."""
@@ -318,28 +279,45 @@ def mavlink_receive_loop_runner(
                 gevent.sleep(0.1) # Wait if connection is temporarily None
                 continue
             
-            # Use a slightly longer timeout but still non-blocking
-            # This is similar to the approach in test_heartbeat.py
-            receive_start_time = time.time()  # Track when we start receiving
-            msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.1) # Slightly longer non-blocking timeout
-            receive_end_time = time.time()  # Track when receive completes
-
-            if not msg:
-                # No message received in this attempt, loop will sleep at the end
-                # Periodically log that we're waiting for messages (every 5 seconds)
+            # PRIORITY FIX: Check for HEARTBEAT messages first (like listenheartbeat_FIXED.py)
+            receive_start_time = time.time()
+            
+            # First, try to get a HEARTBEAT message with priority - USE BLOCKING LIKE listenheartbeat_FIXED.py
+            heartbeat_msg = mavlink_connection_instance.recv_match(type='HEARTBEAT', blocking=True, timeout=1.0)
+            
+            if heartbeat_msg:
+                # Process HEARTBEAT immediately for instant mode change detection
+                receive_end_time = time.time()
+                receive_time_ms = (receive_end_time - receive_start_time) * 1000
+                print(f"[RECV-TIMING] HEARTBEAT received in {receive_time_ms:.2f}ms at {receive_end_time}")
+                
+                # Process the heartbeat message immediately
+                processing_start = time.time()
+                heartbeat_changed = process_heartbeat(
+                    heartbeat_msg, drone_state, drone_state_lock, 
+                    mavlink_connection_instance, log_function, sio, heartbeat_log_cb
+                )
+                processing_time = (time.time() - processing_start) * 1000
+                print(f"[PROC-TIMING] HEARTBEAT processed in {processing_time:.2f}ms at {time.time()}")
+                
+                if heartbeat_changed:
+                    drone_state_changed_iteration = True
+            else:
+                # Debug: Show when we're not receiving heartbeats
+                if not hasattr(mavlink_receive_loop_runner, 'last_heartbeat_debug_time'):
+                    mavlink_receive_loop_runner.last_heartbeat_debug_time = 0
+                
                 current_time = time.time()
-                if not hasattr(mavlink_receive_loop_runner, 'last_waiting_log_time') or \
-                   current_time - mavlink_receive_loop_runner.last_waiting_log_time > 5:
-                    print(f"Waiting for MAVLink messages... (Connected: {drone_state.get('connected', False)}, Target System: {mavlink_connection_instance.target_system if mavlink_connection_instance else 'None'})")
-                    mavlink_receive_loop_runner.last_waiting_log_time = current_time
-            elif msg.get_srcSystem() == mavlink_connection_instance.target_system:
+                if current_time - mavlink_receive_loop_runner.last_heartbeat_debug_time > 2:  # Debug every 2 seconds
+                    print(f"[DEBUG] No HEARTBEAT received in this iteration at {current_time:.3f}")
+                    mavlink_receive_loop_runner.last_heartbeat_debug_time = current_time
+            
+            # Then process other message types (but don't let them delay heartbeats)
+            msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.001)  # Very short timeout for other messages
+            
+            if msg and msg.get_type() != 'HEARTBEAT':  # Skip heartbeats since we already processed them above
                 msg_type = msg.get_type()
                 handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
-
-                # Add timing info for heartbeat messages specifically
-                if msg_type == 'HEARTBEAT':
-                    receive_duration = (receive_end_time - receive_start_time) * 1000  # Convert to ms
-                    print(f"[RECV-TIMING] HEARTBEAT received in {receive_duration:.2f}ms at {receive_end_time:.6f}")
 
                 if handler:
                     try:
@@ -375,10 +353,6 @@ def mavlink_receive_loop_runner(
                             drone_state_changed_iteration = True
                     except Exception as e:
                         log_function("HANDLER_EXCEPTION", {"msg_type": msg_type}, f"Error in {msg_type} handler: {e}", level="ERROR")
-                # else:
-                    # Optional: log unhandled message types if verbose logging is desired
-                    # if msg_type not in ['BAD_DATA']:
-                    #     log_function("UNHANDLED_MAVLINK_MSG", {"msg_type": msg_type}, f"No specific handler for: {msg_type}")
 
                 # Specific post-handler logic for certain messages that affect connection state or command tracking
                 if msg_type == 'HEARTBEAT':

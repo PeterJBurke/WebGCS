@@ -32,51 +32,123 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
         bool: True if the drone_state was changed, False otherwise.
     """
     
-    # Use custom heartbeat logging if provided, otherwise fall back to the existing format
+    # TIMING TEST: Start measuring processing time
+    process_start_time = time.time()
+    
+    # Use custom heartbeat logging if provided, otherwise fall back to the exact format from listenheartbeat_FIXED.py
     if heartbeat_log_cb:
         heartbeat_log_cb(msg)
     else:
-        # Fallback to original logging format (no rate limiting)
-        system_status_str = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN({msg.system_status})")
-        vehicle_type_str = MAV_TYPE_STR.get(msg.type, f"UNKNOWN({msg.type})")
-        autopilot_type_str = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN({msg.autopilot})")
+        timing_step2 = time.time()
         
-        # Decode base mode flags using direct constants to avoid EnumEntry issues
-        base_mode_flags = []
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
-            base_mode_flags.append("CUSTOM_MODE_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_TEST_ENABLED:
-            base_mode_flags.append("TEST_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_AUTO_ENABLED:
-            base_mode_flags.append("AUTO_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_GUIDED_ENABLED:
-            base_mode_flags.append("GUIDED_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_STABILIZE_ENABLED:
-            base_mode_flags.append("STABILIZE_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_HIL_ENABLED:
-            base_mode_flags.append("HIL_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED:
-            base_mode_flags.append("MANUAL_INPUT_ENABLED")
-        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED:
-            base_mode_flags.append("SAFETY_ARMED")
+        # Copy the EXACT format from listenheartbeat_FIXED.py
+        # Increment counter for heartbeat numbering
+        if not hasattr(process_heartbeat, 'counter'):
+            process_heartbeat.counter = 0
+        process_heartbeat.counter += 1
         
-        base_mode_str = ", ".join(base_mode_flags) if base_mode_flags else "NONE"
+        # Use the exact dictionaries and functions from listenheartbeat_FIXED.py
+        AUTOPILOT_TYPES = {
+            0: "Generic", 1: "Reserved", 2: "SLUGS", 3: "ArduPilotMega", 4: "OpenPilot",
+            5: "Generic Waypoints Only", 6: "Generic Waypoints and Simple Navigation Only",
+            7: "Generic Mission Full", 8: "Invalid", 9: "PPZ", 10: "UDB", 11: "FP", 12: "PX4",
+            13: "SMACCMPILOT", 14: "AUTOQUAD", 15: "ARMAZILA", 16: "AEROB", 17: "ASLUAV",
+            18: "SmartAP", 19: "AirRails"
+        }
         
-        # Get custom mode string
-        custom_mode_str_list = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
-        custom_mode_str = custom_mode_str_list[0] if custom_mode_str_list else f'CUSTOM_MODE({msg.custom_mode})'
+        VEHICLE_TYPES = {
+            0: "Generic", 1: "Fixed Wing", 2: "Quadrotor", 3: "Coaxial", 4: "Helicopter",
+            5: "Antenna Tracker", 6: "GCS", 7: "Airship", 8: "Free Balloon", 9: "Rocket",
+            10: "Ground Rover", 11: "Surface Boat", 12: "Submarine", 13: "Hexarotor",
+            14: "Octorotor", 15: "Tricopter", 16: "Flapping Wing", 17: "Kite",
+            18: "Onboard Companion Controller", 19: "Two-rotor VTOL", 20: "Quad-rotor VTOL",
+            21: "Tiltrotor VTOL", 22: "VTOL Reserved 2", 23: "VTOL Reserved 3",
+            24: "VTOL Reserved 4", 25: "VTOL Reserved 5", 26: "Gimbal", 27: "ADSB system",
+            28: "Steerable, 2-axis Gimbal", 29: "Onboard IO Controller", 30: "Vectored 6 DOF UUV",
+            31: "Onboard Companion Computer"
+        }
         
-        # Format armed status
-        armed_status = "ARMED" if (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) else "DISARMED"
+        ARDUPILOT_COPTER_MODES = {
+            0: "Stabilize", 1: "Acro", 2: "AltHold", 3: "Auto", 4: "Guided", 5: "Loiter",
+            6: "RTL", 7: "Circle", 8: "Position", 9: "Land", 10: "OF_Loiter", 11: "Drift",
+            13: "Sport", 14: "Flip", 15: "AutoTune", 16: "PosHold", 17: "Brake", 18: "Throw",
+            19: "Avoid_ADSB", 20: "Guided_NoGPS", 21: "Smart_RTL", 22: "FlowHold", 23: "Follow",
+            24: "ZigZag", 25: "SystemID", 26: "Heli_Autorotate"
+        }
         
-        # Print heartbeat info (every time, no rate limiting)
-        print(f"HEARTBEAT: SysID={msg.get_srcSystem()} CompID={msg.get_srcComponent()} | "
-              f"Type={vehicle_type_str} | Autopilot={autopilot_type_str} | "
-              f"Status={system_status_str} | Mode={custom_mode_str} | {armed_status} | "
-              f"Base Mode Flags=[{base_mode_str}]")
+        def decode_base_mode_fixed(base_mode):
+            """Decode base mode flags exactly like listenheartbeat_FIXED.py"""
+            flags = []
+            if base_mode & 0x01: flags.append("Custom Mode Enabled")
+            if base_mode & 0x02: flags.append("Test Mode")
+            if base_mode & 0x04: flags.append("Auto Mode")
+            if base_mode & 0x08: flags.append("Guided Mode")
+            if base_mode & 0x10: flags.append("Stabilize Mode")
+            if base_mode & 0x20: flags.append("Hardware in Loop")
+            if base_mode & 0x40: flags.append("Manual Input Enabled")
+            if base_mode & 0x80: flags.append("Safety Armed")
+            return flags
+        
+        def get_flight_mode_fixed(base_mode, custom_mode, autopilot):
+            """Get flight mode exactly like listenheartbeat_FIXED.py"""
+            if base_mode & 0x01:  # Custom mode enabled
+                if autopilot == 3:  # ArduPilotMega
+                    return ARDUPILOT_COPTER_MODES.get(custom_mode, f"Unknown Custom Mode ({custom_mode})")
+            
+            # Fallback to base mode interpretation
+            if base_mode & 0x10:
+                return "Stabilize (Base Mode)"
+            elif base_mode & 0x04:
+                return "Auto (Base Mode)"
+            elif base_mode & 0x08:
+                return "Guided (Base Mode)"
+            else:
+                return f"Unknown Mode (Base: 0x{base_mode:02X})"
+        
+        # Extract values exactly like listenheartbeat_FIXED.py
+        autopilot = msg.autopilot
+        vehicle_type = msg.type
+        base_mode = msg.base_mode
+        custom_mode = msg.custom_mode
+        system_status = msg.system_status
+        mavlink_version = msg.mavlink_version
+        
+        # Get the actual flight mode using the exact function
+        flight_mode = get_flight_mode_fixed(base_mode, custom_mode, autopilot)
+        
+        # Print heartbeat information in EXACTLY the same format as listenheartbeat_FIXED.py
+        print(f"\n=== Heartbeat #{process_heartbeat.counter} ===")
+        print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"System: {msg.get_srcSystem()}, Component: {msg.get_srcComponent()}")
+        print(f"Autopilot: {AUTOPILOT_TYPES.get(autopilot, 'Unknown')} ({autopilot})")
+        print(f"Vehicle Type: {VEHICLE_TYPES.get(vehicle_type, 'Unknown')} ({vehicle_type})")
+        print(f"Flight Mode: {flight_mode}")
+        print(f"System Status: {system_status}")
+        print(f"MAVLink Version: {mavlink_version}")
+        print(f"Base Mode: 0x{base_mode:02X}")
+        
+        # Decode base mode flags exactly like listenheartbeat_FIXED.py
+        flags = decode_base_mode_fixed(base_mode)
+        if flags:
+            print("Base Mode Flags:")
+            for flag in flags:
+                print(f"  - {flag}")
+        else:
+            print("No base mode flags")
+            
+        # Show custom mode with human-readable name exactly like listenheartbeat_FIXED.py
+        if base_mode & 0x01:  # Custom mode enabled
+            custom_mode_name = ARDUPILOT_COPTER_MODES.get(custom_mode, f"Unknown ({custom_mode})")
+            print(f"Custom Mode: {custom_mode_name} ({custom_mode})")
+        else:
+            print(f"Custom Mode: Not enabled (Base mode only)")
+        print("=" * 30)
+        
+        timing_step3 = time.time()
 
     drone_state_changed_local = False
 
+    timing_state_start = time.time()
     with drone_state_lock:
         prev_mode = drone_state.get('mode', 'UNKNOWN')
         prev_armed = drone_state.get('armed', False)
@@ -111,9 +183,13 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
             status = "ARMED" if drone_state['armed'] else "DISARMED"
             log_cmd_action_cb("ARM_STATUS", None, f"Vehicle {status}")
             drone_state_changed_local = True
+    
+    timing_state_end = time.time()
 
     # Emit event for UI animation - now sending generic mavlink_message
     # Only emit for our drone (already filtered by mavlink_receive_loop_runner, but good for clarity)
+    
+    timing_emit_start = time.time()
     
     # Debug system ID filtering for HEARTBEAT messages
     if msg.get_type() == 'HEARTBEAT':
@@ -148,6 +224,16 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
         #           f"Alt={drone_state.get('alt_rel', 0.0):.1f}m")
         
         sio_instance.emit('mavlink_message', msg.to_dict()) # Send the whole message dictionary
+    
+    timing_emit_end = time.time()
+    
+    # TIMING TEST: Calculate total processing time
+    process_end_time = time.time()
+    total_process_time = (process_end_time - process_start_time) * 1000  # Convert to ms
+    state_time = (timing_state_end - timing_state_start) * 1000
+    emit_time = (timing_emit_end - timing_emit_start) * 1000
+    
+    print(f"[PROC-TIMING] TOTAL: {total_process_time:.2f}ms | State: {state_time:.2f}ms | Emit: {emit_time:.2f}ms | Changed: {drone_state_changed_local}")
 
     return drone_state_changed_local
 

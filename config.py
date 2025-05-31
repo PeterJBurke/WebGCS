@@ -17,7 +17,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'desktop_drone_secret!')
 
 # MAVLink Settings
 HEARTBEAT_TIMEOUT = int(os.getenv('HEARTBEAT_TIMEOUT', '30'))
-REQUEST_STREAM_RATE_HZ = int(os.getenv('REQUEST_STREAM_RATE_HZ', '4'))
+REQUEST_STREAM_RATE_HZ = int(os.getenv('REQUEST_STREAM_RATE_HZ', '1'))  # Reduced from 4 to 1 Hz to reduce message flooding
 COMMAND_ACK_TIMEOUT = int(os.getenv('COMMAND_ACK_TIMEOUT', '10'))
 TELEMETRY_UPDATE_INTERVAL = float(os.getenv('TELEMETRY_UPDATE_INTERVAL', '0.1'))  # Seconds (10 Hz for faster UI updates)
 
