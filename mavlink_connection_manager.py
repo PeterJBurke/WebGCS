@@ -205,7 +205,13 @@ def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function
     global pending_commands_instance
     now = time.time()
     timed_out_commands = []
-    for cmd_id, timestamp in list(pending_commands_instance.items()): # Iterate over a copy
+    for cmd_id, value in list(pending_commands_instance.items()): # Iterate over a copy
+        # Handle both float timestamps and dict values with timestamp keys
+        if isinstance(value, dict):
+            timestamp = value.get('timestamp', 0)
+        else:
+            timestamp = value  # Assume it's a float timestamp
+        
         if now - timestamp > command_ack_timeout_config:
             details = f"Command {cmd_id} (e.g., MAV_CMD_DO_SET_MODE) timed out after {command_ack_timeout_config}s."
             print(f"COMMAND TIMEOUT: {details}")
@@ -314,7 +320,9 @@ def mavlink_receive_loop_runner(
             
             # Use a slightly longer timeout but still non-blocking
             # This is similar to the approach in test_heartbeat.py
+            receive_start_time = time.time()  # Track when we start receiving
             msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.1) # Slightly longer non-blocking timeout
+            receive_end_time = time.time()  # Track when receive completes
 
             if not msg:
                 # No message received in this attempt, loop will sleep at the end
@@ -328,8 +336,14 @@ def mavlink_receive_loop_runner(
                 msg_type = msg.get_type()
                 handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
 
+                # Add timing info for heartbeat messages specifically
+                if msg_type == 'HEARTBEAT':
+                    receive_duration = (receive_end_time - receive_start_time) * 1000  # Convert to ms
+                    print(f"[RECV-TIMING] HEARTBEAT received in {receive_duration:.2f}ms at {receive_end_time:.6f}")
+
                 if handler:
                     try:
+                        handler_start_time = time.time()  # Track handler processing time
                         # Pass heartbeat_log_cb only to the heartbeat handler
                         if msg_type == 'HEARTBEAT':
                             changed_by_handler = handler(
@@ -350,6 +364,13 @@ def mavlink_receive_loop_runner(
                                 log_function, # Passed as log_cmd_action_cb in handlers
                                 sio
                             )
+                        handler_end_time = time.time()
+                        
+                        # Log handler processing time for heartbeat
+                        if msg_type == 'HEARTBEAT':
+                            handler_duration = (handler_end_time - handler_start_time) * 1000  # Convert to ms
+                            print(f"[PROC-TIMING] HEARTBEAT processed in {handler_duration:.2f}ms at {handler_end_time:.6f}")
+                        
                         if changed_by_handler:
                             drone_state_changed_iteration = True
                     except Exception as e:

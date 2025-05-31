@@ -358,17 +358,19 @@
 
         // Add debug logging for ALL WebSocket events
         let heartbeatCount = 0;
+        let lastHeartbeatModeUpdate = 0; // Track when we last updated mode from heartbeat
+        let currentHeartbeatMode = null; // Track the actual mode from heartbeat
         const originalOn = socket.on;
         socket.on = function(event, handler) {
             return originalOn.call(this, event, function(...args) {
                 if (event === 'mavlink_message') {
-                    // console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args[0]);
+                    console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args[0]);
                     if (args[0] && args[0].mavpackettype === 'HEARTBEAT') {
-                        // console.log(`[WEBSOCKET DEBUG] *** HEARTBEAT MESSAGE RECEIVED #${heartbeatCount} ***`, args[0]);
+                        console.log(`[WEBSOCKET DEBUG] *** HEARTBEAT MESSAGE RECEIVED #${heartbeatCount} ***`, args[0]);
                     }
                 } else if (event !== 'telemetry_update') {
                     // Log all events except telemetry_update to avoid spam
-                    // console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args);
+                    console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args);
                 }
                 return handler.apply(this, args);
             });
@@ -429,9 +431,17 @@
             // });
             
             batteryValueSpan.textContent = voltage.toFixed(2); 
-            modeValueSpan.textContent = mode; 
-            armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED"; 
-            armingStatusOverlay.classList.toggle("pfd-armed", armed); 
+            
+            // DISABLE telemetry mode updates - only use heartbeat for mode
+            // if (currentHeartbeatMode === null || mode.toUpperCase() === currentHeartbeatMode.toUpperCase()) {
+            //     modeValueSpan.textContent = mode; 
+            // } else {
+            //     console.log(`[MODE-CONFLICT] Ignoring telemetry mode '${mode}' because heartbeat mode is '${currentHeartbeatMode}'`);
+            // }
+            console.log(`[TELEMETRY-MODE] Ignoring telemetry mode '${mode}' - using heartbeat only`);
+            
+            armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED";
+            armingStatusOverlay.classList.toggle("pfd-armed", armed);
             currentValueSpan.textContent = current >= 0 ? current.toFixed(1) : "--.-"; 
             let fixStr = "---"; 
             switch (fix) { 
@@ -741,6 +751,10 @@
                 const modeValueEl = document.getElementById('mode_value');
                 if (modeValueEl) {
                     modeValueEl.textContent = modeString;
+                    // Track when we update mode from heartbeat to prevent telemetry conflicts
+                    lastHeartbeatModeUpdate = Date.now();
+                    currentHeartbeatMode = modeString.toUpperCase();
+                    console.log(`[HB-MODE] Updated mode to '${modeString}' from heartbeat`);
                 }
 
                 // Update PFD overlay for mode (no logging)

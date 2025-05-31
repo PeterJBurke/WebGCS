@@ -184,23 +184,46 @@ def init_socketio_handlers(socketio_instance, app_context):
                 _log_command_action("ARM_REJECTED", {"current_mode": current_mode}, 
                                    f"ARM command rejected: {current_mode} mode not armable", "ERROR")
             else:
-                # Send the ARM command to the telemetry bridge
-                success = _send_command_to_bridge('ARM')
+                # Store additional command details for the ACK handler
+                _pending_commands_dict[mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM] = {
+                    'timestamp': time.time(),
+                    'ui_command_name': 'ARM'
+                }
+                
+                # Send direct MAVLink ARM command
+                success, msg_send = _send_mavlink_command_handler(
+                    mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                    p1=1  # 1 to arm, 0 to disarm
+                )
                 cmd_type = 'info' if success else 'error'
-                msg = f'ARM command sent to telemetry bridge...' if success else f'Failed to send ARM command to telemetry bridge'
+                msg = f'ARM command sent.' if success else f'ARM Failed: {msg_send}'
         elif cmd == 'DISARM':
-            # Send the DISARM command to the telemetry bridge
-            success = _send_command_to_bridge('DISARM')
+            # Store additional command details for the ACK handler
+            _pending_commands_dict[mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM] = {
+                'timestamp': time.time(),
+                'ui_command_name': 'DISARM'
+            }
+            
+            # Send direct MAVLink DISARM command
+            success, msg_send = _send_mavlink_command_handler(
+                mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                p1=0  # 1 to arm, 0 to disarm
+            )
             cmd_type = 'info' if success else 'error'
-            msg = f'DISARM command sent to telemetry bridge...' if success else f'Failed to send DISARM command to telemetry bridge'
+            msg = f'DISARM command sent.' if success else f'DISARM Failed: {msg_send}'
         elif cmd == 'TAKEOFF':
             try:
                 alt = float(data.get('altitude', 5.0))
                 if not (0 < alt <= 1000):
                     raise ValueError("Altitude must be > 0 and <= 1000")
-                success = _send_command_to_bridge('TAKEOFF', altitude=alt)
+                
+                # Send direct MAVLink TAKEOFF command
+                success, msg_send = _send_mavlink_command_handler(
+                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                    p7=alt  # param7 = altitude
+                )
                 cmd_type = 'info' if success else 'error'
-                msg = f'Takeoff to {alt:.1f}m command sent to telemetry bridge...' if success else f'Failed to send TAKEOFF command to telemetry bridge'
+                msg = f'Takeoff to {alt:.1f}m command sent.' if success else f'TAKEOFF Failed: {msg_send}'
             except (ValueError, TypeError) as e:
                 success = False
                 msg = f"TAKEOFF Error: Invalid altitude '{data.get('altitude')}'. Details: {e}"
@@ -217,13 +240,26 @@ def init_socketio_handlers(socketio_instance, app_context):
         elif cmd == 'SET_MODE':
             mode_name = data.get('mode_name', '').upper()
             if mode_name in _AP_MODE_NAME_TO_ID:
-                # Send the SET_MODE command to the telemetry bridge
-                success = _send_command_to_bridge('SET_MODE', mode_name=mode_name)
-                cmd_type = 'info' if success else 'error'
-                msg = f'SET_MODE to {mode_name} command sent to telemetry bridge...' if success else f'Failed to send SET_MODE command to telemetry bridge'
+                mode_id = _AP_MODE_NAME_TO_ID[mode_name]
                 
                 _log_command_action("SET_MODE_REQUEST", {"mode_name": mode_name}, 
                                    f"Attempting to set mode to {mode_name}", "INFO")
+                
+                # Store additional command details for the ACK handler
+                _pending_commands_dict[mavutil.mavlink.MAV_CMD_DO_SET_MODE] = {
+                    'timestamp': time.time(),
+                    'ui_command_name': 'SET_MODE',
+                    'mode_name': mode_name
+                }
+                
+                # Send direct MAVLink SET_MODE command
+                success, msg_send = _send_mavlink_command_handler(
+                    mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                    p1=mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                    p2=mode_id
+                )
+                cmd_type = 'info' if success else 'error'
+                msg = f'SET_MODE to {mode_name} command sent.' if success else f'SET_MODE Failed: {msg_send}'
             else:
                 success = False
                 msg = f"SET_MODE Failed: Unknown mode '{mode_name}'"
@@ -237,10 +273,16 @@ def init_socketio_handlers(socketio_instance, app_context):
 
                 _log_command_action("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m", "INFO")
                 
-                # Send the GOTO command to the telemetry bridge
-                success = _send_command_to_bridge('GOTO', lat=lat, lon=lon, alt=alt)
+                # Send direct MAVLink GOTO command (using SET_POSITION_TARGET_GLOBAL_INT)
+                # For now, use a simpler waypoint approach with MAV_CMD_NAV_WAYPOINT
+                success, msg_send = _send_mavlink_command_handler(
+                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                    p5=lat,  # latitude
+                    p6=lon,  # longitude  
+                    p7=alt   # altitude
+                )
                 cmd_type = 'info' if success else 'error'
-                msg = f'GOTO command sent to telemetry bridge...' if success else f'Failed to send GOTO command to telemetry bridge'
+                msg = f'GOTO command sent.' if success else f'GOTO Failed: {msg_send}'
                 
             except (ValueError, TypeError) as e:
                 success = False

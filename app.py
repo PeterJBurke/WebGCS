@@ -94,9 +94,14 @@ def log_heartbeat_message(msg):
     from pymavlink import mavutil
     from mavlink_utils import MAV_TYPE_STR, MAV_AUTOPILOT_STR, MAV_STATE_STR
     from config import AP_CUSTOM_MODES
+    import time
     
-    # Get current timestamp in human readable format
+    # Get VERY precise timestamp when we're processing this message
+    processing_time = time.time()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]  # Include milliseconds
+    
+    # Check if message has any timestamp info (mavlink messages don't typically have timestamps)
+    msg_timestamp = getattr(msg, '_timestamp', None) or getattr(msg, 'timestamp', None)
     
     # Parse heartbeat message details
     system_status_str = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN({msg.system_status})")
@@ -131,12 +136,17 @@ def log_heartbeat_message(msg):
     # Format armed status
     armed_status = "ARMED" if (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) else "DISARMED"
     
-    # Print heartbeat with special formatting
+    # Print heartbeat with special formatting and timing info
     print()
     print("=" * 80)
     print("                              HEARTBEAT MESSAGE RECEIVED")
     print("=" * 80)
-    print(f"TIMESTAMP: {timestamp}")
+    print(f"PROCESSING TIMESTAMP: {timestamp}")
+    print(f"PROCESSING TIME (Unix): {processing_time:.6f}")
+    if msg_timestamp:
+        print(f"MESSAGE TIMESTAMP: {msg_timestamp}")
+    else:
+        print("MESSAGE TIMESTAMP: Not available (MAVLink heartbeats don't contain timestamps)")
     print()
     print(f"SYSTEM ID: {msg.get_srcSystem()}  |  COMPONENT ID: {msg.get_srcComponent()}")
     print(f"VEHICLE TYPE: {vehicle_type_str}")
