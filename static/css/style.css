@@ -109,8 +109,14 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 /* Heartbeat Icon Styles */
 .heartbeat-icon { display: inline-block; margin-left: 5px; vertical-align: middle; font-size: 13px; color: #dc3545; transition: color 0.5s ease; transform-origin: center center; -webkit-user-select: none; -ms-user-select: none; user-select: none; }
 .heartbeat-icon.connected-state { color: #2ecc71; }
-@keyframes beat { 0% { transform: scale(1.0); } 50% { transform: scale(1.5); } 100% { transform: scale(1.0); } }
-.heartbeat-icon.beating { animation: beat 0.35s ease-in-out; }
+@keyframes beat { 
+    0% { transform: scale(1.0); } 
+    50% { transform: scale(2.0); } 
+    100% { transform: scale(1.0); } 
+}
+.heartbeat-icon.beating { 
+    animation: beat 0.8s ease-in-out; 
+}
 
 /* *** ADDED: EKF Status styles *** */
 .ekf-status { font-weight: bold; margin-left: 5px; } /* Added margin */

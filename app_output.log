@@ -1,0 +1,201 @@
+Starting server on http://localhost:5000
+Read telemetry data from file: connected=True, mode=GUIDED, armed=True
+Telemetry update thread started
+Attempting to connect to drone at 192.168.193.63:5678 via tcp:192.168.193.63:5678
+>>> Starting Flask-SocketIO server...
+MAVLink receive loop thread started.
+Attempting to create new MAVLink connection to: tcp:192.168.193.63:5678
+Creating MAVLink connection with simplified parameters...
+MAVLink connection object created: tcp:192.168.193.63:5678
+Waiting for heartbeat to confirm connection...
+Received initial heartbeat from system 1, confirming connection
+Drone is in GUIDED mode and is ARMED
+Set target system to 1, component 1
+Requesting data streams (home known: True)...
+  Requesting MSG ID 0 at 1 Hz (Interval: 1000000 us)
+  Requesting MSG ID 1 at 1 Hz (Interval: 1000000 us)
+  Requesting MSG ID 24 at 1 Hz (Interval: 1000000 us)
+  Requesting MSG ID 33 at 4 Hz (Interval: 250000 us)
+  Requesting MSG ID 30 at 4 Hz (Interval: 250000 us)
+  Requesting MSG ID 74 at 4 Hz (Interval: 250000 us)
+Data streams request sequence completed.
+DEBUG: process_command_ack received: COMMAND_ACK {command : 511, result : 0, progress : 0, result_param2 : 0, target_system : 255, target_component : 0}
+
+================================================================================
+[2025-05-30 17:04:32] INFO | COMMAND: ACK_MAV_CMD_SET_MESSAGE_INTERVAL, Params: Result: UNKNOWN - Command ACCEPTED by vehicle (Raw: 0) - Command ACCEPTED by vehicle
+================================================================================
+DEBUG: process_command_ack received: COMMAND_ACK {command : 511, result : 0, progress : 0, result_param2 : 0, target_system : 255, target_component : 0}
+
+================================================================================
+[2025-05-30 17:04:32] INFO | COMMAND: ACK_MAV_CMD_SET_MESSAGE_INTERVAL, Params: Result: UNKNOWN - Command ACCEPTED by vehicle (Raw: 0) - Command ACCEPTED by vehicle
+================================================================================
+DEBUG: process_command_ack received: COMMAND_ACK {command : 511, result : 0, progress : 0, result_param2 : 0, target_system : 255, target_component : 0}
+
+================================================================================
+[2025-05-30 17:04:32] INFO | COMMAND: ACK_MAV_CMD_SET_MESSAGE_INTERVAL, Params: Result: UNKNOWN - Command ACCEPTED by vehicle (Raw: 0) - Command ACCEPTED by vehicle
+================================================================================
+DEBUG: process_command_ack received: COMMAND_ACK {command : 511, result : 0, progress : 0, result_param2 : 0, target_system : 255, target_component : 0}
+
+================================================================================
+[2025-05-30 17:04:32] INFO | COMMAND: ACK_MAV_CMD_SET_MESSAGE_INTERVAL, Params: Result: UNKNOWN - Command ACCEPTED by vehicle (Raw: 0) - Command ACCEPTED by vehicle
+================================================================================
+DEBUG: process_command_ack received: COMMAND_ACK {command : 511, result : 0, progress : 0, result_param2 : 0, target_system : 255, target_component : 0}
+
+================================================================================
+[2025-05-30 17:04:32] INFO | COMMAND: ACK_MAV_CMD_SET_MESSAGE_INTERVAL, Params: Result: UNKNOWN - Command ACCEPTED by vehicle (Raw: 0) - Command ACCEPTED by vehicle
+================================================================================
+DEBUG: process_command_ack received: COMMAND_ACK {command : 511, result : 0, progress : 0, result_param2 : 0, target_system : 255, target_component : 0}
+
+================================================================================
+[2025-05-30 17:04:32] INFO | COMMAND: ACK_MAV_CMD_SET_MESSAGE_INTERVAL, Params: Result: UNKNOWN - Command ACCEPTED by vehicle (Raw: 0) - Command ACCEPTED by vehicle
+================================================================================
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+
+================================================================================
+[2025-05-30 17:04:33] INFO | COMMAND: MAVLINK_EVENT - Drone connected (heartbeat processed).
+================================================================================
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+
+================================================================================
+[2025-05-30 17:04:35] INFO | COMMAND: CLIENT_CONNECTED - Client PMKev68YcV2MbMYKAAAB connected.
+================================================================================
+Web UI Client PMKev68YcV2MbMYKAAAB connected. Initial telemetry sent.
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]
+[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI
+HEARTBEAT: SysID=1 CompID=1 | Type=UNKNOWN(2) | Autopilot=UNKNOWN(3) | Status=UNKNOWN(4) | Mode=GUIDED | ARMED | Base Mode Flags=[CUSTOM_MODE_ENABLED, GUIDED_ENABLED, STABILIZE_ENABLED, MANUAL_INPUT_ENABLED, SAFETY_ARMED]

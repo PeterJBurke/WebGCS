@@ -200,32 +200,82 @@ def check_for_commands():
                 if command == 'SET_MODE':
                     mode_name = command_data.get('mode_name')
                     if mode_name:
+                        print(f"Executing SET_MODE command: {mode_name}")
                         execute_set_mode_command(mode_name)
                     else:
-                        print("Missing mode_name for SET_MODE command")
+                        print("Error: SET_MODE command missing mode_name parameter")
                 elif command == 'ARM':
-                    arm = command_data.get('arm', False)
-                    execute_arm_command(arm)
+                    print("Executing ARM command")
+                    execute_arm_command(True)
+                elif command == 'DISARM':
+                    print("Executing DISARM command")
+                    execute_arm_command(False)
                 elif command == 'TAKEOFF':
                     altitude = command_data.get('altitude', 5.0)
+                    print(f"Executing TAKEOFF command to {altitude}m")
                     execute_takeoff_command(float(altitude))
+                elif command == 'GOTO':
+                    lat = command_data.get('lat')
+                    lon = command_data.get('lon')
+                    alt = command_data.get('alt', 5.0)
+                    
+                    if lat is not None and lon is not None:
+                        print(f"Executing GOTO command to Lat:{lat}, Lon:{lon}, Alt:{alt}m")
+                        execute_goto_command(float(lat), float(lon), float(alt))
+                    else:
+                        print("Error: GOTO command missing lat/lon parameters")
                 else:
                     print(f"Unknown command: {command}")
 
-                # Delete the command file
+                # Remove the command file after processing
                 os.remove(command_file)
         except Exception as e:
             print(f"Error checking for commands: {e}")
         
-        # Sleep for a short time
+        # Sleep for a short time before checking again
         time.sleep(0.5)
 
 
-def execute_set_mode(mode_name, mode_id):
+def execute_set_mode_command(mode_name):
     """Execute a SET_MODE command."""
     global mav
     try:
-        # Send the SET_MODE command
+        print(f"\n----- Attempting to set mode to {mode_name} -----")
+        
+        # Map of mode names to mode numbers
+        mode_mapping = {
+            'STABILIZE': 0,
+            'ACRO': 1,
+            'ALT_HOLD': 2,
+            'AUTO': 3,
+            'GUIDED': 4,
+            'LOITER': 5,
+            'RTL': 6,
+            'CIRCLE': 7,
+            'POSITION': 8,
+            'LAND': 9,
+            'OF_LOITER': 10,
+            'DRIFT': 11,
+            'SPORT': 12,
+            'FLIP': 13,
+            'AUTOTUNE': 14,
+            'POSHOLD': 15,
+            'BRAKE': 16,
+            'THROW': 17,
+            'AVOID_ADSB': 18,
+            'GUIDED_NOGPS': 19,
+        }
+        
+        if mode_name not in mode_mapping:
+            print(f"Unknown mode: {mode_name}")
+            return False
+        
+        # Get mode ID
+        mode_id = mode_mapping[mode_name]
+        
+        # Request mode change
+        # param1: The MAV_MODE_FLAG to use (1 = custom mode)
+        # param2: Custom mode (mode_id)
         mav.mav.command_long_send(
             mav.target_system,
             mav.target_component,
@@ -233,26 +283,26 @@ def execute_set_mode(mode_name, mode_id):
             0,  # Confirmation
             mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
             mode_id,
-            0, 0, 0, 0, 0  # Unused parameters
+            0, 0, 0, 0, 0  # param3-7 not used
         )
-        print(f"SET_MODE command sent: {mode_name} (ID: {mode_id})")
         
         # Wait for command acknowledgment
-        ack = mav.recv_match(type='COMMAND_ACK', blocking=True, timeout=5)
-        if ack and ack.command == mavutil.mavlink.MAV_CMD_DO_SET_MODE:
+        print(f"Waiting for SET_MODE command acknowledgment...")
+        ack = mav.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
+        if ack:
+            print(f"Got COMMAND_ACK: {mavutil.mavlink.enums['MAV_CMD'][ack.command].name}: {mavutil.mavlink.enums['MAV_RESULT'][ack.result].name}")
             if ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-                print(f"SET_MODE to {mode_name} accepted!")
+                print(f"Successfully set mode to {mode_name}!")
                 return True
             else:
-                print(f"SET_MODE to {mode_name} failed with result: {ack.result}")
+                print(f"Command was rejected: {mavutil.mavlink.enums['MAV_RESULT'][ack.result].name}")
                 return False
         else:
-            print(f"No acknowledgment received for SET_MODE to {mode_name}")
+            print(f"No acknowledgment received for SET_MODE command")
             return False
     except Exception as e:
-        print(f"Error executing SET_MODE command: {e}")
+        print(f"Error setting mode: {e}")
         return False
-
 
 def execute_arm_command(arm):
     """Execute an ARM or DISARM command."""
@@ -271,58 +321,39 @@ def execute_arm_command(arm):
                 mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL,
                 0, # Confirmation
                 mavutil.mavlink.MAVLINK_MSG_ID_STATUSTEXT,
-                100000, # 10Hz (100,000 microseconds)
-                0, 0, 0, 0, 0  # params 3-7 not used
+                100000, # 10Hz (100,000 μs)
+                0, 0, 0, 0, 0 # Unused parameters
             )
             
-            # Wait a moment to receive any status messages
-            start_time = time.time()
-            while time.time() - start_time < 2:
-                msg = mav.recv_match(type='STATUSTEXT', blocking=False)
-                if msg:
-                    print(f"STATUS: {msg.text}")
-                time.sleep(0.1)
+            # Short delay to receive any pre-arm messages
+            time.sleep(0.5)
         
-        # Send the ARM/DISARM command with force flag if arming
-        force_arm = 21196 if arm else 0  # Magic number to force arm
+        # Send ARM/DISARM command
+        # param1: 1 to arm, 0 to disarm
+        # param2: 21196 is force arm/disarm (override preflight checks) - enabled when arm=True
         mav.mav.command_long_send(
             mav.target_system,
             mav.target_component,
             mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
             0,  # Confirmation
-            1 if arm else 0,  # 1 to arm, 0 to disarm
-            force_arm,  # Force arming/disarming (bypass preflight checks)
-            0, 0, 0, 0, 0  # Unused parameters
+            1 if arm else 0,  # param1: 1 to arm, 0 to disarm
+            21196 if arm else 0,  # param2: force (override preflight checks)
+            0, 0, 0, 0, 0  # param3-7 not used
         )
-        print(f"{action} command sent with {'FORCE' if arm else 'normal'} flag")
         
         # Wait for command acknowledgment
         print(f"Waiting for {action} command acknowledgment...")
-        ack = mav.recv_match(type='COMMAND_ACK', blocking=True, timeout=5)
+        ack = mav.recv_match(type='COMMAND_ACK', blocking=True, timeout=3)
         if ack:
-            print(f"Received ACK for command={ack.command}, result={ack.result}")
-            if ack.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
-                if ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-                    print(f"{action} command accepted!")
-                    return True
-                else:
-                    print(f"{action} command failed with result code: {ack.result}")
-                    # Try to translate the result code
-                    result_codes = {
-                        mavutil.mavlink.MAV_RESULT_ACCEPTED: "ACCEPTED",
-                        mavutil.mavlink.MAV_RESULT_TEMPORARILY_REJECTED: "TEMPORARILY_REJECTED",
-                        mavutil.mavlink.MAV_RESULT_DENIED: "DENIED",
-                        mavutil.mavlink.MAV_RESULT_UNSUPPORTED: "UNSUPPORTED",
-                        mavutil.mavlink.MAV_RESULT_FAILED: "FAILED"
-                    }
-                    result_str = result_codes.get(ack.result, f"Unknown result code: {ack.result}")
-                    print(f"Result meaning: {result_str}")
-                    return False
+            print(f"Got COMMAND_ACK: {mavutil.mavlink.enums['MAV_CMD'][ack.command].name}: {mavutil.mavlink.enums['MAV_RESULT'][ack.result].name}")
+            if ack.result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
+                print(f"Successfully {'armed' if arm else 'disarmed'} the drone!")
+                return True
             else:
-                print(f"Received ACK for different command: {ack.command}")
+                print(f"Command was rejected: {mavutil.mavlink.enums['MAV_RESULT'][ack.result].name}")
                 return False
         else:
-            print(f"No acknowledgment received for {action} command after 5 seconds")
+            print(f"No acknowledgment received for {action} command")
             return False
     except Exception as e:
         print(f"Error executing {action} command: {e}")
@@ -344,7 +375,7 @@ def execute_takeoff_command(altitude):
             
         if 'GUIDED' not in current_mode:
             print(f"WARNING: Drone is not in GUIDED mode (current: {current_mode}). Setting GUIDED mode first.")
-            execute_set_mode('GUIDED')
+            execute_set_mode_command('GUIDED')
             time.sleep(1)  # Give time for mode change to take effect
         
         # Check if drone is armed
@@ -394,6 +425,63 @@ def execute_takeoff_command(altitude):
             
     except Exception as e:
         print(f"Error executing TAKEOFF command: {e}")
+        return False
+
+def execute_goto_command(lat, lon, alt):
+    """Execute a GOTO command to fly to a specific lat/lon/alt."""
+    global mav
+    try:
+        print(f"\n----- Attempting GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m -----")
+        
+        # Check if drone is in GUIDED mode (required for waypoint navigation)
+        last_heartbeat = mav.recv_match(type='HEARTBEAT', blocking=False)
+        current_mode = ''
+        if last_heartbeat:
+            base_mode = last_heartbeat.base_mode
+            custom_mode = last_heartbeat.custom_mode
+            current_mode = mavutil.mode_string_v10(base_mode, custom_mode)
+            
+        if 'GUIDED' not in current_mode:
+            print(f"WARNING: Drone is not in GUIDED mode (current: {current_mode}). Setting GUIDED mode first.")
+            execute_set_mode_command('GUIDED')
+            time.sleep(1)  # Give time for mode change to take effect
+        
+        # Check if drone is armed
+        is_armed = False
+        last_heartbeat = mav.recv_match(type='HEARTBEAT', blocking=False)
+        if last_heartbeat and hasattr(last_heartbeat, 'base_mode'):
+            is_armed = (last_heartbeat.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
+        
+        if not is_armed:
+            print("WARNING: Drone is not armed. Attempting to arm first.")
+            if not execute_arm_command(True):
+                print("Failed to arm. GOTO aborted.")
+                return False
+            # Wait for arm to take effect
+            time.sleep(1)
+        
+        # Send SET_POSITION_TARGET_GLOBAL_INT command (equivalent to GOTO)
+        print(f"Sending GOTO command to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m")
+        mav.mav.set_position_target_global_int_send(
+            0,       # time_boot_ms (not used)
+            mav.target_system,
+            mav.target_component,
+            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,  # frame
+            0b110111111000,  # type_mask (position only: lat, lon, alt)
+            int(lat * 1e7),  # lat_int (scaled)
+            int(lon * 1e7),  # lon_int (scaled)
+            float(alt),      # alt in meters
+            0, 0, 0,  # vx, vy, vz (not used)
+            0, 0, 0,  # afx, afy, afz (not used)
+            0, 0      # yaw, yaw_rate (not used)
+        )
+        
+        print(f"GOTO command sent successfully to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m")
+        # There's no direct ACK for SET_POSITION_TARGET_GLOBAL_INT, so we assume success if no exception
+        return True
+            
+    except Exception as e:
+        print(f"Error executing GOTO command: {e}")
         return False
 
 def main():

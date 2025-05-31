@@ -20,8 +20,7 @@ from mavlink_utils import (
     MAV_RESULT_STR,
     MAV_TYPE_STR,
     MAV_STATE_STR,
-    MAV_AUTOPILOT_STR,
-    MAV_MODE_FLAG_ENUM
+    MAV_AUTOPILOT_STR
 )
 
 def format_heartbeat(msg):
@@ -30,11 +29,25 @@ def format_heartbeat(msg):
     vehicle_type_str = MAV_TYPE_STR.get(msg.type, f"UNKNOWN({msg.type})")
     autopilot_type_str = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN({msg.autopilot})")
     
-    # Decode base mode flags
+    # Decode base mode flags using direct constants to avoid EnumEntry issues
     base_mode_flags = []
-    for flag_name, flag_value in MAV_MODE_FLAG_ENUM.items():
-        if msg.base_mode & flag_value:
-            base_mode_flags.append(flag_name.replace('MAV_MODE_FLAG_', ''))
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
+        base_mode_flags.append("CUSTOM_MODE_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_TEST_ENABLED:
+        base_mode_flags.append("TEST_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_AUTO_ENABLED:
+        base_mode_flags.append("AUTO_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_GUIDED_ENABLED:
+        base_mode_flags.append("GUIDED_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_STABILIZE_ENABLED:
+        base_mode_flags.append("STABILIZE_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_HIL_ENABLED:
+        base_mode_flags.append("HIL_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED:
+        base_mode_flags.append("MANUAL_INPUT_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED:
+        base_mode_flags.append("SAFETY_ARMED")
+    
     base_mode_str = ", ".join(base_mode_flags) if base_mode_flags else "NONE"
     
     # Get custom mode string

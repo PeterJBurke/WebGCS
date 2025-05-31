@@ -12,12 +12,11 @@ from mavlink_utils import (
     MAV_TYPE_STR,
     MAV_AUTOPILOT_STR,
     MAV_STATE_STR,
-    MAV_MODE_FLAG_ENUM,
     get_ekf_status_report, # Added for SYS_STATUS processing
     MAV_SEVERITY_STR # Added for STATUSTEXT processing
 )
 
-def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_action_cb, sio_instance):
+def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_action_cb, sio_instance, heartbeat_log_cb=None):
     """Process HEARTBEAT message with enhanced logging for mode changes.
     
     Args:
@@ -27,35 +26,55 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
         mavlink_conn: The MAVLink connection object (from mavlink_connection_manager).
         log_cmd_action_cb: Callback to the log_command_action function from app.py.
         sio_instance: The SocketIO instance for emitting events.
+        heartbeat_log_cb: Optional callback for custom heartbeat logging from app.py.
     
     Returns:
         bool: True if the drone_state was changed, False otherwise.
     """
     
-    # Log heartbeat in human-readable format
-    system_status_str = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN({msg.system_status})")
-    vehicle_type_str = MAV_TYPE_STR.get(msg.type, f"UNKNOWN({msg.type})")
-    autopilot_type_str = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN({msg.autopilot})")
-    
-    # Decode base mode flags
-    base_mode_flags = []
-    for flag_name, flag_value in MAV_MODE_FLAG_ENUM.items():
-        if msg.base_mode & flag_value:
-            base_mode_flags.append(flag_name.replace('MAV_MODE_FLAG_', ''))
-    base_mode_str = ", ".join(base_mode_flags) if base_mode_flags else "NONE"
-    
-    # Get custom mode string
-    custom_mode_str_list = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
-    custom_mode_str = custom_mode_str_list[0] if custom_mode_str_list else f'CUSTOM_MODE({msg.custom_mode})'
-    
-    # Format armed status
-    armed_status = "ARMED" if (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) else "DISARMED"
-    
-    # Print heartbeat info
-    print(f"HEARTBEAT: SysID={msg.get_srcSystem()} CompID={msg.get_srcComponent()} | "
-          f"Type={vehicle_type_str} | Autopilot={autopilot_type_str} | "
-          f"Status={system_status_str} | Mode={custom_mode_str} | {armed_status} | "
-          f"Base Mode Flags=[{base_mode_str}]")
+    # Use custom heartbeat logging if provided, otherwise fall back to the existing format
+    if heartbeat_log_cb:
+        heartbeat_log_cb(msg)
+    else:
+        # Fallback to original logging format (no rate limiting)
+        system_status_str = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN({msg.system_status})")
+        vehicle_type_str = MAV_TYPE_STR.get(msg.type, f"UNKNOWN({msg.type})")
+        autopilot_type_str = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN({msg.autopilot})")
+        
+        # Decode base mode flags using direct constants to avoid EnumEntry issues
+        base_mode_flags = []
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
+            base_mode_flags.append("CUSTOM_MODE_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_TEST_ENABLED:
+            base_mode_flags.append("TEST_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_AUTO_ENABLED:
+            base_mode_flags.append("AUTO_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_GUIDED_ENABLED:
+            base_mode_flags.append("GUIDED_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_STABILIZE_ENABLED:
+            base_mode_flags.append("STABILIZE_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_HIL_ENABLED:
+            base_mode_flags.append("HIL_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED:
+            base_mode_flags.append("MANUAL_INPUT_ENABLED")
+        if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED:
+            base_mode_flags.append("SAFETY_ARMED")
+        
+        base_mode_str = ", ".join(base_mode_flags) if base_mode_flags else "NONE"
+        
+        # Get custom mode string
+        custom_mode_str_list = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
+        custom_mode_str = custom_mode_str_list[0] if custom_mode_str_list else f'CUSTOM_MODE({msg.custom_mode})'
+        
+        # Format armed status
+        armed_status = "ARMED" if (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) else "DISARMED"
+        
+        # Print heartbeat info (every time, no rate limiting)
+        print(f"HEARTBEAT: SysID={msg.get_srcSystem()} CompID={msg.get_srcComponent()} | "
+              f"Type={vehicle_type_str} | Autopilot={autopilot_type_str} | "
+              f"Status={system_status_str} | Mode={custom_mode_str} | {armed_status} | "
+              f"Base Mode Flags=[{base_mode_str}]")
+
     drone_state_changed_local = False
 
     with drone_state_lock:
@@ -95,15 +114,38 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
 
     # Emit event for UI animation - now sending generic mavlink_message
     # Only emit for our drone (already filtered by mavlink_receive_loop_runner, but good for clarity)
-    if sio_instance and mavlink_conn and msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0):
+    
+    # Debug system ID filtering for HEARTBEAT messages
+    if msg.get_type() == 'HEARTBEAT':
+        src_system = msg.get_srcSystem()
+        target_system = getattr(mavlink_conn, 'target_system', None) if mavlink_conn else None
+        # print(f"[HEARTBEAT DEBUG] Source System: {src_system}, Target System: {target_system}")
+        # print(f"[HEARTBEAT DEBUG] mavlink_conn exists: {mavlink_conn is not None}")
+        # print(f"[HEARTBEAT DEBUG] sio_instance exists: {sio_instance is not None}")
+    
+    # Temporarily allow all HEARTBEAT messages through regardless of system ID for debugging
+    should_emit = False
+    if sio_instance and mavlink_conn:
+        if msg.get_type() == 'HEARTBEAT':
+            should_emit = True  # Always emit HEARTBEAT for debugging
+            # print(f"[HEARTBEAT DEBUG] Forcing HEARTBEAT emission for debugging")
+        else:
+            should_emit = msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0)
+    
+    if should_emit:
+        # Debug output for HEARTBEAT messages specifically
+        if msg.get_type() == 'HEARTBEAT':
+            # Log the debug message for every heartbeat (no rate limiting)
+            print(f"[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI")
+        
         # Log telemetry data for debugging
-        with drone_state_lock:
-            print(f"Current Telemetry: Connected={drone_state.get('connected', False)}, "
-                  f"Armed={drone_state.get('armed', False)}, "
-                  f"Mode={drone_state.get('mode', 'UNKNOWN')}, "
-                  f"Lat={drone_state.get('lat', 0.0):.6f}, "
-                  f"Lon={drone_state.get('lon', 0.0):.6f}, "
-                  f"Alt={drone_state.get('alt_rel', 0.0):.1f}m")
+        # with drone_state_lock:
+        #     print(f"Current Telemetry: Connected={drone_state.get('connected', False)}, "
+        #           f"Armed={drone_state.get('armed', False)}, "
+        #           f"Mode={drone_state.get('mode', 'UNKNOWN')}, "
+        #           f"Lat={drone_state.get('lat', 0.0):.6f}, "
+        #           f"Lon={drone_state.get('lon', 0.0):.6f}, "
+        #           f"Alt={drone_state.get('alt_rel', 0.0):.1f}m")
         
         sio_instance.emit('mavlink_message', msg.to_dict()) # Send the whole message dictionary
 

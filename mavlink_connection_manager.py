@@ -5,6 +5,9 @@ from pymavlink import mavutil
 from gevent.event import Event
 import gevent # For gevent.sleep
 
+# Import configuration constants
+from config import AP_CUSTOM_MODES
+
 # Import from our own modules
 from mavlink_message_processor import (
     process_heartbeat,
@@ -228,7 +231,8 @@ def mavlink_receive_loop_runner(
     execute_mission_request_cb,        # From app.py: _execute_mission_request
     heartbeat_timeout_config,          # From app.py: HEARTBEAT_TIMEOUT
     request_stream_rate_hz_config,     # From app.py: REQUEST_STREAM_RATE_HZ
-    command_ack_timeout_config         # From app.py: COMMAND_ACK_TIMEOUT
+    command_ack_timeout_config,        # From app.py: COMMAND_ACK_TIMEOUT
+    heartbeat_log_cb=None              # Optional callback for custom heartbeat logging
 ):
     """Main loop for receiving MAVLink messages and managing connection state."""
     global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance, feature_callbacks
@@ -326,14 +330,26 @@ def mavlink_receive_loop_runner(
 
                 if handler:
                     try:
-                        changed_by_handler = handler(
-                            msg,
-                            drone_state,
-                            drone_state_lock,
-                            mavlink_connection_instance.mav, # Pass the .mav object
-                            log_function, # Passed as log_cmd_action_cb in handlers
-                            sio
-                        )
+                        # Pass heartbeat_log_cb only to the heartbeat handler
+                        if msg_type == 'HEARTBEAT':
+                            changed_by_handler = handler(
+                                msg,
+                                drone_state,
+                                drone_state_lock,
+                                mavlink_connection_instance.mav, # Pass the .mav object
+                                log_function, # Passed as log_cmd_action_cb in handlers
+                                sio,
+                                heartbeat_log_cb
+                            )
+                        else:
+                            changed_by_handler = handler(
+                                msg,
+                                drone_state,
+                                drone_state_lock,
+                                mavlink_connection_instance.mav, # Pass the .mav object
+                                log_function, # Passed as log_cmd_action_cb in handlers
+                                sio
+                            )
                         if changed_by_handler:
                             drone_state_changed_iteration = True
                     except Exception as e:
@@ -406,3 +422,6 @@ def mavlink_receive_loop_runner(
                 drone_state['connected'] = False
             sio.emit('drone_disconnected', {'reason': f'Receive loop error: {e}'})
             time.sleep(1) # Brief pause before attempting to reconnect
+        
+        # Add a small sleep to prevent 100% CPU usage and allow Flask server to process requests
+        gevent.sleep(0.01)  # 10ms sleep to process messages frequently while keeping reasonable CPU usage

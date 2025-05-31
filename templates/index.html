@@ -108,7 +108,12 @@
                     <h2>Status</h2>
                     <div class="status-grid">
                         <div class="status-row">
-                            <div class="status-item"><strong>Connection:</strong> <span id="status-connection" class="disconnected">Disconnected</span><span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span></div>
+                            <div class="status-item">
+                                <strong>Connection:</strong>
+                                <span id="status-connection" class="disconnected">Disconnected</span>
+                                <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
+                                <span id="heartbeat-counter" style="font-size: 10px; margin-left: 5px; color: #666;">(0)</span>
+                            </div>
                             <!-- *** ADDED: EKF Status Display Element *** -->
                             <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
                             <div class="status-item"><strong>Mode:</strong> <span id="mode_value">---</span></div>
@@ -332,24 +337,6 @@
             addMessage("Disconnected from backend.", "error"); 
             document.getElementById("status-connection").textContent = "Disconnected"; 
             document.getElementById("status-connection").className = "disconnected"; 
-            armingStatusOverlay.textContent = "DISARMED"; 
-            armingStatusOverlay.classList.remove("pfd-armed"); 
-            batteryValueSpan.textContent = "--.-"; 
-            modeValueSpan.textContent = "------"; 
-            currentValueSpan.textContent = "--.-"; 
-            gpsFixValueSpan.textContent = "---"; 
-            gpsSatsValueSpan.textContent = "0"; 
-            gpsHdopValueSpan.textContent = "--.-"; 
-            latValueSpan.textContent = "--.------"; 
-            lonValueSpan.textContent = "--.------"; 
-            const heartIconDisc = document.getElementById('heartbeat-indicator'); 
-            if(heartIconDisc) heartIconDisc.classList.remove('connected-state'); 
-            ekfStatusSpan.textContent = 'N/A'; 
-            ekfStatusSpan.className = 'ekf-status ekf-error'; 
-            drawAttitudeIndicator(0, 0, 0); 
-            drawAirspeedTape(0); 
-            drawAltitudeTape(0); 
-            setControlsDisabled(true); 
         });
         
         socket.on("connect_error", (err) => { 
@@ -369,23 +356,50 @@
             addMessage(data.text, data.type); 
         });
 
-        socket.on("telemetry_update", (state) => {
-            console.log("Telemetry update received:", state);
-            console.log("Detailed telemetry data:", JSON.stringify(state, null, 2));
+        // Add debug logging for ALL WebSocket events
+        let heartbeatCount = 0;
+        const originalOn = socket.on;
+        socket.on = function(event, handler) {
+            return originalOn.call(this, event, function(...args) {
+                if (event === 'mavlink_message') {
+                    // console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args[0]);
+                    if (args[0] && args[0].mavpackettype === 'HEARTBEAT') {
+                        // console.log(`[WEBSOCKET DEBUG] *** HEARTBEAT MESSAGE RECEIVED #${heartbeatCount} ***`, args[0]);
+                    }
+                } else if (event !== 'telemetry_update') {
+                    // Log all events except telemetry_update to avoid spam
+                    // console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args);
+                }
+                return handler.apply(this, args);
+            });
+        };
+
+        // Test message handlers - comment out for clean HEARTBEAT tracing
+        socket.on('websocket_test', function(data) {
+            // console.log('[WEBSOCKET TEST] Received test message:', data);
+        });
+
+        socket.on('debug_message', function(data) {
+            // console.log('[DEBUG MESSAGE] Received debug message:', data);
+        });
+
+        socket.on("telemetry_update", (data) => {
+            // console.log("Telemetry update received:", data);
+            // console.log("Detailed telemetry data:", JSON.stringify(data, null, 2));
             
-            const isConnected = state.connected;
+            const isConnected = data.connected;
             document.getElementById("status-connection").textContent = isConnected ? "Drone Connected" : "Drone Disconnected";
             document.getElementById("status-connection").className = isConnected ? "connected" : "disconnected";
             setControlsDisabled(!isConnected);
             
             // Add debug message to the UI
-            addMessage(`Telemetry update: Connected=${isConnected}, Mode=${state.mode}, Lat=${state.lat}, Lon=${state.lon}`, "info");
+            addMessage(`Telemetry update: Connected=${isConnected}, Mode=${data.mode}, Lat=${data.lat}, Lon=${data.lon}`, "info");
 
             const heartIconElement = document.getElementById('heartbeat-indicator');
             if (heartIconElement) { heartIconElement.classList.toggle('connected-state', isConnected); }
 
             // Update EKF Status Display
-            const ekfReport = state.ekf_status_report || 'N/A';
+            const ekfReport = data.ekf_status_report || 'N/A';
             if (ekfStatusSpan) {
                 ekfStatusSpan.textContent = ekfReport;
                 ekfStatusSpan.className = 'ekf-status '; // Reset classes
@@ -399,20 +413,20 @@
             }
 
             // Update text overlays
-            const mode = (state.mode || "UNKNOWN").toUpperCase(); 
-            const voltage = state.battery_voltage || 0; 
-            const current = state.battery_current ?? -1; 
-            const armed = state.armed || false; 
-            const lat = state.lat ?? 0; 
-            const lon = state.lon ?? 0; 
-            const fix = state.gps_fix_type ?? 0; 
-            const sats = state.satellites_visible ?? 0; 
-            const hdop = state.hdop ?? 99.9; 
+            const mode = (data.mode || "UNKNOWN").toUpperCase(); 
+            const voltage = data.battery_voltage || 0; 
+            const current = data.battery_current ?? -1; 
+            const armed = data.armed || false; 
+            const lat = data.lat ?? 0; 
+            const lon = data.lon ?? 0; 
+            const fix = data.gps_fix_type ?? 0; 
+            const sats = data.satellites_visible ?? 0; 
+            const hdop = data.hdop ?? 99.9; 
             
-            console.log("Updating display values:", {
-                mode, voltage, current, armed, 
-                lat, lon, fix, sats, hdop
-            });
+            // console.log("Updating display values:", {
+            //     mode: mode, voltage: voltage, current: current, armed: armed, 
+            //     lat: lat, lon: lon, fix: fix, sats: sats, hdop: hdop
+            // });
             
             batteryValueSpan.textContent = voltage.toFixed(2); 
             modeValueSpan.textContent = mode; 
@@ -436,17 +450,16 @@
             lonValueSpan.textContent = lon.toFixed(7);
 
             // Update PFD canvas drawings
-            const airspeed = state.airspeed || 0; 
-            const altRel = state.alt_rel || 0; 
-            const heading = state.heading || 0; 
-            const pitch = (state.pitch || 0) * RAD_TO_DEG; 
-            const roll = (state.roll || 0) * RAD_TO_DEG;
+            const airspeed = data.airspeed || 0; 
+            const altRel = data.alt_rel || 0; 
+            const heading = data.heading || 0; 
+            const pitch = (data.pitch || 0) * RAD_TO_DEG; 
+            const roll = (data.roll || 0) * RAD_TO_DEG;
             
-            console.log("Updating PFD values:", {
-                airspeed, altRel, heading,
-                pitch: pitch.toFixed(1), 
-                roll: roll.toFixed(1)
-            });
+            // console.log("Updating PFD values:", {
+            //     airspeed: airspeed, altRel: altRel, heading: heading, 
+            //     pitch: pitch.toFixed(1), roll: roll.toFixed(1)
+            // });
             
             drawAttitudeIndicator(pitch, roll, heading); 
             drawAirspeedTape(airspeed); 
@@ -472,8 +485,8 @@
                 } 
             } 
             
-            const homeLat = state.home_lat; 
-            const homeLon = state.home_lon; 
+            const homeLat = data.home_lat; 
+            const homeLon = data.home_lon; 
             
             if (isConnected && homeLat != null && homeLon != null && homeLat !== 0 && homeLon !== 0) { 
                 const homeLatLng = [homeLat, homeLon]; 
@@ -526,7 +539,6 @@
                 // Remove any existing target marker when deactivating
                 if (flyToTargetMarker) {
                     map.removeLayer(flyToTargetMarker);
-                    flyToTargetMarker = null;
                 }
             }
         });
@@ -668,92 +680,74 @@
             // The simple 'command_result' handler might still be needed for basic send failures.
         });
 
-        // Heartbeat animation trigger
+        // Heartbeat trigger function
+        function triggerHeartbeat() {
+            const heartIcon = document.getElementById('heartbeat-indicator');
+            if (heartIcon) {
+                // Remove existing animation class to reset
+                heartIcon.classList.remove('beating');
+                
+                // Force browser reflow to ensure class removal takes effect
+                heartIcon.offsetHeight;
+                
+                // Add the beating class to start animation
+                heartIcon.classList.add('beating');
+                
+                console.log(`[HB-BEAT] Heart animation triggered #${heartbeatCount}`);
+                
+                // Remove the class after animation completes (0.8s)
+                setTimeout(() => {
+                    heartIcon.classList.remove('beating');
+                    // console.log('[HEARTBEAT TRIGGER] Heart animation ended');
+                }, 800);
+            }
+        }
+
+        // HEARTBEAT message handler - updates connection status and UI
         socket.on("mavlink_message", (msg) => {
             if (msg && msg.mavpackettype === 'HEARTBEAT') {
-                // --- Start of HUD Update Block ---
-                console.log('[HEARTBEAT] Raw:', JSON.parse(JSON.stringify(msg)));
-                console.log('[HEARTBEAT] Parsed - Autopilot:', msg.autopilot, 'Type:', msg.type, 'Custom mode:', msg.custom_mode, 'Base mode:', msg.base_mode);
-
-                const heartIcon = document.getElementById('heartbeat-indicator');
-                if (heartIcon) {
-                    if (!heartIcon.classList.contains('beating')) {
-                        heartIcon.classList.add('beating');
-                        heartIcon.addEventListener('animationend', () => {
-                            heartIcon.classList.remove('beating');
-                        }, { once: true });
-                    }
+                // Clean HEARTBEAT tracing - count each received message
+                heartbeatCount++;
+                const now = Date.now();
+                console.log(`[HB-RECV] Frontend received HEARTBEAT #${heartbeatCount} at ${now}`);
+                
+                // Trigger heart animation on every HEARTBEAT message
+                triggerHeartbeat();
+                
+                // Update heartbeat counter
+                const counterElement = document.getElementById('heartbeat-counter');
+                if (counterElement) {
+                    counterElement.textContent = `(${heartbeatCount})`;
                 }
 
-                // Update Arm Status
+                // Update Arm Status (no logging)
                 const isArmed = (msg.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) !== 0;
                 const armString = isArmed ? 'ARMED' : 'DISARMED';
-                console.log('[HEARTBEAT] Arm status - isArmed:', isArmed, 'armString:', armString);
 
                 const armStatusValueEl = document.getElementById('arm_status_value');
                 if (armStatusValueEl) {
                     armStatusValueEl.textContent = armString;
-                    console.log('[HEARTBEAT] Set arm_status_value.textContent to:', armString);
-                } else {
-                    console.warn('[HEARTBEAT] Element with ID "arm_status_value" not found.');
                 }
 
-                // const hudArmStatusEl = document.getElementById('hud_arm_status');
-                // if (hudArmStatusEl) {
-                //     hudArmStatusEl.textContent = armString;
-                //     console.log('[HEARTBEAT] Set hud_arm_status.textContent to:', armString);
-                // } else {
-                //     // console.warn('[HEARTBEAT] Element with ID "hud_arm_status" not found.');
-                // }
-                
-                // Attempt to update PFD overlay for arming status
-                if (typeof updatePfdOverlay === "function") { // Check if function exists
-                    updatePfdOverlay({ arming_status: armString });
-                    console.log('[HEARTBEAT] Called updatePfdOverlay for arming_status:', armString);
-                } else {
-                    const pfdArmEl = document.getElementById('arming-status-overlay'); 
-                    if (pfdArmEl) {
-                        pfdArmEl.textContent = armString;
-                        console.log('[HEARTBEAT] Directly set arming-status-overlay to:', armString);
-                    } else {
-                        // console.warn('[HEARTBEAT] Element with ID "arming-status-overlay" not found for direct update.');
-                    }
+                // Update PFD overlay for arming status (no logging)
+                const pfdArmEl = document.getElementById('arming-status-overlay'); 
+                if (pfdArmEl) {
+                    pfdArmEl.textContent = armString;
                 }
 
-                // Update Mode
+                // Update Mode (no logging)
                 const modeString = getModeString(msg.autopilot, msg.type, msg.custom_mode);
-                console.log('[HEARTBEAT] Result from getModeString:', modeString);
 
                 const modeValueEl = document.getElementById('mode_value');
                 if (modeValueEl) {
                     modeValueEl.textContent = modeString;
-                    console.log('[HEARTBEAT] Set mode_value.textContent to:', modeString);
-                } else {
-                    console.warn('[HEARTBEAT] Element with ID "mode_value" not found.');
                 }
 
-                // const hudModeEl = document.getElementById('hud_mode');
-                // if (hudModeEl) {
-                //     hudModeEl.textContent = modeString;
-                //     console.log('[HEARTBEAT] Set hud_mode.textContent to:', modeString);
-                // } else {
-                //     // console.warn('[HEARTBEAT] Element with ID "hud_mode" not found.');
-                // }
-
-                // Attempt to update PFD overlay for mode
-                if (typeof updatePfdOverlay === "function") { // Check if function exists
-                    updatePfdOverlay({ mode: modeString });
-                    console.log('[HEARTBEAT] Called updatePfdOverlay for mode:', modeString);
-                } else {
-                    const pfdModeEl = document.getElementById('mode-overlay');
-                    if (pfdModeEl) {
-                        pfdModeEl.textContent = "Mode: " + modeString;
-                        console.log('[HEARTBEAT] Directly set mode-overlay to: Mode:', modeString);
-                    } else {
-                        // console.warn('[HEARTBEAT] Element with ID "mode-overlay" not found for direct update.');
-                    }
+                // Update PFD overlay for mode (no logging)
+                const pfdModeEl = document.getElementById('mode-overlay');
+                if (pfdModeEl) {
+                    pfdModeEl.textContent = "Mode: " + modeString;
                 }
-                // --- End of HUD Update Block ---
             }
         });
 

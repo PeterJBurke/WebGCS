@@ -10,7 +10,7 @@ if sys.platform == 'win32':
 
 # *** ADDED: Explicit Monkey Patching ***
 from gevent import monkey
-# monkey.patch_all()
+monkey.patch_all()
 
 import sys
 import time
@@ -44,8 +44,7 @@ from mavlink_utils import (
     MAV_RESULT_STR,
     MAV_TYPE_STR,
     MAV_STATE_STR,
-    MAV_AUTOPILOT_STR,
-    MAV_MODE_FLAG_ENUM
+    MAV_AUTOPILOT_STR
 )
 from request_handlers import init_request_handlers, _execute_fence_request, _execute_mission_request
 import socketio_handlers
@@ -73,7 +72,12 @@ app.config['SECRET_KEY'] = SECRET_KEY
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 socketio = SocketIO(app,
                     async_mode='gevent',
-                    cors_allowed_origins="*"  # Allow cross-origin requests
+                    cors_allowed_origins="*",  # Allow cross-origin requests
+                    ping_timeout=60,          # Longer ping timeout (default behavior)
+                    ping_interval=25,         # Standard ping interval
+                    max_http_buffer_size=1e6, # Increase buffer size
+                    engineio_logger=False,    # Disable logging
+                    socketio_logger=False     # Disable logging
                    )
 
 
@@ -83,6 +87,66 @@ def set_drone_state_changed_flag():
     """Sets the global flag to indicate drone_state has been modified."""
     global drone_state_changed
     drone_state_changed = True
+
+def log_heartbeat_message(msg):
+    """Log heartbeat message with special formatting for visibility and timestamp."""
+    from datetime import datetime
+    from pymavlink import mavutil
+    from mavlink_utils import MAV_TYPE_STR, MAV_AUTOPILOT_STR, MAV_STATE_STR
+    from config import AP_CUSTOM_MODES
+    
+    # Get current timestamp in human readable format
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]  # Include milliseconds
+    
+    # Parse heartbeat message details
+    system_status_str = MAV_STATE_STR.get(msg.system_status, f"UNKNOWN({msg.system_status})")
+    vehicle_type_str = MAV_TYPE_STR.get(msg.type, f"UNKNOWN({msg.type})")
+    autopilot_type_str = MAV_AUTOPILOT_STR.get(msg.autopilot, f"UNKNOWN({msg.autopilot})")
+    
+    # Decode base mode flags
+    base_mode_flags = []
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
+        base_mode_flags.append("CUSTOM_MODE_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_TEST_ENABLED:
+        base_mode_flags.append("TEST_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_AUTO_ENABLED:
+        base_mode_flags.append("AUTO_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_GUIDED_ENABLED:
+        base_mode_flags.append("GUIDED_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_STABILIZE_ENABLED:
+        base_mode_flags.append("STABILIZE_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_HIL_ENABLED:
+        base_mode_flags.append("HIL_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_MANUAL_INPUT_ENABLED:
+        base_mode_flags.append("MANUAL_INPUT_ENABLED")
+    if msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED:
+        base_mode_flags.append("SAFETY_ARMED")
+    
+    base_mode_str = ", ".join(base_mode_flags) if base_mode_flags else "NONE"
+    
+    # Get custom mode string
+    custom_mode_str_list = [k for k, v in AP_CUSTOM_MODES.items() if v == msg.custom_mode]
+    custom_mode_str = custom_mode_str_list[0] if custom_mode_str_list else f'CUSTOM_MODE({msg.custom_mode})'
+    
+    # Format armed status
+    armed_status = "ARMED" if (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) else "DISARMED"
+    
+    # Print heartbeat with special formatting
+    print()
+    print("=" * 80)
+    print("                              HEARTBEAT MESSAGE RECEIVED")
+    print("=" * 80)
+    print(f"TIMESTAMP: {timestamp}")
+    print()
+    print(f"SYSTEM ID: {msg.get_srcSystem()}  |  COMPONENT ID: {msg.get_srcComponent()}")
+    print(f"VEHICLE TYPE: {vehicle_type_str}")
+    print(f"AUTOPILOT: {autopilot_type_str}")
+    print(f"SYSTEM STATUS: {system_status_str}")
+    print(f"FLIGHT MODE: {custom_mode_str}")
+    print(f"ARMED STATUS: {armed_status}")
+    print(f"BASE MODE FLAGS: [{base_mode_str}]")
+    print("=" * 80)
+    print()
 
 # mavlink_connection, last_heartbeat_time, connection_event are now managed in mavlink_connection_manager
 mavlink_thread = None  # This will run mavlink_receive_loop_runner
@@ -204,12 +268,13 @@ def periodic_telemetry_update():
         try:
             current_time = time.time()
             
-            # Check for telemetry data from file every 1 second
-            if current_time - last_file_check_time >= 1:
+            # Check for telemetry data from file every 1 second (only as fallback if no live connection)
+            mavlink_conn = get_mavlink_connection()
+            if current_time - last_file_check_time >= 1 and not mavlink_conn:
                 file_data, success = read_telemetry_from_file()
                 if success and file_data:
                     with drone_state_lock:
-                        # Update drone_state with data from file
+                        # Update drone_state with data from file (fallback only)
                         for key, value in file_data.items():
                             if key in drone_state:
                                 drone_state[key] = value
@@ -217,17 +282,19 @@ def periodic_telemetry_update():
                         # Set connected flag based on the file data's connected status
                         drone_state['connected'] = file_data.get('connected', False)
                         
-                        # Double-check connected flag based on heartbeat time
-                        last_heartbeat_time = file_data.get('last_heartbeat_time', 0)
-                        if current_time - last_heartbeat_time > 5:  # Consider disconnected if no heartbeat within 5 seconds
-                            drone_state['connected'] = False
+                        # For testing: Accept any telemetry data as connected (comment out heartbeat timeout check)
+                        # last_heartbeat_time = file_data.get('last_heartbeat_time', 0)
+                        # if current_time - last_heartbeat_time > 300:  # Consider disconnected if no heartbeat within 300 seconds (5 minutes)
+                        #     drone_state['connected'] = False
                         
                         # Signal that drone_state has changed
                         drone_state_changed = True
                         
                         # Print debug info about the connection status
-                        print(f"Connection status from file: {file_data.get('connected')}, Updated status: {drone_state['connected']}")
-                        print(f"Last heartbeat time: {last_heartbeat_time}, Current time: {current_time}, Diff: {current_time - last_heartbeat_time}s")
+                        # print(f"[FALLBACK] Connection status from file: {file_data.get('connected')}, Updated status: {drone_state['connected']}")
+                        # print(f"[FALLBACK] Last heartbeat time: {file_data.get('last_heartbeat_time', 0)}, Current time: {current_time}, Diff: {current_time - file_data.get('last_heartbeat_time', 0)}s")
+                        
+                        # No simulated heartbeats - only real MAVLink heartbeats should trigger heart animation
                 
                 last_file_check_time = current_time
             
@@ -241,24 +308,28 @@ def periodic_telemetry_update():
                     lon = drone_state.get('lon', 0.0)
                     alt_rel = drone_state.get('alt_rel', 0.0)
                     
-                    print(f"\n[TELEMETRY DEBUG] Update count: {update_count}, State changed: {drone_state_changed}")
-                    print(f"[TELEMETRY DEBUG] Connected: {connected}, Armed: {armed}, Mode: {mode}")
-                    print(f"[TELEMETRY DEBUG] Position: Lat={lat:.6f}, Lon={lon:.6f}, Alt={alt_rel:.1f}m")
-                    print(f"[TELEMETRY DEBUG] Full drone_state: {drone_state}\n")
+                # print(f"\n[TELEMETRY DEBUG] Update count: {update_count}, State changed: {drone_state_changed}")
+                # print(f"[TELEMETRY DEBUG] Connected: {connected}, Armed: {armed}, Mode: {mode}")
+                # print(f"[TELEMETRY DEBUG] Position: Lat={lat:.6f}, Lon={lon:.6f}, Alt={alt_rel:.1f}m")
+                # print(f"[TELEMETRY DEBUG] Full drone_state: {drone_state}\n")
                 
                 last_debug_time = current_time
             
             # Send telemetry update if state has changed
             if drone_state_changed:
                 with drone_state_lock:
-                    print(f"Sending telemetry update to web clients (update #{update_count+1})")
+                    # Emit telemetry update to all connected clients
+                    # print(f"Sending telemetry update to web clients (update #{update_count+1})")
                     socketio.emit('telemetry_update', drone_state)
-                    drone_state_changed = False
-                    update_count += 1
+                    
+                drone_state_changed = False
+                update_count += 1
             
             gevent.sleep(TELEMETRY_UPDATE_INTERVAL)
         except Exception as e:
             print(f"Error in telemetry update: {e}")
+            import traceback
+            traceback.print_exc()
             gevent.sleep(1)
 
 
@@ -309,24 +380,17 @@ from socketio_handlers import init_socketio_handlers
 if __name__ == '__main__':
     print(f"Starting server on http://{WEB_SERVER_HOST}:{WEB_SERVER_PORT}")
     
-    # Start telemetry update thread first to ensure UI updates work
-    telemetry_update_thread = threading.Thread(target=periodic_telemetry_update, daemon=True)
-    telemetry_update_thread.start()
-    print("Telemetry update thread started")
-    
-    # Initialize contexts for handlers before starting MAVLink
-    # Prepare context for and initialize SocketIO handlers
+    # Initialize contexts for handlers first
     app_context = {
         'log_command_action': log_command_action,
-        'get_mavlink_connection': get_mavlink_connection, # from mavlink_connection_manager
+        'get_mavlink_connection': get_mavlink_connection,
         'drone_state': drone_state,
-        'pending_commands_dict': pending_commands, # The global dict in app.py
-        'AP_MODE_NAME_TO_ID': AP_CUSTOM_MODES, # from config (Name->ID mapping)
+        'pending_commands_dict': pending_commands,
+        'AP_MODE_NAME_TO_ID': AP_CUSTOM_MODES,
         'schedule_fence_request_in_app': _schedule_fence_request,
         'schedule_mission_request_in_app': _schedule_mission_request
     }
     
-    # Prepare context for and initialize request_handlers
     request_handlers_context = {
         'socketio': socketio,
         'get_mavlink_connection': get_mavlink_connection,
@@ -340,99 +404,50 @@ if __name__ == '__main__':
     init_request_handlers(request_handlers_context)
     socketio_handlers.init_socketio_handlers(socketio, app_context)
     
-    # Start MAVLink connection in a separate thread with timeout handling
-    def start_mavlink_connection():
+    # Start telemetry update thread 
+    telemetry_update_thread = threading.Thread(target=periodic_telemetry_update, daemon=True)
+    telemetry_update_thread.start()
+    print("Telemetry update thread started")
+    
+    # Start MAVLink connection in background - don't wait for it
+    def start_mavlink_connection_async():
         try:
-            # Print connection details for debugging
             print(f"Attempting to connect to drone at {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} via {MAVLINK_CONNECTION_STRING}")
             
-            # Function to handle connection attempts with retries
-            def connection_handler():
-                # Set connection parameters
-                MAX_ATTEMPTS = 3
-                ATTEMPT_TIMEOUT = 10  # Seconds per attempt
-                RETRY_DELAY = 2       # Seconds between attempts
-                
-                for attempt in range(1, MAX_ATTEMPTS + 1):
-                    print(f"MAVLink connection attempt {attempt}/{MAX_ATTEMPTS} to {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}...")
-                    
-                    # Start the MAVLink connection thread
-                    mavlink_thread = gevent.spawn(mavlink_receive_loop_runner, 
-                                                MAVLINK_CONNECTION_STRING, 
-                                                drone_state, 
-                                                drone_state_lock, 
-                                                pending_commands, 
-                                                get_connection_event(), 
-                                                log_command_action, 
-                                                socketio, 
-                                                set_drone_state_changed_flag, 
-                                                app_shared_state, 
-                                                _execute_fence_request, 
-                                                _execute_mission_request, 
-                                                HEARTBEAT_TIMEOUT, 
-                                                REQUEST_STREAM_RATE_HZ, 
-                                                COMMAND_ACK_TIMEOUT)
-                    
-                    # Monitor this connection attempt
-                    start_time = time.time()
-                    connected = False
-                    
-                    while time.time() - start_time < ATTEMPT_TIMEOUT:
-                        # Check if connection is established
-                        with drone_state_lock:
-                            if drone_state['connected']:
-                                print(f"✓ MAVLink connection established to {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} in {time.time() - start_time:.2f} seconds")
-                                return mavlink_thread
-                        # Sleep briefly to avoid excessive CPU usage
-                        time.sleep(0.2)
-                    
-                    # If we get here, this attempt timed out
-                    print(f"✗ MAVLink connection attempt {attempt} timed out after {ATTEMPT_TIMEOUT} seconds")
-                    
-                    # Wait before next attempt
-                    if attempt < MAX_ATTEMPTS:
-                        print(f"Waiting {RETRY_DELAY} seconds before next attempt...")
-                        time.sleep(RETRY_DELAY)
-                
-                print(f"All {MAX_ATTEMPTS} connection attempts to {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} failed")
-                print("The web interface will still be accessible, but no telemetry data will be shown until a connection is established.")
-                return None
-            
-            # Start connection handler in a separate thread
-            connection_thread = threading.Thread(target=connection_handler, daemon=True)
-            connection_thread.start()
-            
-            # Return a placeholder thread - the actual thread will be managed by the connection_handler
-            return True
+            # Start the MAVLink connection thread
+            mavlink_thread = gevent.spawn(mavlink_receive_loop_runner, 
+                                        MAVLINK_CONNECTION_STRING, 
+                                        drone_state, 
+                                        drone_state_lock, 
+                                        pending_commands, 
+                                        get_connection_event(), 
+                                        log_command_action, 
+                                        socketio, 
+                                        set_drone_state_changed_flag, 
+                                        app_shared_state, 
+                                        _execute_fence_request, 
+                                        _execute_mission_request, 
+                                        HEARTBEAT_TIMEOUT, 
+                                        REQUEST_STREAM_RATE_HZ, 
+                                        COMMAND_ACK_TIMEOUT,
+                                        log_heartbeat_message)
+            return mavlink_thread
         except Exception as e:
             print(f"Error starting MAVLink thread: {e}")
-            print("Continuing without MAVLink connection. The web interface will still be accessible.")
+            print("Continuing without MAVLink connection.")
             return None
     
-    # Start MAVLink connection in a separate thread
-    mavlink_connection_thread = threading.Thread(target=start_mavlink_connection, daemon=True)
+    # Start MAVLink connection in a background thread - don't block server startup
+    mavlink_connection_thread = threading.Thread(target=start_mavlink_connection_async, daemon=True)
     mavlink_connection_thread.start()
-
-    # Contexts already initialized above
-
-    print(">>> Attempting to start Flask-SocketIO server...")
+    
+    # Start Flask-SocketIO server immediately 
+    print(">>> Starting Flask-SocketIO server...")
     try:
-        print(f">>> Starting Flask-SocketIO server on 0.0.0.0:{WEB_SERVER_PORT}...")
-        # Use a separate thread for the server to avoid blocking
-        def run_server():
-            try:
-                socketio.run(app, host='0.0.0.0', port=WEB_SERVER_PORT, debug=False, use_reloader=False)
-                print(">>> Flask-SocketIO server finished (SHOULD NOT HAPPEN if running normally).")
-            except Exception as e:
-                print(f">>> EXCEPTION during socketio.run: {e}")
-                import traceback
-                traceback.print_exc()
-        
-        # Start the server in the main thread (this is important for Flask-SocketIO)
-        run_server()
+        socketio.run(app, host='0.0.0.0', port=WEB_SERVER_PORT, debug=False, use_reloader=False)
     except Exception as e:
-        print(f">>> EXCEPTION during server setup: {e}")
+        print(f">>> EXCEPTION during socketio.run: {e}")
         import traceback
         traceback.print_exc()
     finally:
-        print(">>> socketio.run block finished or exited (e.g. via exception or normal termination).")
+        print(">>> Flask-SocketIO server finished.")

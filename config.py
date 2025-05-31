@@ -19,7 +19,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'desktop_drone_secret!')
 HEARTBEAT_TIMEOUT = int(os.getenv('HEARTBEAT_TIMEOUT', '30'))
 REQUEST_STREAM_RATE_HZ = int(os.getenv('REQUEST_STREAM_RATE_HZ', '4'))
 COMMAND_ACK_TIMEOUT = int(os.getenv('COMMAND_ACK_TIMEOUT', '10'))
-TELEMETRY_UPDATE_INTERVAL = float(os.getenv('TELEMETRY_UPDATE_INTERVAL', '0.1'))  # Seconds (10 Hz)
+TELEMETRY_UPDATE_INTERVAL = float(os.getenv('TELEMETRY_UPDATE_INTERVAL', '0.5'))  # Seconds (2 Hz)
 
 # ArduPilot Custom Flight Modes
 AP_CUSTOM_MODES = {

@@ -233,79 +233,21 @@ def init_socketio_handlers(socketio_instance, app_context):
             try:
                 lat = float(data.get('lat'))
                 lon = float(data.get('lon'))
-                alt = float(data.get('alt', _drone_state.get('alt_rel', 10.0))) # Default to current rel alt or 10m
+                alt = float(data.get('alt', _drone_state.get('alt_rel', 10.0)))  # Default to current rel alt or 10m
 
                 _log_command_action("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m", "INFO")
-
-                # Step 1: Attempt to set GUIDED mode
-                guided_mode_id = _AP_MODE_NAME_TO_ID.get('GUIDED')
-                if guided_mode_id is None:
-                    success = False
-                    msg = "GOTO Failed: 'GUIDED' mode ID not found in local mapping."
-                    cmd_type = 'error'
-                    _log_command_action("GOTO_ERROR", data, msg, "ERROR")
-                else:
-                    _log_command_action("GOTO_SET_MODE", data, "Attempting to set GUIDED mode.", "INFO")
-                    mode_set_sent_success, mode_set_msg_send = _send_mavlink_command_handler(
-                        mavutil.mavlink.MAV_CMD_DO_SET_MODE,
-                        p1=mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-                        p2=guided_mode_id
-                    )
-
-                    if not mode_set_sent_success:
-                        success = False
-                        msg = f"GOTO Failed: Could not send SET_MODE (GUIDED) command. Details: {mode_set_msg_send}"
-                        cmd_type = 'error'
-                        _log_command_action("GOTO_ERROR", data, msg, "ERROR")
-                    else:
-                        _log_command_action("GOTO_SET_MODE_SENT", data, f"SET_MODE (GUIDED) command sent. Details: {mode_set_msg_send}. Waiting briefly...", "INFO")
-                        time.sleep(0.5) # Brief delay for drone to process mode change
-
-                        # Step 2: Send SET_POSITION_TARGET_GLOBAL_INT
-                        current_mavlink_connection = _get_mavlink_connection()
-                        if not current_mavlink_connection or not hasattr(current_mavlink_connection, 'mav'):
-                            success = False
-                            msg = "GOTO Failed: MAVLink connection not available for sending SET_POSITION_TARGET_GLOBAL_INT."
-                            cmd_type = 'error'
-                            _log_command_action("GOTO_ERROR", data, msg, "ERROR")
-                        else:
-                            try:
-                                _log_command_action("GOTO_SET_POSITION_TARGET", data, f"Attempting SET_POSITION_TARGET_GLOBAL_INT to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m.", "INFO")
-                                current_mavlink_connection.mav.set_position_target_global_int_send(
-                                    0,       # time_boot_ms (not used)
-                                    current_mavlink_connection.target_system,  # target system
-                                    current_mavlink_connection.target_component,  # target component
-                                    mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,  # frame
-                                    0b110111111000,  # type_mask (position only: lat, lon, alt)
-                                    int(lat * 1e7),  # lat_int
-                                    int(lon * 1e7),  # lon_int
-                                    float(alt),      # alt in meters
-                                    0, 0, 0,  # vx, vy, vz (not used)
-                                    0, 0, 0,  # afx, afy, afz (not used)
-                                    0, 0      # yaw, yaw_rate (not used)
-                                )
-                                success = True
-                                msg = f"GOTO command (SET_POSITION_TARGET_GLOBAL_INT) to {lat:.7f}, {lon:.7f}, {alt:.1f}m sent."
-                                cmd_type = 'info'
-                                _log_command_action("GOTO_SET_POSITION_TARGET_SENT", data, msg, "INFO")
-                            except Exception as e:
-                                success = False
-                                msg = f"GOTO Failed: Error sending SET_POSITION_TARGET_GLOBAL_INT. Details: {str(e)}"
-                                cmd_type = 'error'
-                                _log_command_action("GOTO_ERROR", data, f"EXCEPTION: {msg}", "ERROR")
-                                traceback.print_exc()
-            except Exception as e:
-                success = False
-                msg = f"GOTO Unexpected Error: {e}"
-                cmd_type = 'error'
-                _log_command_action("GOTO_UNEXPECTED_EXCEPTION", data, f"UNEXPECTED EXCEPTION: {msg} - {traceback.format_exc()}", "ERROR")
-
+                
+                # Send the GOTO command to the telemetry bridge
+                success = _send_command_to_bridge('GOTO', lat=lat, lon=lon, alt=alt)
+                cmd_type = 'info' if success else 'error'
+                msg = f'GOTO command sent to telemetry bridge...' if success else f'Failed to send GOTO command to telemetry bridge'
+                
             except (ValueError, TypeError) as e:
                 success = False
                 msg = f"GOTO Error: Invalid coordinates/altitude. Data: {data}. Details: {e}"
                 cmd_type = 'error'
                 _log_command_action("GOTO", data, f"EXCEPTION: {msg}", "ERROR")
-            except Exception as e: # Catch any other unexpected errors
+            except Exception as e:  # Catch any other unexpected errors
                 success = False
                 msg = f"GOTO Unexpected Error: {e}"
                 cmd_type = 'error'
