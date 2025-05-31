@@ -153,13 +153,46 @@ def request_data_streams(req_rate_hz_config, home_position_is_known):
         print("No MAVLink connection or target system to request streams.")
         return
 
-    print(f"TESTING: NOT requesting any message intervals - letting autopilot use defaults!")
+    print(f"Requesting data streams at {req_rate_hz_config} Hz...")
+    target_sys = mavlink_connection_instance.target_system
+    target_comp = mavlink_connection_instance.target_component
+
+    # Define messages and their desired rates (restored to normal operation)
+    messages_to_request = [
+        (1, 'HEARTBEAT'),           # MAV_MSG_ID_HEARTBEAT
+        (24, 'GPS_RAW_INT'),        # MAV_MSG_ID_GPS_RAW_INT  
+        (33, 'GLOBAL_POSITION_INT'), # MAV_MSG_ID_GLOBAL_POSITION_INT
+        (30, 'ATTITUDE'),           # MAV_MSG_ID_ATTITUDE
+        (74, 'VFR_HUD'),            # MAV_MSG_ID_VFR_HUD
+        (242, 'HOME_POSITION'),     # MAV_MSG_ID_HOME_POSITION
+        (27, 'RAW_IMU'),            # MAV_MSG_ID_RAW_IMU
+        (116, 'SCALED_PRESSURE'),   # MAV_MSG_ID_SCALED_PRESSURE
+        (129, 'SCALED_PRESSURE2'),  # MAV_MSG_ID_SCALED_PRESSURE2
+        (29, 'SCALED_PRESSURE3'),   # MAV_MSG_ID_SCALED_PRESSURE3
+        (137, 'TERRAIN_REPORT'),    # MAV_MSG_ID_TERRAIN_REPORT
+        (65, 'RC_CHANNELS'),        # MAV_MSG_ID_RC_CHANNELS
+    ]
+
+    # Send MAV_CMD_SET_MESSAGE_INTERVAL for each message type
+    interval_us = int(1_000_000 / req_rate_hz_config)  # Convert Hz to microseconds
     
-    # COMPLETELY DISABLE ALL MESSAGE INTERVAL REQUESTS FOR TESTING
-    # Let the autopilot send messages at its default rates without any interference
-    
-    print("TESTING MODE: No message interval requests - using autopilot defaults!")
-    data_streams_requested_instance = True  # Mark as done so we don't keep trying
+    for msg_id, msg_name in messages_to_request:
+        try:
+            print(f"  Requesting {msg_name} (ID: {msg_id}) at {req_rate_hz_config} Hz (Interval: {interval_us} us)")
+            mavlink_connection_instance.mav.command_long_send(
+                target_sys,                    # target_system
+                target_comp,                   # target_component  
+                mavlink_connection_instance.mav.MAV_CMD_SET_MESSAGE_INTERVAL, # command
+                0,                             # confirmation
+                msg_id,                        # param1: message_id
+                interval_us,                   # param2: interval in microseconds
+                0, 0, 0, 0, 0                  # param3-7: unused
+            )
+        except Exception as e:
+            print(f"  Error requesting {msg_name}: {e}")
+
+    print(f"Data stream requests sent at {req_rate_hz_config} Hz!")
+    data_streams_requested_instance = True
 
 def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function):
     """Checks for timed-out MAVLink commands and emits SocketIO events."""
