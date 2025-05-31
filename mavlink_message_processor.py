@@ -291,7 +291,8 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
                 drone_state['vy'] = new_vy
                 drone_state['vz'] = new_vz
                 
-                # print(f"DEBUG: Updated drone_state with GLOBAL_POSITION_INT: lat={new_lat}, lon={new_lon}, alt_rel={new_alt_rel}, hdg={new_hdg}, vx={new_vx}, vy={new_vy}, vz={new_vz}")
+                # DEBUG: Show altitude updates
+                print(f"[ALT-DEBUG] GLOBAL_POSITION_INT: alt_rel={new_alt_rel:.2f}m, alt_abs={new_alt_msl:.2f}m")
                 drone_state_changed_local = True
         
     return drone_state_changed_local
@@ -331,6 +332,8 @@ def process_vfr_hud(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_ac
                 drone_state['alt_rel_vfr'] = new_alt_vfr # Store VFR_HUD altitude separately
                 drone_state['climb_rate'] = new_climb_rate
                 
+                # DEBUG: Show VFR_HUD altitude updates  
+                print(f"[ALT-DEBUG] VFR_HUD: alt={new_alt_vfr:.2f}m, climb_rate={new_climb_rate:.2f}m/s, groundspeed={new_groundspeed:.2f}m/s")
                 drone_state_changed_local = True
     return drone_state_changed_local
 

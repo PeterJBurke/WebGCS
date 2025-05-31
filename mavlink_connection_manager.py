@@ -312,99 +312,81 @@ def mavlink_receive_loop_runner(
                 gevent.sleep(0.1) # Wait if connection is temporarily None
                 continue
             
-            # PRIORITY FIX: Check for HEARTBEAT messages first (like listenheartbeat_FIXED.py)
+            # OPTIMIZED MESSAGE PROCESSING: Handle both heartbeats and other messages efficiently
             receive_start_time = time.time()
             
-            # First, try to get a HEARTBEAT message with priority - USE BLOCKING LIKE listenheartbeat_FIXED.py
-            heartbeat_msg = mavlink_connection_instance.recv_match(type='HEARTBEAT', blocking=True, timeout=1.0)
+            # Check for any message (including heartbeats and telemetry)
+            msg = mavlink_connection_instance.recv_match(blocking=True, timeout=1.0)  # Use longer timeout like working script
             
-            if heartbeat_msg:
-                # Process HEARTBEAT immediately for instant mode change detection
-                receive_end_time = time.time()
-                receive_time_ms = (receive_end_time - receive_start_time) * 1000
-                print(f"[RECV-TIMING] HEARTBEAT received in {receive_time_ms:.2f}ms at {receive_end_time}")
-                
-                # Process the heartbeat message immediately
-                processing_start = time.time()
-                heartbeat_changed = process_heartbeat(
-                    heartbeat_msg, drone_state, drone_state_lock, 
-                    mavlink_connection_instance, log_function, sio, heartbeat_log_cb
-                )
-                processing_time = (time.time() - processing_start) * 1000
-                print(f"[PROC-TIMING] HEARTBEAT processed in {processing_time:.2f}ms at {time.time()}")
-                
-                if heartbeat_changed:
-                    drone_state_changed_iteration = True
-            else:
-                # Debug: Show when we're not receiving heartbeats
-                if not hasattr(mavlink_receive_loop_runner, 'last_heartbeat_debug_time'):
-                    mavlink_receive_loop_runner.last_heartbeat_debug_time = 0
-                
-                current_time = time.time()
-                if current_time - mavlink_receive_loop_runner.last_heartbeat_debug_time > 2:  # Debug every 2 seconds
-                    print(f"[DEBUG] No HEARTBEAT received in this iteration at {current_time:.3f}")
-                    mavlink_receive_loop_runner.last_heartbeat_debug_time = current_time
-            
-            # Then process other message types (but don't let them delay heartbeats)
-            msg = mavlink_connection_instance.recv_match(blocking=False, timeout=0.001)  # Very short timeout for other messages
-            
-            if msg and msg.get_type() != 'HEARTBEAT':  # Skip heartbeats since we already processed them above
+            if msg:
                 msg_type = msg.get_type()
-                handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
-
-                if handler:
-                    try:
-                        handler_start_time = time.time()  # Track handler processing time
-                        # Pass heartbeat_log_cb only to the heartbeat handler
-                        if msg_type == 'HEARTBEAT':
+                
+                # PRIORITY: Process heartbeats immediately for instant mode changes
+                if msg_type == 'HEARTBEAT':
+                    receive_end_time = time.time()
+                    receive_time_ms = (receive_end_time - receive_start_time) * 1000
+                    print(f"[RECV-TIMING] HEARTBEAT received in {receive_time_ms:.2f}ms at {receive_end_time}")
+                    
+                    # Process the heartbeat message immediately
+                    processing_start = time.time()
+                    heartbeat_changed = process_heartbeat(
+                        msg, drone_state, drone_state_lock, 
+                        mavlink_connection_instance, log_function, sio, heartbeat_log_cb
+                    )
+                    processing_time = (time.time() - processing_start) * 1000
+                    print(f"[PROC-TIMING] HEARTBEAT processed in {processing_time:.2f}ms at {time.time()}")
+                    
+                    if heartbeat_changed:
+                        drone_state_changed_iteration = True
+                
+                # ALSO PROCESS: All other message types for telemetry data (altitude, GPS, etc.)
+                else:
+                    handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
+                    if handler:
+                        try:
+                            handler_start_time = time.time()
                             changed_by_handler = handler(
                                 msg,
                                 drone_state,
                                 drone_state_lock,
-                                mavlink_connection_instance.mav, # Pass the .mav object
-                                log_function, # Passed as log_cmd_action_cb in handlers
-                                sio,
-                                heartbeat_log_cb
-                            )
-                        else:
-                            changed_by_handler = handler(
-                                msg,
-                                drone_state,
-                                drone_state_lock,
-                                mavlink_connection_instance.mav, # Pass the .mav object
-                                log_function, # Passed as log_cmd_action_cb in handlers
+                                mavlink_connection_instance.mav,
+                                log_function,
                                 sio
                             )
-                        handler_end_time = time.time()
-                        
-                        # Log handler processing time for heartbeat
-                        if msg_type == 'HEARTBEAT':
-                            handler_duration = (handler_end_time - handler_start_time) * 1000  # Convert to ms
-                            print(f"[PROC-TIMING] HEARTBEAT processed in {handler_duration:.2f}ms at {handler_end_time:.6f}")
-                        
-                        if changed_by_handler:
-                            drone_state_changed_iteration = True
-                    except Exception as e:
-                        log_function("HANDLER_EXCEPTION", {"msg_type": msg_type}, f"Error in {msg_type} handler: {e}", level="ERROR")
-
-                # Specific post-handler logic for certain messages that affect connection state or command tracking
+                            handler_end_time = time.time()
+                            
+                            # Log processing time for important messages
+                            if msg_type in ['VFR_HUD', 'GLOBAL_POSITION_INT', 'GPS_RAW_INT']:
+                                handler_duration = (handler_end_time - handler_start_time) * 1000
+                                print(f"[TELEMETRY] {msg_type} processed in {handler_duration:.2f}ms")
+                            
+                            if changed_by_handler:
+                                drone_state_changed_iteration = True
+                        except Exception as e:
+                            log_function("HANDLER_EXCEPTION", {"msg_type": msg_type}, f"Error in {msg_type} handler: {e}", level="ERROR")
+                
+                # Handle message-specific post-processing
                 if msg_type == 'HEARTBEAT':
                     last_heartbeat_time_instance = time.time()
                     if drone_state.get('was_just_connected_by_heartbeat', False):
-                        # This flag is set by process_heartbeat if it changed 'connected' to True
                         log_function("MAVLINK_EVENT", details="Drone connected (heartbeat processed).")
-                        # drone_state_changed_iteration would have been set true by process_heartbeat
                         with drone_state_lock:
-                            drone_state.pop('was_just_connected_by_heartbeat', None) # Clear the flag
-                    connection_event_instance.set() # Signal that we are actively connected
-
+                            drone_state.pop('was_just_connected_by_heartbeat', None)
+                    connection_event_instance.set()
                 elif msg_type == 'COMMAND_ACK':
                     command_id_from_ack = msg.command
-                    # process_command_ack handles logging and emitting SocketIO events for the ACK itself.
-                    # We still need to remove the command from pending_commands_instance here.
                     if command_id_from_ack in pending_commands_instance:
                         pending_commands_instance.pop(command_id_from_ack, None)
-            
+            else:
+                # Debug: Show when we're not receiving any messages
+                if not hasattr(mavlink_receive_loop_runner, 'last_message_debug_time'):
+                    mavlink_receive_loop_runner.last_message_debug_time = 0
+                
+                current_time = time.time()
+                if current_time - mavlink_receive_loop_runner.last_message_debug_time > 5:  # Debug every 5 seconds
+                    print(f"[DEBUG] No messages received in this iteration at {current_time:.3f}")
+                    mavlink_receive_loop_runner.last_message_debug_time = current_time
+
             # If drone_state was changed by any message handler in this iteration, notify app.py
             if drone_state_changed_iteration:
                 if callable(notify_state_changed_cb):

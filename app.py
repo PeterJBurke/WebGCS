@@ -328,8 +328,16 @@ def periodic_telemetry_update():
             # Send telemetry update if state has changed
             if drone_state_changed:
                 with drone_state_lock:
+                    # DEBUG: Show what's being sent to frontend
+                    print(f"[TELEMETRY-EMIT] Sending update #{update_count+1} to frontend:")
+                    print(f"  Connected: {drone_state.get('connected', False)}")
+                    print(f"  Armed: {drone_state.get('armed', False)}")
+                    print(f"  Mode: {drone_state.get('mode', 'UNKNOWN')}")
+                    print(f"  Alt (rel): {drone_state.get('alt_rel', 0.0):.2f}m")
+                    print(f"  Alt (VFR): {drone_state.get('alt_rel_vfr', 0.0):.2f}m")
+                    print(f"  Lat/Lon: {drone_state.get('lat', 0.0):.6f}, {drone_state.get('lon', 0.0):.6f}")
+                    
                     # Emit telemetry update to all connected clients
-                    # print(f"Sending telemetry update to web clients (update #{update_count+1})")
                     socketio.emit('telemetry_update', drone_state)
                     
                 drone_state_changed = False
