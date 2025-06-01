@@ -104,6 +104,51 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 .goto-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; } .goto-controls input { flex-grow: 1; min-width: 60px; }
 #btn-clear-goto { background-color: #6c757d; } #btn-clear-goto:hover:not(:disabled) { background-color: #5a6268; }
 
+/* Button Color Coding - Green for positive/safe actions */
+#btn-connect, #btn-arm, #btn-takeoff, #btn-goto, #btn-set-mode {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+#btn-connect:hover:not(:disabled), #btn-arm:hover:not(:disabled), #btn-takeoff:hover:not(:disabled), #btn-goto:hover:not(:disabled), #btn-set-mode:hover:not(:disabled) {
+    background-color: #218838;
+}
+#btn-connect:active:not(:disabled), #btn-arm:active:not(:disabled), #btn-takeoff:active:not(:disabled), #btn-goto:active:not(:disabled), #btn-set-mode:active:not(:disabled) {
+    background-color: #1e7e34;
+}
+
+/* Button Color Coding - Red for dangerous/ending actions */
+#btn-disconnect, #btn-disarm, #btn-land, #btn-rtl {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+#btn-disconnect:hover:not(:disabled), #btn-disarm:hover:not(:disabled), #btn-land:hover:not(:disabled), #btn-rtl:hover:not(:disabled) {
+    background-color: #c82333;
+}
+#btn-disconnect:active:not(:disabled), #btn-disarm:active:not(:disabled), #btn-land:active:not(:disabled), #btn-rtl:active:not(:disabled) {
+    background-color: #bd2130;
+}
+
+/* Button Color Coding - Gray for utility/information actions */
+#btn-clear-goto, #btn-request-fence, #btn-request-mission, #btn-center-map, #btn-fly-to-mode {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+#btn-clear-goto:hover:not(:disabled), #btn-request-fence:hover:not(:disabled), #btn-request-mission:hover:not(:disabled), #btn-center-map:hover:not(:disabled), #btn-fly-to-mode:hover:not(:disabled) {
+    background-color: #5a6268;
+}
+#btn-clear-goto:active:not(:disabled), #btn-request-fence:active:not(:disabled), #btn-request-mission:active:not(:disabled), #btn-center-map:active:not(:disabled), #btn-fly-to-mode:active:not(:disabled) {
+    background-color: #545b62;
+}
+
+/* Special handling for fly-to-mode toggle active state */
+#btn-fly-to-mode.active {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+#btn-fly-to-mode.active:hover:not(:disabled) {
+    background-color: #218838 !important;
+}
+
 /* Status Indicators */
 .connected { color: #28a745; font-weight: bold; }
 .disconnected { color: #dc3545; font-weight: bold; }
