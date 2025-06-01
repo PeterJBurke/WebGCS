@@ -215,8 +215,6 @@
                                 <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
                                 <span id="heartbeat-counter" style="font-size: 10px; margin-left: 5px; color: #666;">(0)</span>
                             </div>
-                            <!-- *** ADDED: EKF Status Display Element *** -->
-                            <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
                             <div class="status-item"><strong>Mode:</strong> <span id="mode_value">---</span></div>
                             <div class="status-item"><strong>Arm Status:</strong> <span id="arm_status_value">---</span></div>
                         </div>
@@ -412,17 +410,17 @@
         const gpsSatsValueSpan = document.getElementById('gps-sats-value');
         const gpsHdopValueSpan = document.getElementById('gps-hdop-value');
         const latValueSpan = document.getElementById('lat-value');
-
+        const lonValueSpan = document.getElementById('lon-value');
+        const pitchValueSpan = document.getElementById('pitch-value');
+        const rollValueSpan = document.getElementById('roll-value');
+        
         // Offscreen canvas for altitude tape strip
         let offscreenAltitudeStripCanvas = null;
         let offscreenAltitudeStripCtx = null;
         const ALT_STRIP_MIN_ALT_RENDER = -1000; // Min altitude to pre-render on the strip
         const ALT_STRIP_MAX_ALT_RENDER = 10000; // Max altitude to pre-render on the strip
         let ALT_STRIP_CONTENT_HEIGHT = 0;     // Actual height of the pre-rendered strip content
-        const lonValueSpan = document.getElementById('lon-value');
-        const pitchValueSpan = document.getElementById('pitch-value');
-        const rollValueSpan = document.getElementById('roll-value');
-        const ekfStatusSpan = document.getElementById('ekf-status');
+        
         const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")};
         const modeSelect=document.getElementById("mode-select");
         const DEG_TO_RAD = Math.PI / 180;
@@ -585,9 +583,7 @@
             document.getElementById("status-connection").className = "disconnected"; 
             const heartIconErr = document.getElementById('heartbeat-indicator'); 
             if(heartIconErr) heartIconErr.classList.remove('connected-state'); 
-            ekfStatusSpan.textContent = 'ERROR'; 
-            ekfStatusSpan.className = 'ekf-status ekf-error'; 
-            setControlsDisabled(true); 
+            setControlsDisabled(true);
         });
         
         socket.on("status_message", (data) => { 
@@ -638,20 +634,6 @@
 
             const heartIconElement = document.getElementById('heartbeat-indicator');
             if (heartIconElement) { heartIconElement.classList.toggle('connected-state', isConnected); }
-
-            // Update EKF Status Display
-            const ekfReport = data.ekf_status_report || 'N/A';
-            if (ekfStatusSpan) {
-                ekfStatusSpan.textContent = ekfReport;
-                ekfStatusSpan.className = 'ekf-status '; // Reset classes
-                if (ekfReport === 'EKF OK') {
-                    ekfStatusSpan.classList.add('ekf-ok');
-                } else if (ekfReport.includes('INIT') || ekfReport.includes('N/A') || ekfReport.includes('ERROR')) {
-                     ekfStatusSpan.classList.add('ekf-error');
-                } else { // Treat other non-OK statuses as warnings
-                    ekfStatusSpan.classList.add('ekf-warn');
-                }
-            }
 
             // Update text overlays
             const mode = (data.mode || "UNKNOWN").toUpperCase(); 
@@ -885,7 +867,6 @@
             latValueSpan.textContent = "--.------"; lonValueSpan.textContent = "--.------";
             // *** ADDED: Initialize heart and EKF status ***
             const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
-            if(ekfStatusSpan) { ekfStatusSpan.textContent = 'INIT'; ekfStatusSpan.className = 'ekf-status ekf-error'; }
             setControlsDisabled(true);
             setTimeout(() => { 
                 try { 
