@@ -247,6 +247,89 @@ EOF
     fi
 }
 
+# Create systemd service
+create_systemd_service() {
+    log_info "Creating systemd service for WebGCS..."
+    
+    local service_name="webgcs"
+    local service_file="/etc/systemd/system/${service_name}.service"
+    local current_user="$(whoami)"
+    local python_path="${VENV_PATH}/bin/python"
+    local app_path="${SCRIPT_DIR}/app.py"
+    
+    # Create the service file content
+    local service_content="[Unit]
+Description=WebGCS - Web-Based Ground Control Station
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=${current_user}
+Group=${current_user}
+WorkingDirectory=${SCRIPT_DIR}
+Environment=PATH=${VENV_PATH}/bin
+ExecStart=${python_path} ${app_path}
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=webgcs
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=${SCRIPT_DIR}
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target"
+
+    # Check if we need sudo for service installation
+    if [[ ! -w "/etc/systemd/system" ]]; then
+        log_info "Installing systemd service (requires sudo)..."
+        if ! command -v sudo &> /dev/null; then
+            log_error "sudo is required to install the systemd service but is not available."
+            log_error "Please install sudo or run this script as root."
+            return 1
+        fi
+        
+        # Create service file with sudo
+        echo "$service_content" | sudo tee "$service_file" > /dev/null
+        
+        # Set proper permissions
+        sudo chmod 644 "$service_file"
+        
+        # Reload systemd and enable the service
+        sudo systemctl daemon-reload
+        sudo systemctl enable "$service_name"
+        
+        log_success "Systemd service created and enabled"
+        
+        # Start the service
+        log_info "Starting WebGCS service..."
+        if sudo systemctl start "$service_name"; then
+            log_success "WebGCS service started successfully"
+            
+            # Wait a moment and check status
+            sleep 2
+            if sudo systemctl is-active --quiet "$service_name"; then
+                log_success "Service is running properly"
+            else
+                log_warning "Service may have issues. Check with: sudo systemctl status $service_name"
+            fi
+        else
+            log_error "Failed to start WebGCS service"
+            log_error "Check the service status with: sudo systemctl status $service_name"
+            return 1
+        fi
+    else
+        log_error "Cannot write to /etc/systemd/system without sudo privileges"
+        return 1
+    fi
+}
+
 # Verify installation
 verify_installation() {
     log_info "Verifying installation..."
@@ -265,8 +348,55 @@ verify_installation() {
     log_success "Installation verified successfully"
 }
 
-# Print final instructions
-print_instructions() {
+# Print service management instructions
+print_service_instructions() {
+    local service_name="webgcs"
+    
+    echo
+    echo "======================================================================"
+    log_success "WebGCS Service Installation Complete!"
+    echo "======================================================================"
+    echo
+    echo "🚀 Your WebGCS service is now running automatically!"
+    echo
+    echo "📋 Service Management Commands:"
+    echo
+    echo "   Check service status:"
+    echo "   ${GREEN}sudo systemctl status $service_name${NC}"
+    echo
+    echo "   View service logs:"
+    echo "   ${BLUE}sudo journalctl -u $service_name -f${NC}"
+    echo
+    echo "   Restart the service:"
+    echo "   ${YELLOW}sudo systemctl restart $service_name${NC}"
+    echo
+    echo "   Stop the service:"
+    echo "   ${RED}sudo systemctl stop $service_name${NC}"
+    echo
+    echo "   Start the service:"
+    echo "   ${GREEN}sudo systemctl start $service_name${NC}"
+    echo
+    echo "   Disable auto-start on boot:"
+    echo "   ${YELLOW}sudo systemctl disable $service_name${NC}"
+    echo
+    echo "   Enable auto-start on boot:"
+    echo "   ${GREEN}sudo systemctl enable $service_name${NC}"
+    echo
+    echo "🌐 Access the interface:"
+    echo "   ${BLUE}http://localhost:5000${NC}"
+    echo "   ${BLUE}http://$(hostname -I | awk '{print $1}'):5000${NC}"
+    echo
+    echo "⚙️  Configuration:"
+    echo "   Edit: ${BLUE}${SCRIPT_DIR}/.env${NC}"
+    echo "   After changes: ${YELLOW}sudo systemctl restart $service_name${NC}"
+    echo
+    echo "📁 Project directory: ${SCRIPT_DIR}"
+    echo "📋 Service file: /etc/systemd/system/$service_name.service"
+    echo "======================================================================"
+}
+
+# Print manual instructions (for non-service mode)
+print_manual_instructions() {
     echo
     echo "======================================================================"
     log_success "WebGCS Setup Complete!"
@@ -305,6 +435,24 @@ main() {
     
     log_info "Starting WebGCS setup in: ${SCRIPT_DIR}"
     
+    # Check for service installation option
+    local install_service=false
+    if [[ "${1:-}" == "--service" ]] || [[ "${1:-}" == "-s" ]]; then
+        install_service=true
+        log_info "Service installation mode enabled"
+    else
+        echo
+        log_info "Setup modes available:"
+        echo "  Manual mode: Sets up for manual running"
+        echo "  Service mode: Installs and runs as system service"
+        echo
+        read -p "Do you want to install WebGCS as a system service? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            install_service=true
+        fi
+    fi
+    
     check_linux
     check_python_version
     check_dependencies
@@ -315,7 +463,17 @@ main() {
     set_permissions
     create_env_template
     verify_installation
-    print_instructions
+    
+    if [[ "$install_service" == true ]]; then
+        if create_systemd_service; then
+            print_service_instructions
+        else
+            log_error "Service installation failed. Falling back to manual mode."
+            print_manual_instructions
+        fi
+    else
+        print_manual_instructions
+    fi
     
     echo
     log_success "Setup completed successfully!"

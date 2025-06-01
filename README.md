@@ -15,6 +15,185 @@ A modern web-based ground control interface for MAVLink-compatible drones and ve
 - **Responsive Design**: Works on desktop and mobile devices
 - **MAVLink Integration**: Direct TCP connection to autopilot systems
 
+## 🚀 Installation Options
+
+WebGCS offers two installation methods to suit different use cases:
+
+1. **[Manual Installation](#-manual-installation)** - Run the application manually when needed
+2. **[Automated Service Installation (Linux Only)](#-automated-service-installation-linux-only)** - Install as a system service that runs automatically
+
+---
+
+## 📋 Manual Installation
+
+Perfect for development, testing, or when you want full control over when the application runs.
+
+### Prerequisites
+
+- Python 3.7+ 
+- Git (for cloning)
+- Network access to your drone/autopilot
+
+### Installation Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/PeterJBurke/WebGCS.git
+   cd WebGCS
+   ```
+
+2. **Set up Python environment**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. **Configure connection** (optional)
+   
+   Create a `.env` file to customize settings:
+   ```bash
+   cp .env.example .env
+   nano .env  # Edit with your drone's IP and settings
+   ```
+
+4. **Run the application**
+   ```bash
+   python app.py
+   ```
+
+5. **Access the interface**
+   
+   Open your browser to: `http://localhost:5000`
+
+### Manual Operation
+
+- **Start**: `source venv/bin/activate && python app.py`
+- **Stop**: Press `Ctrl+C` in the terminal
+- **Logs**: Displayed in the terminal where you ran the application
+
+---
+
+## 🐧 Automated Service Installation (Linux Only)
+
+Ideal for production deployments, headless servers, or when you want WebGCS to start automatically on boot.
+
+### Prerequisites
+
+- Linux operating system (Ubuntu, Debian, CentOS, RHEL, Arch, etc.)
+- Internet connection for downloading dependencies
+- `sudo` access for installing the system service
+
+### Installation Methods
+
+#### Option A: Interactive Setup
+```bash
+git clone https://github.com/PeterJBurke/WebGCS.git
+cd WebGCS
+chmod +x setup_desktop.sh
+./setup_desktop.sh
+# Choose "y" when prompted to install as a service
+```
+
+#### Option B: Direct Service Installation
+```bash
+git clone https://github.com/PeterJBurke/WebGCS.git
+cd WebGCS
+chmod +x setup_desktop.sh
+./setup_desktop.sh --service
+```
+
+### What the Service Installation Does
+
+The automated setup script will:
+- ✅ Check for Linux OS and Python 3.7+ compatibility
+- ✅ Verify system dependencies (curl, git, python3-venv)
+- ✅ Create a Python virtual environment
+- ✅ Install all Python dependencies from requirements.txt
+- ✅ Download required frontend libraries (Leaflet, Socket.IO, Bootstrap)
+- ✅ Create a `.env.example` configuration template
+- ✅ **Install WebGCS as a systemd service**
+- ✅ **Enable auto-start on boot**
+- ✅ **Start the service immediately**
+- ✅ Verify the installation and service status
+
+### Service Management
+
+Once installed as a service, WebGCS runs automatically and can be managed with standard systemd commands:
+
+#### Check Service Status
+```bash
+sudo systemctl status webgcs
+```
+
+#### View Live Logs
+```bash
+sudo journalctl -u webgcs -f
+```
+
+#### Restart the Service
+```bash
+sudo systemctl restart webgcs
+```
+
+#### Stop the Service
+```bash
+sudo systemctl stop webgcs
+```
+
+#### Start the Service
+```bash
+sudo systemctl start webgcs
+```
+
+#### Disable Auto-start on Boot
+```bash
+sudo systemctl disable webgcs
+```
+
+#### Enable Auto-start on Boot
+```bash
+sudo systemctl enable webgcs
+```
+
+### Service Configuration
+
+#### Updating Configuration
+1. Edit the configuration file:
+   ```bash
+   nano /path/to/WebGCS/.env
+   ```
+
+2. Restart the service to apply changes:
+   ```bash
+   sudo systemctl restart webgcs
+   ```
+
+#### Service Details
+- **Service Name**: `webgcs`
+- **Service File**: `/etc/systemd/system/webgcs.service`
+- **User**: Runs under the user who installed it
+- **Auto-restart**: Automatically restarts if the application crashes
+- **Logs**: Available via `journalctl`
+
+### Supported Linux Distributions
+
+The setup script provides package installation commands for:
+- **Ubuntu/Debian**: `apt install`
+- **CentOS/RHEL**: `yum install`
+- **Arch Linux**: `pacman -S`
+
+### Service Benefits
+
+- 🚀 **Automatic startup** on system boot
+- 🔄 **Auto-restart** if the application crashes
+- 📋 **Centralized logging** via systemd journal
+- 🔒 **Security hardening** with systemd security features
+- 🎛️ **Easy management** with standard systemd commands
+- 🌐 **Always available** - no need to manually start
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
