@@ -78,15 +78,17 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
+    width: 100%;
 }
 
 .status .connection-inputs {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: nowrap;
     align-items: center;
+    flex: 1;
 }
 
 .status .connection-inputs .field-group {
@@ -102,13 +104,17 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
     min-width: 50px;
 }
 
-/* Specific spacing for port field group to be tighter */
+/* Specific spacing for port field group to be much tighter */
 .status .connection-inputs .field-group:last-child {
-    gap: 1px;
+    gap: 0px;
+}
+
+.status .connection-inputs .field-group:last-child label {
+    margin-right: 1px;
 }
 
 .status .connection-inputs .field-group:last-child input {
-    margin-left: -2px;
+    margin-left: 0px;
 }
 
 .status .connection-inputs input {
@@ -121,18 +127,19 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 
 .status .connection-inputs #drone-ip {
     width: 110px;
-    margin-right: 8px;
+    margin-right: 6px;
 }
 
 .status .connection-inputs #drone-port {
     width: 60px;
-    margin-right: 8px;
+    margin-right: 6px;
 }
 
 .status .connection-actions {
     display: flex;
     gap: 5px;
     margin-left: 0px;
+    flex-shrink: 0;
 }
 
 /* Connection buttons - Match control button size and style */
