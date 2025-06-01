@@ -102,6 +102,11 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
     min-width: 50px;
 }
 
+/* Specific spacing for port field group to be tighter */
+.status .connection-inputs .field-group:last-child {
+    gap: 2px;
+}
+
 .status .connection-inputs input {
     padding: 4px;
     border: 1px solid #ccc;
@@ -112,16 +117,18 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 
 .status .connection-inputs #drone-ip {
     width: 110px;
+    margin-right: 8px;
 }
 
 .status .connection-inputs #drone-port {
     width: 60px;
+    margin-right: 8px;
 }
 
 .status .connection-actions {
     display: flex;
     gap: 5px;
-    margin-left: 8px;
+    margin-left: 0px;
 }
 
 /* Connection buttons - Match control button size and style */
