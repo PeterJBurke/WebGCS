@@ -356,6 +356,64 @@ def init_socketio_handlers(socketio_instance, app_context):
             success, msg_send = _send_mavlink_command_handler(mavutil.mavlink.MAV_CMD_MISSION_CLEAR_ALL, p2=0) # p2=0 for MAV_MISSION_TYPE_ALL
             cmd_type = 'info' if success else 'error'
             msg = 'CLEAR_MISSION command sent.' if success else f'CLEAR_MISSION Failed: {msg_send}'
+        elif cmd == 'GOTO':
+            try:
+                lat = float(data.get('lat'))
+                lon = float(data.get('lon'))
+                # Use current relative altitude as default if not provided
+                current_rel_alt = _drone_state.get('alt_rel', 10.0)
+                alt = float(data.get('alt', current_rel_alt))
+                
+                _log_wrapper_for_caller_info("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m using SET_POSITION_TARGET_GLOBAL_INT", "INFO")
+                
+                current_mav_connection = _get_mavlink_connection()
+                
+                if current_mav_connection and hasattr(current_mav_connection, 'target_system') and current_mav_connection.target_system != 0:
+                    current_target_system = current_mav_connection.target_system
+                    current_target_component = current_mav_connection.target_component
+
+                    # Set type mask to ignore velocities, accelerations, and yaw
+                    type_mask = (
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_VX_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_VY_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_VZ_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_AX_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_AY_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
+                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE
+                    )
+
+                    current_mav_connection.mav.set_position_target_global_int_send(
+                        0,  # time_boot_ms
+                        current_target_system, current_target_component,
+                        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                        type_mask,
+                        int(lat * 1e7), int(lon * 1e7), alt,
+                        0, 0, 0, 0, 0, 0, 0, 0  # vx, vy, vz, afx, afy, afz, yaw, yaw_rate (all ignored)
+                    )
+                    success = True
+                    msg = f'GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m command sent using SET_POSITION_TARGET_GLOBAL_INT.'
+                    _log_wrapper_for_caller_info("GOTO_SENT", data, msg, "INFO")
+                else:
+                    success = False
+                    msg = "GOTO Failed: MAVLink connection not available or target system not identified."
+                    if current_mav_connection and hasattr(current_mav_connection, 'target_system'):
+                        msg += f" (target_sys={current_mav_connection.target_system})"
+                    _log_wrapper_for_caller_info("GOTO_FAIL", data, msg, "ERROR")
+                
+                cmd_type = 'info' if success else 'error'
+                
+            except (ValueError, TypeError) as e:
+                success = False
+                msg = f"GOTO Error: Invalid coordinates - lat: '{data.get('lat')}', lon: '{data.get('lon')}', alt: '{data.get('alt')}'. Details: {e}"
+                cmd_type = 'error'
+                _log_wrapper_for_caller_info("GOTO_ERROR", data, f"EXCEPTION: {msg}", "ERROR")
+            except Exception as e:
+                success = False
+                msg = f"GOTO Error: Unexpected error processing GOTO command: {str(e)}"
+                cmd_type = 'error'
+                _log_wrapper_for_caller_info("GOTO_ERROR_EXC", data, f"EXCEPTION: {msg}", "ERROR")
         else:
             msg = f'Unknown command: {cmd}'
             cmd_type = 'warning'
