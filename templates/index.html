@@ -223,8 +223,6 @@
                                 <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
                                 <span id="heartbeat-counter" style="font-size: 10px; margin-left: 5px; color: #666;">(0)</span>
                             </div>
-                            <div class="status-item"><strong>Mode:</strong> <span id="mode_value">---</span></div>
-                            <div class="status-item"><strong>Arm Status:</strong> <span id="arm_status_value">---</span></div>
                         </div>
                     </div>
                 </div>
@@ -964,11 +962,6 @@
                 const isArmed = (msg.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) !== 0;
                 const armString = isArmed ? 'ARMED' : 'DISARMED';
 
-                const armStatusValueEl = document.getElementById('arm_status_value');
-                if (armStatusValueEl) {
-                    armStatusValueEl.textContent = armString;
-                }
-
                 // Update PFD overlay for arming status (no logging)
                 const pfdArmEl = document.getElementById('arming-status-overlay'); 
                 if (pfdArmEl) {
@@ -978,14 +971,10 @@
                 // Update Mode (no logging)
                 const modeString = getModeString(msg.autopilot, msg.type, msg.custom_mode);
 
-                const modeValueEl = document.getElementById('mode_value');
-                if (modeValueEl) {
-                    modeValueEl.textContent = modeString;
-                    // Track when we update mode from heartbeat to prevent telemetry conflicts
-                    lastHeartbeatModeUpdate = Date.now();
-                    currentHeartbeatMode = modeString.toUpperCase();
-                    console.log(`[HB-MODE] Updated mode to '${modeString}' from heartbeat`);
-                }
+                // Track when we update mode from heartbeat to prevent telemetry conflicts
+                lastHeartbeatModeUpdate = Date.now();
+                currentHeartbeatMode = modeString.toUpperCase();
+                console.log(`[HB-MODE] Updated mode to '${modeString}' from heartbeat`);
 
                 // Update PFD overlay for mode (no logging)
                 const pfdModeEl = document.getElementById('mode-overlay');
