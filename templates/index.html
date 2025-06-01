@@ -183,11 +183,10 @@
             color: white;
         }
         
-        .connection-status-info {
-            font-size: 12px;
-            color: #666;
-            font-style: italic;
-        }
+        /* Connection status styling */
+        .connected { color: #28a745; font-weight: bold; }
+        .disconnected { color: #dc3545; font-weight: bold; }
+        .connecting { color: #007bff; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -244,9 +243,6 @@
                         <div class="connection-actions">
                             <button id="btn-connect" class="connection-btn">Connect</button>
                             <button id="btn-disconnect" class="connection-btn" disabled>Disconnect</button>
-                        </div>
-                        <div class="connection-status-info">
-                            <span id="connection-info">Attempting to connect to default drone...</span>
                         </div>
                     </div>
                 </div>
@@ -631,8 +627,23 @@
             // console.log("Detailed telemetry data:", JSON.stringify(data, null, 2));
             
             const isConnected = data.connected;
-            document.getElementById("status-connection").textContent = isConnected ? "Drone Connected" : "Drone Disconnected";
-            document.getElementById("status-connection").className = isConnected ? "connected" : "disconnected";
+            const currentStatus = document.getElementById("status-connection").className;
+            
+            // Update connection status based on actual connection state
+            // Don't override if we're actively connecting/disconnecting OR if explicitly disconnected
+            if (currentStatus !== 'connecting' && currentStatus !== 'disconnected') {
+                if (isConnected) {
+                    // If connected and we don't have detailed connection info, show generic connected
+                    const currentText = document.getElementById("status-connection").textContent;
+                    if (!currentText.includes('@')) {
+                        document.getElementById("status-connection").textContent = "Drone Connected";
+                        document.getElementById("status-connection").className = "connected";
+                    }
+                }
+                // Remove the else case - don't let telemetry set disconnected status
+                // Only the connection_status handler should set disconnected status
+            }
+            
             setControlsDisabled(!isConnected);
             
             // Add debug message to the UI
@@ -670,8 +681,19 @@
             // }
             console.log(`[TELEMETRY-MODE] Ignoring telemetry mode '${mode}' - using heartbeat only`);
             
-            armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED";
-            armingStatusOverlay.classList.toggle("pfd-armed", armed);
+            // Only update arming status when actually connected
+            // Check the actual UI connection status, not the stale telemetry data
+            const actualConnectionStatus = document.getElementById("status-connection").className;
+            const isActuallyConnected = actualConnectionStatus === 'connected';
+            
+            if (isActuallyConnected) {
+                console.log('[TELEMETRY] Updating arming status - UI Connected:', isActuallyConnected, 'Armed:', armed);
+                armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED";
+                armingStatusOverlay.classList.toggle("pfd-armed", armed);
+            } else {
+                console.log('[TELEMETRY] Skipping arming update - UI shows not connected (status:', actualConnectionStatus, ')');
+            }
+            
             currentValueSpan.textContent = current >= 0 ? current.toFixed(1) : "--.-"; 
             let fixStr = "---"; 
             switch (fix) { 
@@ -871,6 +893,13 @@
             batteryValueSpan.textContent = "--.-"; modeValueSpan.textContent = "------"; currentValueSpan.textContent = "--.-";
             gpsFixValueSpan.textContent = "---"; gpsSatsValueSpan.textContent = "0"; gpsHdopValueSpan.textContent = "--.-";
             latValueSpan.textContent = "--.------"; lonValueSpan.textContent = "--.------";
+            
+            // Initialize connection status with default drone info
+            const defaultIp = document.getElementById('drone-ip').value;
+            const defaultPort = document.getElementById('drone-port').value;
+            document.getElementById("status-connection").textContent = `Attempting to connect to ${defaultIp}:${defaultPort}...`;
+            document.getElementById("status-connection").className = "connecting";
+            
             // *** ADDED: Initialize heart and EKF status ***
             const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
             setControlsDisabled(true);
@@ -962,10 +991,18 @@
                 const isArmed = (msg.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) !== 0;
                 const armString = isArmed ? 'ARMED' : 'DISARMED';
 
-                // Update PFD overlay for arming status (no logging)
+                // Only update PFD overlay for arming status when connected
+                const connectionStatus = document.getElementById("status-connection").className;
                 const pfdArmEl = document.getElementById('arming-status-overlay'); 
-                if (pfdArmEl) {
+                
+                console.log(`[HB-ARM] Connection status: '${connectionStatus}', Armed: ${isArmed}, Will update: ${connectionStatus === 'connected'}`);
+                
+                if (pfdArmEl && connectionStatus === 'connected') {
+                    console.log(`[HB-ARM] Updating arming status to: ${armString}`);
                     pfdArmEl.textContent = armString;
+                    pfdArmEl.classList.toggle('pfd-armed', isArmed);
+                } else {
+                    console.log(`[HB-ARM] Skipping arming update - not connected`);
                 }
 
                 // Update Mode (no logging)
@@ -976,9 +1013,9 @@
                 currentHeartbeatMode = modeString.toUpperCase();
                 console.log(`[HB-MODE] Updated mode to '${modeString}' from heartbeat`);
 
-                // Update PFD overlay for mode (no logging)
+                // Only update PFD overlay for mode when connected
                 const pfdModeEl = document.getElementById('mode-overlay');
-                if (pfdModeEl) {
+                if (pfdModeEl && connectionStatus === 'connected') {
                     pfdModeEl.textContent = "Mode: " + modeString;
                 }
             }
@@ -1183,7 +1220,6 @@
         const dronePortInput = document.getElementById('drone-port');
         const connectBtn = document.getElementById('btn-connect');
         const disconnectBtn = document.getElementById('btn-disconnect');
-        const connectionInfo = document.getElementById('connection-info');
 
         // Connect button event handler
         connectBtn.addEventListener('click', function() {
@@ -1192,22 +1228,24 @@
 
             // Validate inputs
             if (!ip) {
-                connectionInfo.textContent = 'Please enter an IP address';
-                connectionInfo.style.color = '#dc3545';
+                // Update the status connection with error
+                document.getElementById("status-connection").textContent = 'Please enter an IP address';
+                document.getElementById("status-connection").className = 'disconnected';
                 return;
             }
 
             if (!port || port < 1 || port > 65535) {
-                connectionInfo.textContent = 'Please enter a valid port (1-65535)';
-                connectionInfo.style.color = '#dc3545';
+                // Update the status connection with error
+                document.getElementById("status-connection").textContent = 'Please enter a valid port (1-65535)';
+                document.getElementById("status-connection").className = 'disconnected';
                 return;
             }
 
             // Disable connect button and show connecting status
             connectBtn.disabled = true;
             connectBtn.textContent = 'Connecting...';
-            connectionInfo.textContent = `Connecting to ${ip}:${port}...`;
-            connectionInfo.style.color = '#007bff';
+            document.getElementById("status-connection").textContent = `Connecting to ${ip}:${port}...`;
+            document.getElementById("status-connection").className = 'connecting';
 
             // Send connection request to server
             socket.emit('drone_connect', {
@@ -1218,43 +1256,100 @@
 
         // Disconnect button event handler
         disconnectBtn.addEventListener('click', function() {
+            console.log('[DISCONNECT] Disconnect button clicked');
             disconnectBtn.disabled = true;
             disconnectBtn.textContent = 'Disconnecting...';
-            connectionInfo.textContent = 'Disconnecting from drone...';
-            connectionInfo.style.color = '#007bff';
+            document.getElementById("status-connection").textContent = 'Disconnecting from drone...';
+            document.getElementById("status-connection").className = 'connecting';
+            console.log('[DISCONNECT] Status set to disconnecting');
 
             // Send disconnect request to server
             socket.emit('drone_disconnect');
+            console.log('[DISCONNECT] Sent drone_disconnect event');
         });
 
         // Socket.IO connection status updates
         socket.on('connection_status', function(data) {
-            const connectionInfo = document.getElementById('connection-info');
+            console.log('[CONNECTION_STATUS] Received:', data);
             const connectBtn = document.getElementById('btn-connect');
             const disconnectBtn = document.getElementById('btn-disconnect');
             
             if (data.status === 'connected') {
-                connectionInfo.textContent = `Connected to drone at ${data.ip}:${data.port}`;
-                connectionInfo.style.color = '#28a745'; // Green
+                console.log('[CONNECTION_STATUS] Handling connected status');
+                document.getElementById("status-connection").textContent = `Drone Connected @ ${data.ip}:${data.port}`;
+                document.getElementById("status-connection").className = 'connected';
                 connectBtn.disabled = true;
+                connectBtn.textContent = 'Connect';
                 disconnectBtn.disabled = false;
+                disconnectBtn.textContent = 'Disconnect';
                 
                 // Update the input fields with the connected IP/port
                 droneIpInput.value = data.ip;
                 dronePortInput.value = data.port;
                 
             } else if (data.status === 'disconnected') {
+                console.log('[CONNECTION_STATUS] Handling disconnected status');
                 const reason = data.reason ? ` (${data.reason})` : '';
-                connectionInfo.textContent = `Disconnected from drone${reason}`;
-                connectionInfo.style.color = '#dc3545'; // Red
+                document.getElementById("status-connection").textContent = `Disconnected${reason}`;
+                document.getElementById("status-connection").className = 'disconnected';
                 connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect';
                 disconnectBtn.disabled = true;
+                disconnectBtn.textContent = 'Disconnect';
+                
+                // Clear HUD displays when disconnected
+                const armingStatusOverlay = document.getElementById('arming-status-overlay');
+                if (armingStatusOverlay) {
+                    console.log('[DISCONNECT] Before clearing - Text:', armingStatusOverlay.textContent, 'Classes:', armingStatusOverlay.className);
+                    console.log('[DISCONNECT] Clearing arming status to DISARMED');
+                    
+                    // Force complete reset
+                    armingStatusOverlay.textContent = 'DISARMED';
+                    armingStatusOverlay.classList.remove('pfd-armed');
+                    // Remove forced color - let CSS handle it properly
+                    armingStatusOverlay.style.color = '';
+                    
+                    console.log('[DISCONNECT] After clearing - Text:', armingStatusOverlay.textContent, 'Classes:', armingStatusOverlay.className);
+                    
+                    // Double-check after a small delay
+                    setTimeout(() => {
+                        console.log('[DISCONNECT] Final check - Text:', armingStatusOverlay.textContent, 'Classes:', armingStatusOverlay.className, 'Color:', armingStatusOverlay.style.color);
+                        if (armingStatusOverlay.textContent === 'ARMED') {
+                            console.log('[DISCONNECT] ERROR: Something changed it back to ARMED!');
+                        }
+                    }, 100);
+                }
+                
+                // Clear mode display
+                const modeOverlay = document.getElementById('mode-overlay');
+                if (modeOverlay) {
+                    modeOverlay.textContent = 'Mode: ------';
+                }
                 
             } else if (data.status === 'failed') {
-                connectionInfo.textContent = `Connection failed: ${data.message}`;
-                connectionInfo.style.color = '#dc3545'; // Red
+                console.log('[CONNECTION_STATUS] Handling failed status');
+                document.getElementById("status-connection").textContent = `Connection failed: ${data.message}`;
+                document.getElementById("status-connection").className = 'disconnected';
                 connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect';
                 disconnectBtn.disabled = true;
+                disconnectBtn.textContent = 'Disconnect';
+                
+                // Clear HUD displays when failed to connect
+                const armingStatusOverlay = document.getElementById('arming-status-overlay');
+                if (armingStatusOverlay) {
+                    // Force complete reset
+                    armingStatusOverlay.textContent = 'DISARMED';
+                    armingStatusOverlay.classList.remove('pfd-armed');
+                    // Remove forced color - let CSS handle it properly
+                    armingStatusOverlay.style.color = '';
+                }
+                
+                // Clear mode display
+                const modeOverlay = document.getElementById('mode-overlay');
+                if (modeOverlay) {
+                    modeOverlay.textContent = 'Mode: ------';
+                }
             }
         });
 
