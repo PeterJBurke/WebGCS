@@ -78,14 +78,15 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
     width: 100%;
+    overflow: hidden;
 }
 
 .status .connection-inputs {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: nowrap;
     align-items: center;
     flex: 1;
@@ -94,23 +95,25 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 .status .connection-inputs .field-group {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     white-space: nowrap;
 }
 
 .status .connection-inputs label {
     font-weight: bold;
     font-size: 0.8em;
-    min-width: 50px;
+    min-width: 45px;
 }
 
-/* Specific spacing for port field group to be much tighter */
+/* Make Port label ultra-tight */
 .status .connection-inputs .field-group:last-child {
     gap: 0px;
+    margin-left: 4px;
 }
 
 .status .connection-inputs .field-group:last-child label {
-    margin-right: 1px;
+    margin-right: 0px;
+    min-width: 30px;
 }
 
 .status .connection-inputs .field-group:last-child input {
@@ -126,27 +129,27 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 }
 
 .status .connection-inputs #drone-ip {
-    width: 110px;
-    margin-right: 6px;
+    width: 100px;
+    margin-right: 4px;
 }
 
 .status .connection-inputs #drone-port {
-    width: 60px;
-    margin-right: 6px;
+    width: 50px;
+    margin-right: 4px;
 }
 
 .status .connection-actions {
     display: flex;
-    gap: 5px;
+    gap: 3px;
     margin-left: 0px;
     flex-shrink: 0;
 }
 
-/* Connection buttons - Match control button size and style */
+/* Make connection buttons slightly smaller to fit */
 #btn-connect, #btn-disconnect {
-    margin: 2px 3px 2px 0 !important;
-    padding: 6px 10px !important;
-    font-size: 0.9em !important;
+    margin: 2px 1px 2px 0 !important;
+    padding: 5px 8px !important;
+    font-size: 0.85em !important;
     border-radius: 3px !important;
     cursor: pointer !important;
     transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
