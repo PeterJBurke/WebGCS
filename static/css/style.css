@@ -46,11 +46,32 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 /* Add styles for horizontal status row */
 .status-row { 
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 6px;
 }
-.status-item { background-color: #e9ecef; padding: 5px 8px; border-radius: 3px; font-size: 0.85em; overflow-wrap: break-word; display: flex; align-items: center; }
+.status-item { background-color: #e9ecef; padding: 5px 8px; border-radius: 3px; font-size: 0.85em; overflow-wrap: break-word; display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .status-item strong { display: inline-block; min-width: 90px; /* Adjust for alignment */ font-size: 1em; color: #495057; margin-bottom: 0; text-transform: uppercase; margin-right: 5px; text-align: right; /* Right align labels */}
+
+/* Connection status content layout */
+.status-item .connection-content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: space-between;
+}
+
+.status-item .connection-status-text {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.status-item .connection-indicators {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
 
 /* Connection form styling when inside status section */
 .status .connection-form {

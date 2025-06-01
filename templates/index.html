@@ -217,10 +217,16 @@
                     <div class="status-grid">
                         <div class="status-row">
                             <div class="status-item">
-                                <strong>Connection:</strong>
-                                <span id="status-connection" class="disconnected">Disconnected</span>
-                                <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
-                                <span id="heartbeat-counter" style="font-size: 10px; margin-left: 5px; color: #666;">(0)</span>
+                                <div class="connection-content">
+                                    <div class="connection-status-text">
+                                        <strong>Connection:</strong>
+                                        <span id="status-connection" class="disconnected">Disconnected</span>
+                                    </div>
+                                    <div class="connection-indicators">
+                                        <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
+                                        <span id="heartbeat-counter" style="font-size: 10px; color: #666;">(0)</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
