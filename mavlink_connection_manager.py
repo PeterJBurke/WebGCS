@@ -5,6 +5,7 @@ from pymavlink import mavutil
 from gevent.event import Event
 import inspect
 import gevent # For gevent.sleep
+import datetime
 
 # Import configuration constants
 from config import AP_CUSTOM_MODES
@@ -84,7 +85,7 @@ def connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_con
     connection_event_instance.clear()
 
     try:
-        print(f"Creating MAVLink connection with simplified parameters...")
+#        print(f"Creating MAVLink connection with simplified parameters...")
         # Create the MAVLink connection with simplified settings (like simple_monitor.py)
         mavlink_connection_instance = mavutil.mavlink_connection(
             mavlink_connection_string_config,
@@ -94,7 +95,7 @@ def connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_con
             # Removed retries and timeout to match simple_monitor.py approach
         )
         
-        print(f"MAVLink connection object created: {mavlink_connection_string_config}")
+#        print(f"MAVLink connection object created: {mavlink_connection_string_config}")
         print("Waiting for heartbeat to confirm connection...")
         
         # Wait for heartbeat to confirm connection is working
@@ -120,12 +121,12 @@ def connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_con
         armed = (msg.base_mode & mavutil.mavlink.MAV_MODE_FLAG_SAFETY_ARMED) != 0
         armed_str = "ARMED" if armed else "DISARMED"
         
-        print(f"Drone is in {custom_mode_str} mode and is {armed_str}")
+#        print(f"Drone is in {custom_mode_str} mode and is {armed_str}")
         
         # Set target system based on the received heartbeat
         mavlink_connection_instance.target_system = msg.get_srcSystem()
         mavlink_connection_instance.target_component = msg.get_srcComponent()
-        print(f"Set target system to {mavlink_connection_instance.target_system}, component {mavlink_connection_instance.target_component}")
+#        print(f"Set target system to {mavlink_connection_instance.target_system}, component {mavlink_connection_instance.target_component}")
         
         # Update drone state to connected and set initial mode and armed status
         with drone_state_lock:
@@ -154,7 +155,7 @@ def request_data_streams(req_rate_hz_config, home_position_is_known):
         print("No MAVLink connection or target system to request streams.")
         return
 
-    print(f"Requesting data streams at {req_rate_hz_config} Hz...")
+#    print(f"Requesting data streams at {req_rate_hz_config} Hz...")
     target_sys = mavlink_connection_instance.target_system
     target_comp = mavlink_connection_instance.target_component
 
@@ -179,7 +180,7 @@ def request_data_streams(req_rate_hz_config, home_position_is_known):
     
     for msg_id, msg_name in messages_to_request:
         try:
-            print(f"  Requesting {msg_name} (ID: {msg_id}) at {req_rate_hz_config} Hz (Interval: {interval_us} us)")
+#            print(f"  Requesting {msg_name} (ID: {msg_id}) at {req_rate_hz_config} Hz (Interval: {interval_us} us)")
             mavlink_connection_instance.mav.command_long_send(
                 target_sys,                    # target_system
                 target_comp,                   # target_component  
@@ -192,7 +193,7 @@ def request_data_streams(req_rate_hz_config, home_position_is_known):
         except Exception as e:
             print(f"  Error requesting {msg_name}: {e}")
 
-    print(f"Data stream requests sent at {req_rate_hz_config} Hz!")
+#    print(f"Data stream requests sent at {req_rate_hz_config} Hz!")
     data_streams_requested_instance = True
 
 def check_pending_command_timeouts(sio, command_ack_timeout_config, log_function):
@@ -326,7 +327,7 @@ def mavlink_receive_loop_runner(
                 
                 messages_processed_this_cycle += 1
                 msg_type = msg.get_type()
-#                print(f"[RECV-LOOP-DEBUG] Received MAVLink MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade: Log every received message
+#                print(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] INFO | MAVLINK_RX: Received {msg_type} (ID: {msg.get_msgId()})")
                 current_time_unix = time.time() # Capture time immediately after getting msg_type message
                 # print(f"[LOOP_TIMING] Received {msg_type} at {current_msg_receive_time:.4f}")
 
@@ -401,7 +402,7 @@ def mavlink_receive_loop_runner(
                     mavlink_receive_loop_runner.last_message_debug_time = 0
                 current_time = time.time()
                 if current_time - mavlink_receive_loop_runner.last_message_debug_time > 5:  # Debug every 5 seconds
-                    print(f"[DEBUG] No messages (non-blocking read) this iteration at {current_time:.3f}")
+#                    print(f"[DEBUG] No messages (non-blocking read) this iteration at {current_time:.3f}")
                     mavlink_receive_loop_runner.last_message_debug_time = current_time
 
             # If drone_state was changed by any message handler in this iteration, notify app.py

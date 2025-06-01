@@ -27,6 +27,8 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 #current-overlay { bottom: 22px; left: 5px; font-size: 11px; }
 #gps-overlay { top: 30px; left: 5px; color: #ffc107; font-size: 10px; }
 #latlon-overlay { top: 30px; right: 5px; text-align: right; font-size: 10px; }
+#pitch-overlay { bottom: 45px; left: 5px; font-size: 11px; }
+#roll-overlay { bottom: 30px; left: 5px; font-size: 11px; }
 
 /* Info & Controls Section */
 .info-controls-section { display: flex; flex-direction: column; flex: 1; min-height: 0; }

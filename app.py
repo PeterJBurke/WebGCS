@@ -15,6 +15,8 @@ monkey.patch_all()
 import sys
 import datetime
 import time
+import os
+import inspect
 import threading
 import json
 import gevent
@@ -215,7 +217,7 @@ def _schedule_mission_request():
 
 # --- MAVLink Helper Functions ---
 
-def log_command_action(command_name, params=None, details=None, level="INFO"):
+def log_command_action(command_name, params=None, details=None, level="INFO", caller_filename=None, caller_lineno=None, caller_line_content=None):
     """Log command details to terminal in a standardized format with state tracking"""
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     params_str = f", Params: {params}" if params else ""
@@ -225,6 +227,9 @@ def log_command_action(command_name, params=None, details=None, level="INFO"):
     log_message = f"[{timestamp}] {level} | COMMAND: {command_name}{params_str}{details_str}"
     
     # Print with a visible separator for easier log reading
+    if caller_line_content:
+        print(f"\n*** {caller_filename}:{caller_lineno} ***")
+        print(f"*** {caller_line_content.strip()} ***")
     print("\n" + "="*80)
     print(log_message)
     
@@ -339,9 +344,9 @@ def periodic_telemetry_update():
                     lat_status = drone_state.get('lat', 0.0)
                     lon_status = drone_state.get('lon', 0.0)
 
-                    print(f"[{timestamp}] Conn: {conn_status}, Armed: {armed_status}, Mode: {mode_status}")
-                    print(f"  Alt (rel): {alt_rel_status:.2f}m, Alt (VFR): {alt_vfr_status:.2f}m")
-                    print(f"  Lat/Lon: {lat_status:.6f}, {lon_status:.6f}")
+#                    print(f"[{timestamp}] Conn: {conn_status}, Armed: {armed_status}, Mode: {mode_status}")
+#                    print(f"  Alt (rel): {alt_rel_status:.2f}m, Alt (VFR): {alt_vfr_status:.2f}m")
+#                    print(f"  Lat/Lon: {lat_status:.6f}, {lon_status:.6f}")
                 last_console_log_time = current_time_for_log
 
             # Send telemetry update to UI if state has changed

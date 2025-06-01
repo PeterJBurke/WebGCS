@@ -5,6 +5,8 @@ import math
 from flask import request # For request.sid
 from flask_socketio import emit
 from pymavlink import mavutil
+import inspect
+import linecache
 
 # --- Context variables to be initialized by app.py ---
 _socketio = None
@@ -15,6 +17,51 @@ _pending_commands_dict = None
 _AP_MODE_NAME_TO_ID = None
 _schedule_fence_request_in_app = None
 _schedule_mission_request_in_app = None
+
+def _log_wrapper_for_caller_info(command_name, params=None, details=None, level="INFO"):
+    """Captures caller info and forwards to the main logger."""
+    caller_filename = "UnknownFile"
+    caller_lineno = 0
+    caller_line_content = "Error: Could not retrieve source line." # Default error message
+
+    try:
+        # stack()[0] is _log_wrapper_for_caller_info itself.
+        # stack()[1] is the frame of the function that called _log_wrapper_for_caller_info.
+        # This is the frame whose line we want to log.
+        frame_info = inspect.stack()[1]
+        caller_filename = frame_info.filename
+        caller_lineno = frame_info.lineno
+        
+        # Attempt to get the source line
+        linecache.checkcache(caller_filename) 
+        line = linecache.getline(caller_filename, caller_lineno).strip()
+        if line:
+            caller_line_content = line
+        else:
+            caller_line_content = f"Line {caller_lineno} not found or empty in {caller_filename}."
+
+    except IndexError: # If inspect.stack() doesn't have enough frames
+        caller_line_content = "Error: inspect.stack() call failed (IndexError)."
+    except Exception as e: # Catch any other inspection errors
+        caller_line_content = f"Error during inspection: {str(e)}"
+        # For debugging the logger itself, uncomment below:
+        # print(f"DEBUG: Logger inspection error: {e}, Filename: {caller_filename}, Lineno: {caller_lineno}")
+
+    if _log_command_action: # Check if the main logger from app.py is available
+        _log_command_action( # This calls app.py's log_command_action
+            command_name,
+            params=params,
+            details=details,
+            level=level,
+            caller_filename=caller_filename,
+            caller_lineno=caller_lineno,
+            caller_line_content=caller_line_content
+        )
+    else:
+        # Fallback if _log_command_action (app.py's logger) isn't initialized
+        print(f"LOGGER_NOT_INITIALIZED: {level} | {command_name} | {params} | {details}")
+        print(f"  Called from: {caller_filename}:{caller_lineno} -> {caller_line_content}")
+
 
 # --- Function to send commands to the telemetry bridge script ---
 def _send_command_to_bridge(command, **params):
@@ -42,10 +89,10 @@ def _send_command_to_bridge(command, **params):
         with open('command.json', 'w') as f:
             json.dump(command_data, f)
         
-        _log_command_action(command, params, f"Command sent to telemetry bridge: {command}", "INFO")
+        _log_wrapper_for_caller_info(command, params, f"Command sent to telemetry bridge: {command}", "INFO")
         return True
     except Exception as e:
-        _log_command_action(command, params, f"Error sending command to telemetry bridge: {e}", "ERROR")
+        _log_wrapper_for_caller_info(command, params, f"Error sending command to telemetry bridge: {e}", "ERROR")
         return False
 
 # --- Helper function (adapted from app.py's send_mavlink_command) ---
@@ -69,7 +116,7 @@ def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p
 
     if not current_mavlink_connection or not _drone_state.get("connected", False):
         warn_msg = f"CMD {cmd_name} Failed: Drone not connected."
-        _log_command_action(cmd_name, None, f"ERROR: {warn_msg}", "ERROR")
+        _log_wrapper_for_caller_info(cmd_name, None, f"ERROR: {warn_msg}", "ERROR")
         return (False, warn_msg)
 
     target_sys = current_mavlink_connection.target_system
@@ -77,12 +124,12 @@ def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p
 
     if target_sys == 0:
         err_msg = f"CMD {cmd_name} Failed: Invalid target system."
-        _log_command_action(cmd_name, None, f"ERROR: {err_msg}", "ERROR")
+        _log_wrapper_for_caller_info(cmd_name, None, f"ERROR: {err_msg}", "ERROR")
         return (False, err_msg)
 
     try:
         params_str = f"p1={p1:.2f}, p2={p2:.2f}, p3={p3:.2f}, p4={p4:.2f}, p5={p5:.6f}, p6={p6:.6f}, p7={p7:.2f}"
-        _log_command_action(cmd_name, params_str, f"To SYS:{target_sys} COMP:{target_comp}", "INFO")
+#        _log_wrapper_for_caller_info(cmd_name, params_str, f"To SYS:{target_sys} COMP:{target_comp}", "INFO")
         
         # Send the command
         current_mavlink_connection.mav.command_long_send(
@@ -120,7 +167,7 @@ def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p
         return (True, success_msg)
     except Exception as e:
         err_msg = f"CMD {cmd_name} Send Error: {e}"
-        _log_command_action(cmd_name, None, f"EXCEPTION: {err_msg}", "ERROR")
+        _log_wrapper_for_caller_info(cmd_name, None, f"EXCEPTION: {err_msg}", "ERROR")
         traceback.print_exc()
         return (False, err_msg)
 
@@ -142,7 +189,7 @@ def init_socketio_handlers(socketio_instance, app_context):
     # --- SocketIO Event Handlers ---
     @_socketio.on('connect')
     def handle_connect():
-        _log_command_action("CLIENT_CONNECTED", details=f"Client {request.sid} connected.")
+        _log_wrapper_for_caller_info("CLIENT_CONNECTED", details=f"Client {request.sid} connected.")
         emit('telemetry_update', _drone_state)
         status_text = 'Backend connected. '
         status_text += 'Drone link active.' if _drone_state.get('connected') else 'Attempting drone link...'
@@ -151,16 +198,16 @@ def init_socketio_handlers(socketio_instance, app_context):
 
     @_socketio.on('disconnect')
     def handle_disconnect():
-        _log_command_action("CLIENT_DISCONNECTED", details=f"Client {request.sid} disconnected.")
+        _log_wrapper_for_caller_info("CLIENT_DISCONNECTED", details=f"Client {request.sid} disconnected.")
         print(f"Web UI Client {request.sid} disconnected.")
 
     @_socketio.on('send_command')
     def handle_send_command(data):
         """Handles commands received from the web UI."""
-        print(f"DEBUG: handle_send_command (socketio_handlers) received data: {data}")
+#        print(f"DEBUG: handle_send_command (socketio_handlers) received data: {data}")
         cmd = data.get('command')
         log_data = {k: v for k, v in data.items() if k != 'command'}
-        _log_command_action(f"RECEIVED_{cmd}", str(log_data) if log_data else None, "Command received from UI", "INFO")
+        #_log_wrapper_for_caller_info(f"RECEIVED_{cmd}", str(log_data) if log_data else None, "Command received from UI", "INFO")
 
         success = False
         msg = f'{cmd} processing...'
@@ -169,7 +216,7 @@ def init_socketio_handlers(socketio_instance, app_context):
         if not _drone_state.get("connected", False):
             msg = f'CMD {cmd} Fail: Disconnected.'
             cmd_type = 'error'
-            _log_command_action(cmd, None, f"ERROR: {msg}", "ERROR")
+            _log_wrapper_for_caller_info(cmd, None, f"ERROR: {msg}", "ERROR")
             emit('status_message', {'text': msg, 'type': cmd_type})
             emit('command_result', {'command': cmd, 'success': False, 'message': msg})
             return
@@ -181,8 +228,22 @@ def init_socketio_handlers(socketio_instance, app_context):
                 success = False
                 msg = f'ARM Failed: RTL mode is not armable. Please change to an armable mode like GUIDED or STABILIZE first.'
                 cmd_type = 'error'
-                _log_command_action("ARM_REJECTED", {"current_mode": current_mode}, 
-                                   f"ARM command rejected: {current_mode} mode not armable", "ERROR")
+                _log_wrapper_for_caller_info("ARM_REJECTED", {"current_mode": current_mode}, 
+                                       f"Cannot ARM in {current_mode} mode. Set to STABILIZE, LOITER, or ALT_HOLD first.", 
+                                       "WARNING")
+                # Store additional command details for the ACK handler
+                _pending_commands_dict[mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM] = {
+                    'timestamp': time.time(),
+                    'ui_command_name': 'ARM'
+                }
+                
+                # Send direct MAVLink ARM command
+                success, msg_send = _send_mavlink_command_handler(
+                    mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
+                    p1=1  # 1 to arm, 0 to disarm
+                )
+                cmd_type = 'info' if success else 'error'
+                msg = f'ARM command sent.' if success else f'ARM Failed: {msg_send}'
             else:
                 # Store additional command details for the ACK handler
                 _pending_commands_dict[mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM] = {
@@ -228,7 +289,7 @@ def init_socketio_handlers(socketio_instance, app_context):
                 success = False
                 msg = f"TAKEOFF Error: Invalid altitude '{data.get('altitude')}'. Details: {e}"
                 cmd_type = 'error'
-                _log_command_action("TAKEOFF", {"altitude": data.get('altitude')}, f"EXCEPTION: {msg}", "ERROR")
+                _log_wrapper_for_caller_info("TAKEOFF", {"altitude": data.get('altitude')}, f"EXCEPTION: {msg}", "ERROR")
         elif cmd == 'LAND':
             success, msg_send = _send_mavlink_command_handler(mavutil.mavlink.MAV_CMD_NAV_LAND)
             cmd_type = 'info' if success else 'error'
@@ -242,8 +303,8 @@ def init_socketio_handlers(socketio_instance, app_context):
             if mode_name in _AP_MODE_NAME_TO_ID:
                 mode_id = _AP_MODE_NAME_TO_ID[mode_name]
                 
-                _log_command_action("SET_MODE_REQUEST", {"mode_name": mode_name}, 
-                                   f"Attempting to set mode to {mode_name}", "INFO")
+                #_log_wrapper_for_caller_info("SET_MODE_REQUEST", {"mode_name": mode_name}, 
+                                   #f"Attempting to set mode to {mode_name}", "INFO")
                 
                 # Store additional command details for the ACK handler
                 _pending_commands_dict[mavutil.mavlink.MAV_CMD_DO_SET_MODE] = {
@@ -264,15 +325,15 @@ def init_socketio_handlers(socketio_instance, app_context):
                 success = False
                 msg = f"SET_MODE Failed: Unknown mode '{mode_name}'"
                 cmd_type = 'error'
-                _log_command_action("SET_MODE", {"mode_name": mode_name}, f"ERROR: {msg}", "ERROR")
+                _log_wrapper_for_caller_info("SET_MODE", {"mode_name": mode_name}, f"ERROR: {msg}", "ERROR")
         elif cmd == 'REQUEST_HOME':
-            _log_command_action("REQUEST_HOME", None, "UI requested home position update.", "INFO")
+            _log_wrapper_for_caller_info("REQUEST_HOME", None, "UI requested home position update.", "INFO")
             # Actual MAVLink request for home should be managed elsewhere (e.g., periodic or by mavlink_connection_manager)
             msg = "Home position request noted. System will update if available."
             success = True 
             cmd_type = 'info'
         elif cmd == 'REQUEST_FENCE':
-            _log_command_action("REQUEST_FENCE", None, "UI requested fence data.", "INFO")
+            _log_wrapper_for_caller_info("REQUEST_FENCE", None, "UI requested fence data.", "INFO")
             if _schedule_fence_request_in_app:
                 _schedule_fence_request_in_app()
                 msg = "Fence data request scheduled."
@@ -282,7 +343,7 @@ def init_socketio_handlers(socketio_instance, app_context):
                 success = False
                 cmd_type = 'error'
         elif cmd == 'REQUEST_MISSION':
-            _log_command_action("REQUEST_MISSION", None, "UI requested mission data.", "INFO")
+            _log_wrapper_for_caller_info("REQUEST_MISSION", None, "UI requested mission data.", "INFO")
             if _schedule_mission_request_in_app:
                 _schedule_mission_request_in_app()
                 msg = "Mission data request scheduled."
@@ -298,9 +359,10 @@ def init_socketio_handlers(socketio_instance, app_context):
         else:
             msg = f'Unknown command: {cmd}'
             cmd_type = 'warning'
-            _log_command_action(cmd, data, f"WARNING: {msg}", "WARNING")
+            _log_wrapper_for_caller_info(cmd, data, f"WARNING: {msg}", "WARNING")
 
-        _log_command_action(cmd, data, f"Result: {msg}", cmd_type.upper())
+        if cmd != 'SET_MODE':
+            _log_wrapper_for_caller_info(cmd, data, f"Result: {msg}", cmd_type.upper())
         emit('status_message', {'text': msg, 'type': cmd_type})
         emit('command_result', {'command': cmd, 'success': success, 'message': msg})
 
@@ -316,7 +378,7 @@ def init_socketio_handlers(socketio_instance, app_context):
             current_rel_alt = _drone_state.get('alt_rel', 10.0) # Default to 10m if not available
             alt = float(data.get('alt', current_rel_alt))
 
-            _log_command_action("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m using SET_POSITION_TARGET_GLOBAL_INT", "INFO")
+            _log_wrapper_for_caller_info("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m using SET_POSITION_TARGET_GLOBAL_INT", "INFO")
             
             current_mav_connection = _get_mavlink_connection()
 
@@ -345,7 +407,7 @@ def init_socketio_handlers(socketio_instance, app_context):
                 )
                 success = True
                 msg_send = 'GOTO (SET_POSITION_TARGET_GLOBAL_INT) command sent successfully.'
-                _log_command_action("GOTO_SENT", data, msg_send, "INFO")
+                _log_wrapper_for_caller_info("GOTO_SENT", data, msg_send, "INFO")
             else:
                 success = False
                 msg_send = "GOTO Failed: MAVLink connection not available or target system not identified."
@@ -355,13 +417,13 @@ def init_socketio_handlers(socketio_instance, app_context):
                     msg_send += " (Details: target_system attribute missing on connection object)"
                 else:
                     msg_send += " (Details: no MAVLink connection object retrieved)"
-                _log_command_action("GOTO_FAIL", data, msg_send, "ERROR")
+                _log_wrapper_for_caller_info("GOTO_FAIL", data, msg_send, "ERROR")
 
             cmd_type = 'info' if success else 'error'
             emit('goto_feedback', {'status': cmd_type, 'message': msg_send}, room=sid)
         except ValueError as e:
-            _log_command_action("GOTO_ERROR_VAL", data, f"ValueError in GOTO: {str(e)}", "ERROR")
+            _log_wrapper_for_caller_info("GOTO_ERROR_VAL", data, f"ValueError in GOTO: {str(e)}", "ERROR")
             emit('goto_feedback', {'status': 'error', 'message': f'Invalid GOTO parameters: {str(e)}'}, room=sid)
         except Exception as e:
-            _log_command_action("GOTO_ERROR_EXC", data, f"Exception in GOTO: {str(e)}", "ERROR")
+            _log_wrapper_for_caller_info("GOTO_ERROR_EXC", data, f"Exception in GOTO: {str(e)}", "ERROR")
             emit('goto_feedback', {'status': 'error', 'message': f'Error processing GOTO command: {str(e)}'}, room=sid)

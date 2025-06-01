@@ -37,7 +37,8 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
     
     # Use custom heartbeat logging if provided, otherwise fall back to the exact format from listenheartbeat_FIXED.py
     if heartbeat_log_cb:
-        heartbeat_log_cb(msg)
+#        heartbeat_log_cb(msg)
+        pass
     else:
         timing_step2 = time.time()
         
@@ -117,32 +118,35 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
         flight_mode = get_flight_mode_fixed(base_mode, custom_mode, autopilot)
         
         # Print heartbeat information in EXACTLY the same format as listenheartbeat_FIXED.py
-        print(f"\n=== Heartbeat #{process_heartbeat.counter} ===")
-        print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"System: {msg.get_srcSystem()}, Component: {msg.get_srcComponent()}")
-        print(f"Autopilot: {AUTOPILOT_TYPES.get(autopilot, 'Unknown')} ({autopilot})")
-        print(f"Vehicle Type: {VEHICLE_TYPES.get(vehicle_type, 'Unknown')} ({vehicle_type})")
-        print(f"Flight Mode: {flight_mode}")
-        print(f"System Status: {system_status}")
-        print(f"MAVLink Version: {mavlink_version}")
-        print(f"Base Mode: 0x{base_mode:02X}")
+#        print(f"\n=== Heartbeat #{process_heartbeat.counter} ===")
+#        print(f"Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+#        print(f"System: {msg.get_srcSystem()}, Component: {msg.get_srcComponent()}")
+#        print(f"Autopilot: {AUTOPILOT_TYPES.get(autopilot, 'Unknown')} ({autopilot})")
+#        print(f"Vehicle Type: {VEHICLE_TYPES.get(vehicle_type, 'Unknown')} ({vehicle_type})")
+#        print(f"Flight Mode: {flight_mode}")
+#        print(f"System Status: {system_status}")
+#        print(f"MAVLink Version: {mavlink_version}")
+#        print(f"Base Mode: 0x{base_mode:02X}")
         
         # Decode base mode flags exactly like listenheartbeat_FIXED.py
         flags = decode_base_mode_fixed(base_mode)
         if flags:
-            print("Base Mode Flags:")
+#            print("Base Mode Flags:")
             for flag in flags:
-                print(f"  - {flag}")
+#                print(f"  - {flag}")
+                pass
         else:
-            print("No base mode flags")
+#            print("No base mode flags")
+            pass
             
         # Show custom mode with human-readable name exactly like listenheartbeat_FIXED.py
         if base_mode & 0x01:  # Custom mode enabled
             custom_mode_name = ARDUPILOT_COPTER_MODES.get(custom_mode, f"Unknown ({custom_mode})")
-            print(f"Custom Mode: {custom_mode_name} ({custom_mode})")
+#            print(f"Custom Mode: {custom_mode_name} ({custom_mode})")
         else:
-            print(f"Custom Mode: Not enabled (Base mode only)")
-        print("=" * 30)
+#            print(f"Custom Mode: Not enabled (Base mode only)")
+            pass
+#        print("=" * 30)
         
         timing_step3 = time.time()
 
@@ -613,7 +617,7 @@ def process_command_ack(msg, drone_state, drone_state_lock, mavlink_conn, log_cm
         bool: False, as COMMAND_ACK itself doesn't typically change the core drone_state fields like lat/lon/mode.
               However, it provides feedback to the user.
     """
-    print(f"DEBUG: process_command_ack received: {msg}") # Added for debugging
+#    print(f"DEBUG: process_command_ack received: {msg}") # Added for debugging
 
     cmd = msg.command
     result = msg.result
@@ -741,8 +745,8 @@ def process_command_ack(msg, drone_state, drone_state_lock, mavlink_conn, log_cm
         mode_name = ui_command_details.get('mode_name', 'UNKNOWN')
         
         if result == mavutil.mavlink.MAV_RESULT_ACCEPTED:
-            log_cmd_action_cb("SET_MODE_SUCCESS", {"mode_name": mode_name}, 
-                             f"Successfully set mode to {mode_name}", "INFO")
+            #log_cmd_action_cb("SET_MODE_SUCCESS", {"mode_name": mode_name}, 
+#                             f"Successfully set mode to {mode_name}", "INFO")
             if sio_instance:
                 sio_instance.emit('status_message', {
                     'text': f'Successfully set mode to {mode_name}', 
