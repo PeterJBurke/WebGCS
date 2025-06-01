@@ -32,8 +32,8 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
         bool: True if the drone_state was changed, False otherwise.
     """
     
-    # TIMING TEST: Start measuring processing time
-    process_start_time = time.time()
+    func_entry_time = time.time()
+    # print(f"[HB_PROC_TIMING] Enter process_heartbeat at {func_entry_time:.4f}")
     
     # Use custom heartbeat logging if provided, otherwise fall back to the exact format from listenheartbeat_FIXED.py
     if heartbeat_log_cb:
@@ -148,8 +148,11 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
 
     drone_state_changed_local = False
 
-    timing_state_start = time.time()
+    # print(f"[HB_PROC_TIMING] Before lock acquire at {time.time():.4f} (took {time.time() - func_entry_time:.4f}s since entry)")
+    lock_acquire_start_time = time.time()
     with drone_state_lock:
+        lock_acquired_time = time.time()
+        # print(f"[HB_PROC_TIMING] Lock acquired at {lock_acquired_time:.4f} (waited {lock_acquired_time - lock_acquire_start_time:.4f}s for lock)")
         prev_mode = drone_state.get('mode', 'UNKNOWN')
         prev_armed = drone_state.get('armed', False)
         prev_connected = drone_state.get('connected', False)
@@ -183,8 +186,8 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
             status = "ARMED" if drone_state['armed'] else "DISARMED"
             log_cmd_action_cb("ARM_STATUS", None, f"Vehicle {status}")
             drone_state_changed_local = True
-    
-    timing_state_end = time.time()
+        lock_release_time = time.time()
+        # print(f"[HB_PROC_TIMING] Lock released at {lock_release_time:.4f} (held for {lock_release_time - lock_acquired_time:.4f}s)")
 
     # Emit event for UI animation - now sending generic mavlink_message
     # Only emit for our drone (already filtered by mavlink_receive_loop_runner, but good for clarity)
@@ -227,13 +230,8 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
     
     timing_emit_end = time.time()
     
-    # TIMING TEST: Calculate total processing time
-    process_end_time = time.time()
-    total_process_time = (process_end_time - process_start_time) * 1000  # Convert to ms
-    state_time = (timing_state_end - timing_state_start) * 1000
-    emit_time = (timing_emit_end - timing_emit_start) * 1000
-    
-    print(f"[PROC-TIMING] TOTAL: {total_process_time:.2f}ms | State: {state_time:.2f}ms | Emit: {emit_time:.2f}ms | Changed: {drone_state_changed_local}")
+    func_exit_time = time.time()
+    # print(f"[HB_PROC_TIMING] Exit process_heartbeat. Total: {func_exit_time - func_entry_time:.4f}s; LockWait: {lock_acquired_time - lock_acquire_start_time:.4f}s; LockHold: {lock_release_time - lock_acquired_time:.4f}s; Changed: {drone_state_changed_local}")
 
     return drone_state_changed_local
 
