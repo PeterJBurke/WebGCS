@@ -12,7 +12,7 @@ MAVLINK_CONNECTION_STRING = f'tcp:{DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}'
 
 # Web Server Settings
 WEB_SERVER_HOST = os.getenv('WEB_SERVER_HOST', 'localhost')
-WEB_SERVER_PORT = int(os.getenv('WEB_SERVER_PORT', '5000'))
+WEB_SERVER_PORT = int(os.getenv('WEB_SERVER_PORT', '5001'))
 SECRET_KEY = os.getenv('SECRET_KEY', 'desktop_drone_secret!')
 
 # MAVLink Settings

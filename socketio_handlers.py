@@ -265,35 +265,6 @@ def init_socketio_handlers(socketio_instance, app_context):
                 msg = f"SET_MODE Failed: Unknown mode '{mode_name}'"
                 cmd_type = 'error'
                 _log_command_action("SET_MODE", {"mode_name": mode_name}, f"ERROR: {msg}", "ERROR")
-        elif cmd == 'GOTO':
-            try:
-                lat = float(data.get('lat'))
-                lon = float(data.get('lon'))
-                alt = float(data.get('alt', _drone_state.get('alt_rel', 10.0)))  # Default to current rel alt or 10m
-
-                _log_command_action("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m", "INFO")
-                
-                # Send direct MAVLink GOTO command (using SET_POSITION_TARGET_GLOBAL_INT)
-                # For now, use a simpler waypoint approach with MAV_CMD_NAV_WAYPOINT
-                success, msg_send = _send_mavlink_command_handler(
-                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                    p5=lat,  # latitude
-                    p6=lon,  # longitude  
-                    p7=alt   # altitude
-                )
-                cmd_type = 'info' if success else 'error'
-                msg = f'GOTO command sent.' if success else f'GOTO Failed: {msg_send}'
-                
-            except (ValueError, TypeError) as e:
-                success = False
-                msg = f"GOTO Error: Invalid coordinates/altitude. Data: {data}. Details: {e}"
-                cmd_type = 'error'
-                _log_command_action("GOTO", data, f"EXCEPTION: {msg}", "ERROR")
-            except Exception as e:  # Catch any other unexpected errors
-                success = False
-                msg = f"GOTO Unexpected Error: {e}"
-                cmd_type = 'error'
-                _log_command_action("GOTO", data, f"UNEXPECTED EXCEPTION: {msg} - {traceback.format_exc()}", "ERROR")
         elif cmd == 'REQUEST_HOME':
             _log_command_action("REQUEST_HOME", None, "UI requested home position update.", "INFO")
             # Actual MAVLink request for home should be managed elsewhere (e.g., periodic or by mavlink_connection_manager)
@@ -332,3 +303,65 @@ def init_socketio_handlers(socketio_instance, app_context):
         _log_command_action(cmd, data, f"Result: {msg}", cmd_type.upper())
         emit('status_message', {'text': msg, 'type': cmd_type})
         emit('command_result', {'command': cmd, 'success': success, 'message': msg})
+
+    @_socketio.on('goto_location')
+    def goto_location(sid, data):
+        print(f"[GOTO_HANDLER_DEBUG] 'goto_location' event received. SID: {sid}, Data: {data}")
+        global _drone_state # _log_command_action and _get_mavlink_connection are in enclosing scope
+
+        try:
+            lat = float(data.get('lat'))
+            lon = float(data.get('lon'))
+            # Use a safe way to access _drone_state, assuming it's a shared dictionary
+            current_rel_alt = _drone_state.get('alt_rel', 10.0) # Default to 10m if not available
+            alt = float(data.get('alt', current_rel_alt))
+
+            _log_command_action("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m using SET_POSITION_TARGET_GLOBAL_INT", "INFO")
+            
+            current_mav_connection = _get_mavlink_connection()
+
+            if current_mav_connection and hasattr(current_mav_connection, 'target_system') and current_mav_connection.target_system != 0:
+                current_target_system = current_mav_connection.target_system
+                current_target_component = current_mav_connection.target_component
+
+                type_mask = (
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_VX_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_VY_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_VZ_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_AX_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_AY_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE
+                )
+
+                current_mav_connection.mav.set_position_target_global_int_send(
+                    0,  # time_boot_ms
+                    current_target_system, current_target_component,
+                    mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                    type_mask,
+                    int(lat * 1e7), int(lon * 1e7), alt,
+                    0, 0, 0, 0, 0, 0, 0, 0 # vx, vy, vz, afx, afy, afz, yaw, yaw_rate (all ignored)
+                )
+                success = True
+                msg_send = 'GOTO (SET_POSITION_TARGET_GLOBAL_INT) command sent successfully.'
+                _log_command_action("GOTO_SENT", data, msg_send, "INFO")
+            else:
+                success = False
+                msg_send = "GOTO Failed: MAVLink connection not available or target system not identified."
+                if current_mav_connection and hasattr(current_mav_connection, 'target_system'):
+                    msg_send += f" (Details: conn_target_sys={current_mav_connection.target_system})"
+                elif current_mav_connection:
+                    msg_send += " (Details: target_system attribute missing on connection object)"
+                else:
+                    msg_send += " (Details: no MAVLink connection object retrieved)"
+                _log_command_action("GOTO_FAIL", data, msg_send, "ERROR")
+
+            cmd_type = 'info' if success else 'error'
+            emit('goto_feedback', {'status': cmd_type, 'message': msg_send}, room=sid)
+        except ValueError as e:
+            _log_command_action("GOTO_ERROR_VAL", data, f"ValueError in GOTO: {str(e)}", "ERROR")
+            emit('goto_feedback', {'status': 'error', 'message': f'Invalid GOTO parameters: {str(e)}'}, room=sid)
+        except Exception as e:
+            _log_command_action("GOTO_ERROR_EXC", data, f"Exception in GOTO: {str(e)}", "ERROR")
+            emit('goto_feedback', {'status': 'error', 'message': f'Error processing GOTO command: {str(e)}'}, room=sid)

@@ -329,7 +329,7 @@ def periodic_telemetry_update():
             if drone_state_changed:
                 with drone_state_lock:
                     # DEBUG: Show what's being sent to frontend
-                    print(f"[TELEMETRY-EMIT] Sending update #{update_count+1} to frontend:")
+#                    print(f"[TELEMETRY-EMIT] Sending update #{update_count+1} to frontend:")
                     print(f"  Connected: {drone_state.get('connected', False)}")
                     print(f"  Armed: {drone_state.get('armed', False)}")
                     print(f"  Mode: {drone_state.get('mode', 'UNKNOWN')}")
