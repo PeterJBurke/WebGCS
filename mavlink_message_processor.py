@@ -240,7 +240,7 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
 
     Args:
         msg: The MAVLink GLOBAL_POSITION_INT message object.
-        drone_state: The shared dictionary holding drone state.
+        drone_state: The shared dictionary holding drone_state.
         drone_state_lock: Threading lock for accessing drone_state.
         mavlink_conn: The MAVLink connection object.
         log_cmd_action_cb: Callback to the log_command_action function.
@@ -250,6 +250,9 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
         bool: True if the drone_state was changed, False otherwise.
     """
     drone_state_changed_local = False
+    msg_src_system = msg.get_srcSystem()
+    conn_target_system = getattr(mavlink_conn, 'target_system', 0) if mavlink_conn else -1 # Use -1 if mavlink_conn is None
+    print(f"[ALT-DEBUG-SYSID] GPI Handler: msg_src={msg_src_system}, conn_target={conn_target_system}, initial_check_passes={mavlink_conn and msg_src_system == conn_target_system}")
     if mavlink_conn and msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0):
         with drone_state_lock:
             # MAVLink GLOBAL_POSITION_INT:
@@ -270,6 +273,12 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
             new_vy = msg.vy / 100.0  # Convert cm/s to m/s
             new_vz = msg.vz / 100.0  # Convert cm/s to m/s (positive down, but often displayed as positive for climb)
 
+            # DEBUG: Compare current and new altitude values
+            current_alt_rel_in_state = drone_state.get('alt_rel')
+            current_alt_abs_in_state = drone_state.get('alt_abs')
+            print(f"[ALT-DEBUG-VALCOMP] Comparing alt_rel: state='{current_alt_rel_in_state}', new_msg_val='{new_alt_rel}', changed={current_alt_rel_in_state != new_alt_rel}")
+            print(f"[ALT-DEBUG-VALCOMP] Comparing alt_abs: state='{current_alt_abs_in_state}', new_msg_val='{new_alt_msl}', changed={current_alt_abs_in_state != new_alt_msl}")
+            
             # Check if any relevant value has changed to avoid unnecessary updates
             if (drone_state.get('lat') != new_lat or
                 drone_state.get('lon') != new_lon or
@@ -437,6 +446,9 @@ def process_attitude(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_a
             # Normalize yaw to 0-360 range if needed, though math.degrees output is typically -180 to 180
             # if new_yaw < 0:
             #     new_yaw += 360
+
+            # DEBUG: Show attitude updates
+            print(f"[ATT-DEBUG] ATTITUDE: roll={new_roll:.2f}, pitch={new_pitch:.2f}, yaw={new_yaw:.2f}")
 
             if (drone_state.get('roll') != new_roll or
                 drone_state.get('pitch') != new_pitch or

@@ -3,6 +3,7 @@ import threading
 import collections
 from pymavlink import mavutil
 from gevent.event import Event
+import inspect
 import gevent # For gevent.sleep
 
 # Import configuration constants
@@ -182,7 +183,7 @@ def request_data_streams(req_rate_hz_config, home_position_is_known):
             mavlink_connection_instance.mav.command_long_send(
                 target_sys,                    # target_system
                 target_comp,                   # target_component  
-                mavlink_connection_instance.mav.MAV_CMD_SET_MESSAGE_INTERVAL, # command
+                mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, # command
                 0,                             # confirmation
                 msg_id,                        # param1: message_id
                 interval_us,                   # param2: interval in microseconds
@@ -325,7 +326,8 @@ def mavlink_receive_loop_runner(
                 
                 messages_processed_this_cycle += 1
                 msg_type = msg.get_type()
-                current_msg_receive_time = time.time() # More accurate timestamp per message
+                print(f"[RECV-LOOP-DEBUG] Received MAVLink MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade: Log every received message
+                current_time_unix = time.time() # Capture time immediately after getting msg_type message
                 # print(f"[LOOP_TIMING] Received {msg_type} at {current_msg_receive_time:.4f}")
 
                 # PRIORITY: Process heartbeats immediately
@@ -339,30 +341,42 @@ def mavlink_receive_loop_runner(
                     # print(f"[LOOP_TIMING] process_heartbeat for {msg_type} took {hb_call_end_time - hb_call_start_time:.4f}s")
                     if heartbeat_changed:
                         drone_state_changed_iteration = True
-                
-                # ALSO PROCESS: All other message types
-                else:
+                else: # Not a HEARTBEAT
+                    print(f"[HANDLER-DISPATCH] Processing non-HEARTBEAT MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade Debug
                     handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
                     if handler:
-                        other_handler_call_start_time = time.time()
+                        print(f"[HANDLER-DISPATCH] Found handler: {handler.__name__} for {msg_type}. Preparing to call.") # Cascade Debug
                         try:
-                            # handler_start_time = time.time()
-                            changed_by_handler = handler(
-                                msg,
-                                drone_state,
-                                drone_state_lock,
-                                mavlink_connection_instance.mav,
-                                log_function,
-                                sio
-                            )
-                            other_handler_call_end_time = time.time()
-                            # print(f"[LOOP_TIMING] Handler for {msg_type} took {other_handler_call_end_time - other_handler_call_start_time:.4f}s")
-                            # if msg_type in ['VFR_HUD', 'GLOBAL_POSITION_INT', 'GPS_RAW_INT']:
-                            #     handler_duration = (other_handler_call_end_time - other_handler_call_start_time) * 1000
-                            if changed_by_handler:
-                                drone_state_changed_iteration = True
+                            handler_kwargs = {
+                                'msg': msg,
+                                'drone_state': drone_state,
+                                'drone_state_lock': drone_state_lock,
+                                'mavlink_connection_instance': mavlink_connection_instance, # Full instance
+                                'mav_connection': mavlink_connection_instance.mav, # .mav attribute for pymavlink calls
+                                'mavlink_conn': mavlink_connection_instance,  # Pass the full instance
+                                'log_function': log_function, # Passed into mavlink_receive_loop_runner
+                                'log_cmd_action_cb': log_function, # Added for handlers expecting this name
+                                'sio': sio, # Passed into mavlink_receive_loop_runner
+                                'sio_instance': sio, # Added for handlers expecting this name
+                                'target_sys': mavlink_connection_instance.target_system, # System ID from connection
+                                'target_comp': mavlink_connection_instance.target_component, # Component ID from connection
+                                'config': app_shared_state  # Use app_shared_state for the 'config' key
+                            }
+                            # Filter kwargs to only those accepted by the handler
+                            sig = inspect.signature(handler)
+                            valid_kwargs = {k: v for k, v in handler_kwargs.items() if k in sig.parameters}
+                            
+                            print(f"[HANDLER-DISPATCH] Calling handler {handler.__name__} with keys: {list(valid_kwargs.keys())}") # Cascade Debug
+                            handler_changed_state = handler(**valid_kwargs)
+                            print(f"[HANDLER-DISPATCH] Handler {handler.__name__} for {msg_type} returned: {handler_changed_state}") # Cascade Debug
+                            if handler_changed_state:
+                                drone_state_changed_iteration = True # Update flag if handler reported change
                         except Exception as e:
-                            log_function("HANDLER_EXCEPTION", {"msg_type": msg_type}, f"Error in {msg_type} handler: {e}", level="ERROR")
+                            print(f"[HANDLER-DISPATCH-ERROR] Error processing message type {msg_type} with handler {handler.__name__}: {e}") # Cascade: Modified for clarity
+                            import traceback
+                            traceback.print_exc() # Cascade: Add full traceback for errors
+                    else:
+                        print(f"[HANDLER-DISPATCH] No handler found for MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade Debug
                 
                 # Handle message-specific post-processing
                 if msg_type == 'HEARTBEAT':
