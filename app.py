@@ -368,7 +368,7 @@ def periodic_telemetry_update():
 # --- Flask Routes and SocketIO Handlers ---
 @app.route('/')
 def index():
-    return render_template("index.html", version="v1.5-Desktop-Connection-Management")
+    return render_template("index.html", version="Web Ground Control Station (WebGCS) v. 1.5")
 
 @app.route('/static/<path:path>')
 def send_static(path):
@@ -381,7 +381,7 @@ def favicon():
 
 @app.route('/mavlink_dump')
 def mavlink_dump():
-    return render_template("mavlink_dump.html", version="v1.5-Desktop-Connection-Management")
+    return render_template("mavlink_dump.html", version="Web Ground Control Station (WebGCS) v. 1.5")
 
 @app.route('/health')
 def health():

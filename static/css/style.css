@@ -42,7 +42,7 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
     border: 1px solid #bbb;
 }
 .status h2 { font-size: 1.1em; margin: 0 0 8px 0; color: #333; border-bottom: 1px solid #bbb; padding-bottom: 4px; }
-.status-grid { display: grid; grid-template-columns: auto; gap: 6px; }
+.status-grid { display: grid; grid-template-columns: auto; gap: 6px; margin-bottom: 15px; }
 /* Add styles for horizontal status row */
 .status-row { 
     display: grid;
@@ -51,6 +51,51 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 }
 .status-item { background-color: #e9ecef; padding: 5px 8px; border-radius: 3px; font-size: 0.85em; overflow-wrap: break-word; display: flex; align-items: center; }
 .status-item strong { display: inline-block; min-width: 90px; /* Adjust for alignment */ font-size: 1em; color: #495057; margin-bottom: 0; text-transform: uppercase; margin-right: 5px; text-align: right; /* Right align labels */}
+
+/* Connection form styling when inside status section */
+.status .connection-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.status .connection-inputs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.status .connection-inputs .field-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.status .connection-inputs label {
+    font-weight: bold;
+    min-width: 70px;
+}
+
+.status .connection-inputs input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.status .connection-inputs #drone-ip {
+    width: 130px;
+}
+
+.status .connection-inputs #drone-port {
+    width: 80px;
+}
+
+.status .connection-actions {
+    display: flex;
+    gap: 10px;
+}
 
 /* Messages Section */
 .messages-section {
@@ -104,49 +149,35 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 .goto-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; } .goto-controls input { flex-grow: 1; min-width: 60px; }
 #btn-clear-goto { background-color: #6c757d; } #btn-clear-goto:hover:not(:disabled) { background-color: #5a6268; }
 
-/* Button Color Coding - Green for positive/safe actions */
-#btn-connect, #btn-arm, #btn-takeoff, #btn-goto, #btn-set-mode {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-#btn-connect:hover:not(:disabled), #btn-arm:hover:not(:disabled), #btn-takeoff:hover:not(:disabled), #btn-goto:hover:not(:disabled), #btn-set-mode:hover:not(:disabled) {
-    background-color: #218838;
-}
-#btn-connect:active:not(:disabled), #btn-arm:active:not(:disabled), #btn-takeoff:active:not(:disabled), #btn-goto:active:not(:disabled), #btn-set-mode:active:not(:disabled) {
-    background-color: #1e7e34;
-}
-
-/* Button Color Coding - Red for dangerous/ending actions */
-#btn-disconnect, #btn-disarm, #btn-land, #btn-rtl {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-#btn-disconnect:hover:not(:disabled), #btn-disarm:hover:not(:disabled), #btn-land:hover:not(:disabled), #btn-rtl:hover:not(:disabled) {
-    background-color: #c82333;
-}
-#btn-disconnect:active:not(:disabled), #btn-disarm:active:not(:disabled), #btn-land:active:not(:disabled), #btn-rtl:active:not(:disabled) {
-    background-color: #bd2130;
-}
-
-/* Button Color Coding - Gray for utility/information actions */
-#btn-clear-goto, #btn-request-fence, #btn-request-mission, #btn-center-map, #btn-fly-to-mode {
-    background-color: #6c757d;
-    border-color: #6c757d;
-}
-#btn-clear-goto:hover:not(:disabled), #btn-request-fence:hover:not(:disabled), #btn-request-mission:hover:not(:disabled), #btn-center-map:hover:not(:disabled), #btn-fly-to-mode:hover:not(:disabled) {
-    background-color: #5a6268;
-}
-#btn-clear-goto:active:not(:disabled), #btn-request-fence:active:not(:disabled), #btn-request-mission:active:not(:disabled), #btn-center-map:active:not(:disabled), #btn-fly-to-mode:active:not(:disabled) {
-    background-color: #545b62;
-}
-
-/* Special handling for fly-to-mode toggle active state */
-#btn-fly-to-mode.active {
+/* Connection buttons - Keep green/red but ensure good text contrast */
+#btn-connect {
     background-color: #28a745 !important;
-    border-color: #28a745 !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+    font-weight: bold;
 }
-#btn-fly-to-mode.active:hover:not(:disabled) {
+#btn-connect:hover:not(:disabled) {
     background-color: #218838 !important;
+    color: #ffffff !important;
+}
+#btn-connect:active:not(:disabled) {
+    background-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+#btn-disconnect {
+    background-color: #dc3545 !important;
+    border-color: #bd2130 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+#btn-disconnect:hover:not(:disabled) {
+    background-color: #c82333 !important;
+    color: #ffffff !important;
+}
+#btn-disconnect:active:not(:disabled) {
+    background-color: #bd2130 !important;
+    color: #ffffff !important;
 }
 
 /* Status Indicators */
