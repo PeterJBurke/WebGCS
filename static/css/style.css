@@ -76,46 +76,94 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 /* Connection form styling when inside status section */
 .status .connection-form {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .status .connection-inputs {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
 }
 
 .status .connection-inputs .field-group {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 3px;
     white-space: nowrap;
 }
 
 .status .connection-inputs label {
     font-weight: bold;
-    min-width: 70px;
+    font-size: 0.8em;
+    min-width: 50px;
 }
 
 .status .connection-inputs input {
-    padding: 5px;
+    padding: 4px;
     border: 1px solid #ccc;
     border-radius: 3px;
-    font-size: 14px;
+    font-size: 0.8em;
+    height: 26px;
 }
 
 .status .connection-inputs #drone-ip {
-    width: 130px;
+    width: 110px;
 }
 
 .status .connection-inputs #drone-port {
-    width: 80px;
+    width: 60px;
 }
 
 .status .connection-actions {
     display: flex;
-    gap: 10px;
+    gap: 5px;
+    margin-left: 8px;
+}
+
+/* Connection buttons - Match control button size and style */
+#btn-connect, #btn-disconnect {
+    margin: 2px 3px 2px 0 !important;
+    padding: 6px 10px !important;
+    font-size: 0.9em !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
+    vertical-align: middle !important;
+}
+
+/* Connection button colors - Keep green/red but ensure good text contrast */
+#btn-connect {
+    background-color: #28a745 !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+#btn-connect:hover:not(:disabled) {
+    background-color: #218838 !important;
+    color: #ffffff !important;
+}
+#btn-connect:active:not(:disabled) {
+    background-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+#btn-disconnect {
+    background-color: #dc3545 !important;
+    border-color: #bd2130 !important;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+#btn-disconnect:hover:not(:disabled) {
+    background-color: #c82333 !important;
+    color: #ffffff !important;
+}
+#btn-disconnect:active:not(:disabled) {
+    background-color: #bd2130 !important;
+    color: #ffffff !important;
 }
 
 /* Messages Section */
@@ -169,37 +217,6 @@ h1.main-title { flex-shrink: 0; background-color: #333; color: #fff; padding: 8p
 .mode-select-control label { margin-right: 5px; font-weight: bold; } .mode-select-control { margin-left: 10px; }
 .goto-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; } .goto-controls input { flex-grow: 1; min-width: 60px; }
 #btn-clear-goto { background-color: #6c757d; } #btn-clear-goto:hover:not(:disabled) { background-color: #5a6268; }
-
-/* Connection buttons - Keep green/red but ensure good text contrast */
-#btn-connect {
-    background-color: #28a745 !important;
-    border-color: #1e7e34 !important;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-#btn-connect:hover:not(:disabled) {
-    background-color: #218838 !important;
-    color: #ffffff !important;
-}
-#btn-connect:active:not(:disabled) {
-    background-color: #1e7e34 !important;
-    color: #ffffff !important;
-}
-
-#btn-disconnect {
-    background-color: #dc3545 !important;
-    border-color: #bd2130 !important;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-#btn-disconnect:hover:not(:disabled) {
-    background-color: #c82333 !important;
-    color: #ffffff !important;
-}
-#btn-disconnect:active:not(:disabled) {
-    background-color: #bd2130 !important;
-    color: #ffffff !important;
-}
 
 /* Status Indicators */
 .connected { color: #28a745; font-weight: bold; }
