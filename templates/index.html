@@ -100,6 +100,8 @@
                     <div id="current-overlay" class="pfd-overlay">Cur: <span id="current-value">--.-</span>A</div>
                     <div id="gps-overlay" class="pfd-overlay">GPS: <span id="gps-fix-value">---</span> (<span id="gps-sats-value">0</span>) HDOP:<span id="gps-hdop-value">--.-</span></div>
                     <div id="latlon-overlay" class="pfd-overlay">Lat: <span id="lat-value">--.------</span><br>Lon: <span id="lon-value">--.------</span></div>
+                    <div id="pitch-overlay" class="pfd-overlay">Pitch: <span id="pitch-value">--.-</span>°</div>
+                    <div id="roll-overlay" class="pfd-overlay">Roll: <span id="roll-value">--.-</span>°</div>
                 </div>
             </div>
 
@@ -288,6 +290,8 @@
         const gpsHdopValueSpan = document.getElementById('gps-hdop-value');
         const latValueSpan = document.getElementById('lat-value');
         const lonValueSpan = document.getElementById('lon-value');
+        const pitchValueSpan = document.getElementById('pitch-value');
+        const rollValueSpan = document.getElementById('roll-value');
         const ekfStatusSpan = document.getElementById('ekf-status');
         const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")};
         const modeSelect=document.getElementById("mode-select");
@@ -316,7 +320,20 @@
 
         // --- PFD Drawing Functions (drawRoundedRect, drawAttitudeIndicator, drawAirspeedTape, drawAltitudeTape) ---
         function drawRoundedRect(ctx, x, y, width, height, radius) { ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.arcTo(x + width, y, x + width, y + radius, radius); ctx.lineTo(x + width, y + height - radius); ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius); ctx.lineTo(x + radius, y + height); ctx.arcTo(x, y + height, x, y + height - radius, radius); ctx.lineTo(x, y + radius); ctx.arcTo(x, y, x + radius, y, radius); ctx.closePath(); }
-        function drawAttitudeIndicator(pitch = 0, roll = 0, heading = 0) { const rollRad = -roll * DEG_TO_RAD; const pitchPx = pitch * PITCH_SCALE_FACTOR; const ctx = ahCtx; ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, ahWidth, ahHeight); ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.save(); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.beginPath(); ctx.rect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX - heading * HEADING_PIXELS_PER_DEG, HEADING_TAPE_HEIGHT / 2); const headingRange = Math.ceil(ahWidth / (2 * HEADING_PIXELS_PER_DEG)); const startHdg = Math.floor(heading - headingRange - 10); const endHdg = Math.ceil(heading + headingRange + 10); const headingLabels = { 0: "N", 30: "3", 60: "6", 90: "E", 120: "12", 150: "15", 180: "S", 210: "21", 240: "24", 270: "W", 300: "30", 330: "33", 360: "N" }; for (let h = startHdg; h <= endHdg; h += 5) { const normalizedHdg = (h % 360 + 360) % 360; const xPos = h * HEADING_PIXELS_PER_DEG; let tickHeight = 5; let isLabelTick = false; let label = null; ctx.lineWidth = 1; if (h % 10 === 0) tickHeight = 10; if (h % 30 === 0) { tickHeight = 15; isLabelTick = true; label = (normalizedHdg / 10).toString(); } if (headingLabels[normalizedHdg]) { tickHeight = 15; isLabelTick = true; label = headingLabels[normalizedHdg]; ctx.lineWidth = 1.5; } ctx.beginPath(); ctx.moveTo(xPos, -tickHeight / 2); ctx.lineTo(xPos, tickHeight / 2); ctx.stroke(); if (isLabelTick && label) { ctx.fillText(label, xPos, tickHeight / 2 + 10); } } ctx.restore(); ctx.save(); ctx.beginPath(); ctx.rect(0, HEADING_TAPE_HEIGHT, ahWidth, ahHeight - HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.rotate(rollRad); ctx.translate(0, pitchPx); ctx.fillStyle = PFD_SKY_COLOR; ctx.fillRect(-ahWidth * 1.5, -ahHeight * 2, ahWidth * 3, ahHeight * 2); ctx.fillStyle = PFD_GROUND_COLOR; ctx.fillRect(-ahWidth * 1.5, 0, ahWidth * 3, ahHeight * 2); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-ahWidth * 1.5, 0); ctx.lineTo(ahWidth * 1.5, 0); ctx.stroke(); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 1; ctx.font = "12px monospace"; ctx.fillStyle = PFD_HORIZON_LINE_COLOR; ctx.textAlign = "center"; const tickLengthShort = 25; const tickLengthLong = 50; for (let p = -90; p <= 90; p += 5) { if (p === 0) continue; const yPos = -p * PITCH_SCALE_FACTOR; if (Math.abs(yPos) > ahHeight * 1.5) continue; const isMajorTick = (p % 10 === 0); const tickLength = isMajorTick ? tickLengthLong : tickLengthShort; ctx.beginPath(); ctx.moveTo(-tickLength / 2, yPos); ctx.lineTo(tickLength / 2, yPos); ctx.stroke(); if (isMajorTick) { ctx.fillText(Math.abs(p).toString(), -tickLength / 2 - 20, yPos + 4); ctx.fillText(Math.abs(p).toString(), tickLength / 2 + 20, yPos + 4); } } ctx.restore(); ctx.save(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.strokeStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.fillStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.lineWidth = 2; const notchSize = 4; ctx.beginPath(); ctx.moveTo(0, -notchSize / 2); ctx.lineTo(-notchSize, notchSize / 2); ctx.lineTo(notchSize, notchSize / 2); ctx.closePath(); ctx.fillRect(-1,-1,2,2); const wingLength = 40; ctx.beginPath(); ctx.moveTo(-wingLength, 0); ctx.lineTo(-notchSize*1.5, 0); ctx.moveTo(notchSize*1.5, 0); ctx.lineTo(wingLength, 0); ctx.stroke(); ctx.restore(); ctx.save(); const hdgBoxWidth = 80; const hdgBoxHeight = 20; const hdgBoxX = ahCenterX - hdgBoxWidth / 2; const hdgBoxY = 5; const hdgBoxRadius = 5; ctx.fillStyle = PFD_OVERLAY_BOX_COLOR; drawRoundedRect(ctx, hdgBoxX, hdgBoxY, hdgBoxWidth, hdgBoxHeight, hdgBoxRadius); ctx.fill(); ctx.fillStyle = PFD_OVERLAY_TEXT_COLOR; ctx.font = "bold 11px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`HDG: ${heading.toFixed(0)}°`, ahCenterX, hdgBoxY + hdgBoxHeight / 2); ctx.restore(); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(ahCenterX, HEADING_TAPE_HEIGHT); ctx.lineTo(ahCenterX - 6, HEADING_TAPE_HEIGHT + 6); ctx.lineTo(ahCenterX + 6, HEADING_TAPE_HEIGHT + 6); ctx.closePath(); ctx.fill(); ctx.restore(); }
+        function drawAttitudeIndicator(pitch = 0, roll = 0, heading = 0) {
+            // ADD THIS LOG AT THE VERY BEGINNING:
+            console.log(`[DRAW_ATTITUDE] Received: pitch=${pitch.toFixed(2)}, roll=${roll.toFixed(2)}, heading=${heading.toFixed(2)}`);
+            // Add guards for non-finite inputs
+            if (pitchValueSpan) pitchValueSpan.textContent = (isFinite(pitch) ? pitch : 0).toFixed(1);
+            if (rollValueSpan) rollValueSpan.textContent = (isFinite(roll) ? roll : 0).toFixed(1);
+
+            if (!isFinite(pitch) || !isFinite(roll) || !isFinite(heading)) {
+                console.error(`drawAttitudeIndicator called with non-finite values: pitch=${pitch}, roll=${roll}, heading=${heading}`);
+                pitch = isFinite(pitch) ? pitch : 0;
+                roll = isFinite(roll) ? roll : 0;
+                heading = isFinite(heading) ? heading : 0;
+            }
+ const rollRad = -roll * DEG_TO_RAD; const pitchPx = pitch * PITCH_SCALE_FACTOR; const ctx = ahCtx; ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, ahWidth, ahHeight); ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.save(); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.beginPath(); ctx.rect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX - heading * HEADING_PIXELS_PER_DEG, HEADING_TAPE_HEIGHT / 2); const headingRange = Math.ceil(ahWidth / (2 * HEADING_PIXELS_PER_DEG)); const startHdg = Math.floor(heading - headingRange - 10); const endHdg = Math.ceil(heading + headingRange + 10); const headingLabels = { 0: "N", 30: "3", 60: "6", 90: "E", 120: "12", 150: "15", 180: "S", 210: "21", 240: "24", 270: "W", 300: "30", 330: "33", 360: "N" }; for (let h = startHdg; h <= endHdg; h += 5) { const normalizedHdg = (h % 360 + 360) % 360; const xPos = h * HEADING_PIXELS_PER_DEG; let tickHeight = 5; let isLabelTick = false; let label = null; ctx.lineWidth = 1; if (h % 10 === 0) tickHeight = 10; if (h % 30 === 0) { tickHeight = 15; isLabelTick = true; label = (normalizedHdg / 10).toString(); } if (headingLabels[normalizedHdg]) { tickHeight = 15; isLabelTick = true; label = headingLabels[normalizedHdg]; ctx.lineWidth = 1.5; } ctx.beginPath(); ctx.moveTo(xPos, -tickHeight / 2); ctx.lineTo(xPos, tickHeight / 2); ctx.stroke(); if (isLabelTick && label) { ctx.fillText(label, xPos, tickHeight / 2 + 10); } } ctx.restore(); ctx.save(); ctx.beginPath(); ctx.rect(0, HEADING_TAPE_HEIGHT, ahWidth, ahHeight - HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.rotate(rollRad); ctx.translate(0, pitchPx); ctx.fillStyle = PFD_SKY_COLOR; ctx.fillRect(-ahWidth * 1.5, -ahHeight * 2, ahWidth * 3, ahHeight * 2); ctx.fillStyle = PFD_GROUND_COLOR; ctx.fillRect(-ahWidth * 1.5, 0, ahWidth * 3, ahHeight * 2); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-ahWidth * 1.5, 0); ctx.lineTo(ahWidth * 1.5, 0); ctx.stroke(); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 1; ctx.font = "12px monospace"; ctx.fillStyle = PFD_HORIZON_LINE_COLOR; ctx.textAlign = "center"; const tickLengthShort = 25; const tickLengthLong = 50; for (let p = -90; p <= 90; p += 5) { if (p === 0) continue; const yPos = -p * PITCH_SCALE_FACTOR; if (Math.abs(yPos) > ahHeight * 1.5) continue; const isMajorTick = (p % 10 === 0); const tickLength = isMajorTick ? tickLengthLong : tickLengthShort; ctx.beginPath(); ctx.moveTo(-tickLength / 2, yPos); ctx.lineTo(tickLength / 2, yPos); ctx.stroke(); if (isMajorTick) { ctx.fillText(Math.abs(p).toString(), -tickLength / 2 - 20, yPos + 4); ctx.fillText(Math.abs(p).toString(), tickLength / 2 + 20, yPos + 4); } } ctx.restore(); ctx.save(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.strokeStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.fillStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.lineWidth = 2; const notchSize = 4; ctx.beginPath(); ctx.moveTo(0, -notchSize / 2); ctx.lineTo(-notchSize, notchSize / 2); ctx.lineTo(notchSize, notchSize / 2); ctx.closePath(); ctx.fillRect(-1,-1,2,2); const wingLength = 40; ctx.beginPath(); ctx.moveTo(-wingLength, 0); ctx.lineTo(-notchSize*1.5, 0); ctx.moveTo(notchSize*1.5, 0); ctx.lineTo(wingLength, 0); ctx.stroke(); ctx.restore(); ctx.save(); const hdgBoxWidth = 80; const hdgBoxHeight = 20; const hdgBoxX = ahCenterX - hdgBoxWidth / 2; const hdgBoxY = 5; const hdgBoxRadius = 5; ctx.fillStyle = PFD_OVERLAY_BOX_COLOR; drawRoundedRect(ctx, hdgBoxX, hdgBoxY, hdgBoxWidth, hdgBoxHeight, hdgBoxRadius); ctx.fill(); ctx.fillStyle = PFD_OVERLAY_TEXT_COLOR; ctx.font = "bold 11px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`HDG: ${heading.toFixed(0)}°`, ahCenterX, hdgBoxY + hdgBoxHeight / 2); ctx.restore(); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(ahCenterX, HEADING_TAPE_HEIGHT); ctx.lineTo(ahCenterX - 6, HEADING_TAPE_HEIGHT + 6); ctx.lineTo(ahCenterX + 6, HEADING_TAPE_HEIGHT + 6); ctx.closePath(); ctx.fill(); ctx.restore(); }
         function drawAirspeedTape(speed = 0) { const ctx = asiCtx; const tapeWidth = TAPE_WIDTH; const tapeHeight = TAPE_HEIGHT; const centerY = TAPE_CENTER_Y; const pixelsPerUnit = ASI_PIXELS_PER_UNIT; const pointerWidth = 15; ctx.save(); ctx.clearRect(0, 0, tapeWidth, tapeHeight); const pointerBoxHeight = 20; const pointerBoxY = centerY - pointerBoxHeight / 2; const textBoxX = 5; const textBoxWidth = tapeWidth - pointerWidth - 10; ctx.strokeStyle = PFD_TAPE_POINTER_COLOR; ctx.lineWidth = 1.5; ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(speed.toFixed(0), textBoxX + textBoxWidth / 2, centerY); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(tapeWidth - pointerWidth, pointerBoxY); ctx.lineTo(tapeWidth, centerY); ctx.lineTo(tapeWidth - pointerWidth, pointerBoxY + pointerBoxHeight); ctx.closePath(); ctx.fill(); ctx.translate(0, centerY + speed * pixelsPerUnit); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "12px monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle"; const range = Math.ceil(tapeHeight / (2 * pixelsPerUnit * 5)) * 5; const startValue = Math.max(0, Math.floor(speed - range) - 5); const endValue = Math.ceil(speed + range) + 10; for (let val = startValue; val <= endValue; val += 1) { const yPos = -val * pixelsPerUnit; if (yPos < -centerY - 20 || yPos > tapeHeight - centerY + 20) continue; let tickLength = 0; let isLabelTick = false; ctx.lineWidth = 1; if (val % 10 === 0) { tickLength = 15; isLabelTick = true; ctx.lineWidth = 1.5; } else if (val % 5 === 0) { tickLength = 10; } else { tickLength = 5; } if (tickLength > 0) { ctx.beginPath(); ctx.moveTo(0, yPos); ctx.lineTo(tickLength, yPos); ctx.stroke(); if (isLabelTick && val >= 0) { ctx.fillText(val.toString(), -5, yPos); } } } ctx.restore(); }
         function drawAltitudeTape(alt = 0) { const ctx = altCtx; const tapeWidth = TAPE_ALT_WIDTH; const tapeHeight = TAPE_HEIGHT; const centerY = TAPE_CENTER_Y; const pixelsPerUnit = ALT_PIXELS_PER_UNIT; const pointerWidth = 15; ctx.save(); ctx.clearRect(0, 0, tapeWidth, tapeHeight); const pointerBoxHeight = 20; const pointerBoxY = centerY - pointerBoxHeight / 2; const textBoxX = pointerWidth + 5; const textBoxWidth = tapeWidth - pointerWidth - 10; ctx.strokeStyle = PFD_TAPE_POINTER_COLOR; ctx.lineWidth = 1.5; ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(alt.toFixed(0), textBoxX + textBoxWidth / 2, centerY); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(pointerWidth, pointerBoxY); ctx.lineTo(0, centerY); ctx.lineTo(pointerWidth, pointerBoxY + pointerBoxHeight); ctx.closePath(); ctx.fill(); ctx.translate(0, centerY + alt * pixelsPerUnit); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "12px monospace"; ctx.textAlign = "left"; ctx.textBaseline = "middle"; const range = Math.ceil(tapeHeight / (2 * pixelsPerUnit * 10)) * 10; const startValue = Math.floor(alt - range) - 10; const endValue = Math.ceil(alt + range) + 20; for (let val = startValue; val <= endValue; val += 2) { const yPos = -val * pixelsPerUnit; if (yPos < -centerY - 20 || yPos > tapeHeight - centerY + 20) continue; let tickLength = 0; let isLabelTick = false; ctx.lineWidth = 1; if (val % 100 === 0) { tickLength = 20; isLabelTick = true; ctx.lineWidth = 2; } else if (val % 20 === 0) { tickLength = 15; isLabelTick = true; ctx.lineWidth = 1.5; } else if (val % 10 === 0) { tickLength = 10; } else if (val % 2 === 0) { tickLength = 5;} if (tickLength > 0) { ctx.beginPath(); ctx.moveTo(tapeWidth, yPos); ctx.lineTo(tapeWidth - tickLength, yPos); ctx.stroke(); if (isLabelTick) { ctx.fillText(val.toString(), tapeWidth - tickLength - 25, yPos); } } } ctx.restore(); }
 
@@ -429,6 +446,9 @@
             //     mode: mode, voltage: voltage, current: current, armed: armed, 
             //     lat: lat, lon: lon, fix: fix, sats: sats, hdop: hdop
             // });
+
+            if (pitchValueSpan) pitchValueSpan.textContent = (data.pitch != null && isFinite(data.pitch) ? data.pitch : 0).toFixed(1);
+            if (rollValueSpan) rollValueSpan.textContent = (data.roll != null && isFinite(data.roll) ? data.roll : 0).toFixed(1);
             
             batteryValueSpan.textContent = voltage.toFixed(2); 
             
@@ -462,38 +482,36 @@
             // Update PFD canvas drawings
             const airspeed = data.airspeed || 0; 
             const altRel = data.alt_rel || 0; 
-            const heading = data.heading || 0; 
-            const pitch = (data.pitch || 0) * RAD_TO_DEG; 
-            const roll = (data.roll || 0) * RAD_TO_DEG;
-            
-            // console.log("Updating PFD values:", {
-            //     airspeed: airspeed, altRel: altRel, heading: heading, 
-            //     pitch: pitch.toFixed(1), roll: roll.toFixed(1)
-            // });
-            
+            const heading = data.heading ?? data.yaw_attitude ?? 0; // Use data.heading or data.yaw_attitude as fallback
+            const pitch = data.pitch ?? 0;   // Use data.pitch directly (already in degrees)
+            const roll = data.roll ?? 0;     // Use data.roll directly (already in degrees)
+
+            // Log values before drawing
+            console.log(`[TELEMETRY_UPDATE] PFD Values: pitch=${pitch.toFixed(2)}, roll=${roll.toFixed(2)}, heading=${heading.toFixed(2)}, airspeed=${airspeed.toFixed(1)}, altRel=${altRel.toFixed(1)}`);
+
             drawAttitudeIndicator(pitch, roll, heading); 
             drawAirspeedTape(airspeed); 
             drawAltitudeTape(altRel);
 
-            // Update Map
-            if (isConnected && lat != null && lon != null && lat !== 0 && lon !== 0) { 
-                const latLng = [lat, lon]; 
-                if (!droneMarker) { 
-                    droneMarker = L.marker(latLng, { icon: droneIcon }).addTo(map).bindPopup("Drone Position"); 
-                } else { 
-                    droneMarker.setLatLng(latLng); 
-                } 
-                if (firstLocationUpdate) { 
-                    map.setView(latLng, 16); 
-                    firstLocationUpdate = false; 
-                } 
-            } else { 
-                if (droneMarker) { 
-                    map.removeLayer(droneMarker); 
-                    droneMarker = null; 
-                    firstLocationUpdate = true; 
-                } 
-            } 
+            // Update Map with Drone Marker
+            if (isConnected && lat != null && lon != null && lat !== 0 && lon !== 0) {
+                const latLng = [lat, lon];
+                if (!droneMarker) {
+                    droneMarker = L.marker(latLng, { icon: droneIcon }).addTo(map).bindPopup("Drone Position");
+                } else {
+                    droneMarker.setLatLng(latLng);
+                }
+                if (firstLocationUpdate) {
+                    map.setView(latLng, 16);
+                    firstLocationUpdate = false;
+                }
+            } else {
+                if (droneMarker) {
+                    map.removeLayer(droneMarker);
+                    droneMarker = null;
+                    firstLocationUpdate = true;
+                }
+            }
             
             const homeLat = data.home_lat; 
             const homeLon = data.home_lon; 

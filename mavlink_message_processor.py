@@ -437,9 +437,17 @@ def process_attitude(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_a
         bool: True if the drone_state was changed, False otherwise.
     """
     drone_state_changed_local = False
-    if mavlink_conn and msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0):
+    msg_src_system = msg.get_srcSystem()
+    conn_target_system = getattr(mavlink_conn, 'target_system', 0) if mavlink_conn else -1 # Use -1 if mavlink_conn is None for clarity
+    system_ids_match = mavlink_conn and msg_src_system == conn_target_system
+
+    # Debug print for system ID check
+    print(f"[ATT-DEBUG-SYSID] ATTITUDE Handler: msg_src={msg_src_system}, conn_target={conn_target_system}, check_passes={system_ids_match}")
+
+    if system_ids_match: # Modified condition
         with drone_state_lock:
             new_roll = math.degrees(msg.roll)
+            print(f"[ATT-DEBUG-CONV] Roll (rad): {msg.roll:.4f}, Roll (deg): {new_roll:.2f}")
             new_pitch = math.degrees(msg.pitch)
             new_yaw = math.degrees(msg.yaw) # Note: GLOBAL_POSITION_INT.hdg is often preferred for 'heading'
             
