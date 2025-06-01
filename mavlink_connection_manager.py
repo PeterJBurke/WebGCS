@@ -31,6 +31,19 @@ data_streams_requested_instance = False
 pending_commands_instance = collections.OrderedDict() # Stores cmd_id: timestamp
 connection_event_instance = Event() # Used to signal connection status
 
+# Module-level variable to store current connection string for dynamic updates
+current_connection_string = None
+
+# Module-level SocketIO instance for emitting connection status events
+socketio_instance = None
+
+# Module-level flag to prevent auto-reconnection after manual disconnect
+manual_disconnect_flag = False
+
+# Module-level variables to store current connection details
+current_connection_ip = None
+current_connection_port = None
+
 # Initialize feature callbacks dictionary
 feature_callbacks = {}
 
@@ -58,6 +71,11 @@ def get_connection_event():
     """Returns the gevent Event for connection status."""
     global connection_event_instance
     return connection_event_instance
+
+def get_current_connection_details():
+    """Returns the current connection IP and port if available."""
+    global current_connection_ip, current_connection_port
+    return current_connection_ip, current_connection_port
 
 def add_pending_command(command_id):
     """Adds a command to the pending commands dictionary."""
@@ -136,10 +154,43 @@ def connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_con
             drone_state['armed'] = armed
             drone_state['system_status'] = msg.system_status
         
+        # Emit connection status to frontend if SocketIO is available
+        if socketio_instance:
+            # Parse IP and port from connection string for status display
+            ip = 'unknown'
+            port = 'unknown'
+            try:
+                if mavlink_connection_string_config.startswith('tcp:'):
+                    parts = mavlink_connection_string_config.split(':')
+                    if len(parts) >= 3:
+                        ip = parts[1]
+                        port = parts[2]
+                        
+                        # Store the connection details globally
+                        global current_connection_ip, current_connection_port
+                        current_connection_ip = ip
+                        current_connection_port = port
+            except:
+                pass
+            
+            socketio_instance.emit('connection_status', {
+                'status': 'connected',
+                'ip': ip,
+                'port': port
+            })
+        
         connection_event_instance.set() # Signal that connection is successful
         return True
     except Exception as e:
         print(f"MAVLink connection error: {e}")
+        
+        # Emit connection failure status to frontend if SocketIO is available
+        if socketio_instance:
+            socketio_instance.emit('connection_status', {
+                'status': 'failed',
+                'message': str(e)
+            })
+        
         if mavlink_connection_instance:
             try:
                 mavlink_connection_instance.close()
@@ -237,10 +288,13 @@ def mavlink_receive_loop_runner(
     heartbeat_log_cb=None              # Optional callback for custom heartbeat logging
 ):
     """Main loop for receiving MAVLink messages and managing connection state."""
-    global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance, feature_callbacks
+    global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, pending_commands_instance, feature_callbacks, socketio_instance, manual_disconnect_flag
     # Assign the passed pending_commands and connection_event to the module's global instances
     pending_commands_instance = passed_pending_commands
     connection_event_instance = passed_connection_event
+    
+    # Store the SocketIO instance for use by connection functions
+    socketio_instance = sio
     
     # Initialize feature callbacks
     feature_callbacks = {
@@ -250,9 +304,17 @@ def mavlink_receive_loop_runner(
 
     print("MAVLink receive loop thread started.")
     while True:
+        # Check if manual disconnect flag is set - if so, don't attempt reconnection
+        if manual_disconnect_flag:
+            gevent.sleep(1)  # Sleep and continue checking
+            continue
+            
         if not mavlink_connection_instance: # Primary check: is there a connection object at all?
+            # Use dynamic connection string if available, otherwise use config
+            connection_string_to_use = current_connection_string if current_connection_string else mavlink_connection_string_config
+            
             # Attempt to create a new connection object
-            if not connect_mavlink(drone_state, drone_state_lock, mavlink_connection_string_config):
+            if not connect_mavlink(drone_state, drone_state_lock, connection_string_to_use):
                 print("MAVLink connection object creation failed, retrying in 5s...")
                 gevent.sleep(5) # Use gevent.sleep
                 continue
@@ -276,8 +338,22 @@ def mavlink_receive_loop_runner(
             last_heartbeat_time_instance = 0
             data_streams_requested_instance = False
             connection_event_instance.clear()
+            
+            # Emit disconnection status event
+            if socketio_instance:
+                socketio_instance.emit('connection_status', {
+                    'status': 'disconnected',
+                    'reason': 'Heartbeat timeout'
+                })
+            
             sio.emit('drone_disconnected', {'reason': 'Heartbeat timeout'})
-            continue # Attempt to reconnect
+            
+            # Only attempt to reconnect if not manually disconnected
+            if not manual_disconnect_flag:
+                continue # Attempt to reconnect
+            else:
+                gevent.sleep(1)  # Sleep and check manual disconnect flag
+                continue
 
         check_pending_command_timeouts(sio, command_ack_timeout_config, log_function)
 
@@ -453,3 +529,129 @@ def mavlink_receive_loop_runner(
         
         # Add a small sleep to prevent 100% CPU usage and allow Flask server to process requests
         gevent.sleep(0.01)  # 10ms sleep to process messages frequently while keeping reasonable CPU usage
+
+def force_reconnect_with_new_address(new_connection_string, drone_state, drone_state_lock=None):
+    """
+    Force reconnection to a new address by closing current connection and updating the connection string.
+    This function is called from the SocketIO handler when a user requests connection to a new IP/port.
+    
+    Args:
+        new_connection_string (str): New connection string in format 'tcp:ip:port'
+        drone_state (dict): Shared drone state dictionary
+        drone_state_lock (threading.Lock, optional): Lock for drone state access
+        
+    Returns:
+        bool: True if reconnection attempt was initiated successfully, False otherwise
+    """
+    global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, current_connection_string, manual_disconnect_flag
+    
+    try:
+        print(f"Force reconnection requested to: {new_connection_string}")
+        
+        # Clear manual disconnect flag to allow reconnection
+        manual_disconnect_flag = False
+        
+        # Close existing connection if any
+        if mavlink_connection_instance:
+            print("Closing existing MAVLink connection...")
+            try:
+                mavlink_connection_instance.close()
+            except Exception as e:
+                print(f"Warning: Error closing existing connection: {e}")
+            mavlink_connection_instance = None
+        
+        # Reset connection state
+        last_heartbeat_time_instance = 0
+        data_streams_requested_instance = False
+        connection_event_instance.clear()
+        
+        # Update drone state
+        if drone_state_lock:
+            with drone_state_lock:
+                drone_state['connected'] = False
+                drone_state['armed'] = False
+                drone_state['ekf_status_report'] = 'INIT'
+        else:
+            # Update without lock if none provided (not ideal but fallback)
+            drone_state['connected'] = False
+            drone_state['armed'] = False
+            drone_state['ekf_status_report'] = 'INIT'
+        
+        # Store the new connection string for the main loop to use
+        current_connection_string = new_connection_string
+        
+        # The actual reconnection will happen in the main mavlink_receive_loop_runner
+        # when it detects mavlink_connection_instance is None
+        
+        print(f"Force reconnection setup complete. Main loop will attempt connection to: {new_connection_string}")
+        return True
+        
+    except Exception as e:
+        print(f"Error during force reconnection setup: {e}")
+        return False
+
+def force_disconnect(drone_state, drone_state_lock=None):
+    """
+    Force disconnection from the current drone.
+    This function is called from the SocketIO handler when a user requests disconnection.
+    
+    Args:
+        drone_state (dict): Shared drone state dictionary
+        drone_state_lock (threading.Lock, optional): Lock for drone state access
+        
+    Returns:
+        bool: True if disconnection was successful, False otherwise
+    """
+    global mavlink_connection_instance, last_heartbeat_time_instance, data_streams_requested_instance, connection_event_instance, current_connection_string, manual_disconnect_flag, current_connection_ip, current_connection_port
+    
+    try:
+        print("Force disconnection requested")
+        
+        # Set flag to prevent auto-reconnection
+        manual_disconnect_flag = True
+        
+        # Clear connection details
+        current_connection_ip = None
+        current_connection_port = None
+        
+        # Close existing connection if any
+        if mavlink_connection_instance:
+            print("Closing MAVLink connection...")
+            try:
+                mavlink_connection_instance.close()
+            except Exception as e:
+                print(f"Warning: Error closing connection: {e}")
+            mavlink_connection_instance = None
+        
+        # Reset connection state
+        last_heartbeat_time_instance = 0
+        data_streams_requested_instance = False
+        connection_event_instance.clear()
+        
+        # Clear the dynamic connection string to prevent auto-reconnection
+        current_connection_string = None
+        
+        # Update drone state
+        if drone_state_lock:
+            with drone_state_lock:
+                drone_state['connected'] = False
+                drone_state['armed'] = False
+                drone_state['ekf_status_report'] = 'INIT'
+        else:
+            # Update without lock if none provided (not ideal but fallback)
+            drone_state['connected'] = False
+            drone_state['armed'] = False
+            drone_state['ekf_status_report'] = 'INIT'
+        
+        # Emit disconnection status to frontend if SocketIO is available
+        if socketio_instance:
+            socketio_instance.emit('connection_status', {
+                'status': 'disconnected'
+            })
+        
+        print("Force disconnection complete")
+        return True
+        
+    except Exception as e:
+        print(f"Error during force disconnection: {e}")
+        return False

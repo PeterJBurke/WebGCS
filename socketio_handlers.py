@@ -13,6 +13,7 @@ _socketio = None
 _log_command_action = None
 _get_mavlink_connection = None
 _drone_state = None
+_drone_state_lock = None
 _pending_commands_dict = None 
 _AP_MODE_NAME_TO_ID = None
 _schedule_fence_request_in_app = None
@@ -174,13 +175,14 @@ def _send_mavlink_command_handler(command, p1=0, p2=0, p3=0, p4=0, p5=0, p6=0, p
 # --- Initialization Function ---
 def init_socketio_handlers(socketio_instance, app_context):
     global _socketio, _log_command_action, _get_mavlink_connection
-    global _drone_state, _pending_commands_dict, _AP_MODE_NAME_TO_ID
+    global _drone_state, _drone_state_lock, _pending_commands_dict, _AP_MODE_NAME_TO_ID
     global _schedule_fence_request_in_app, _schedule_mission_request_in_app
 
     _socketio = socketio_instance
     _log_command_action = app_context['log_command_action']
     _get_mavlink_connection = app_context['get_mavlink_connection']
     _drone_state = app_context['drone_state']
+    _drone_state_lock = app_context['drone_state_lock']
     _pending_commands_dict = app_context['pending_commands_dict']
     _AP_MODE_NAME_TO_ID = app_context['AP_MODE_NAME_TO_ID']
     _schedule_fence_request_in_app = app_context['schedule_fence_request_in_app']
@@ -194,6 +196,52 @@ def init_socketio_handlers(socketio_instance, app_context):
         status_text = 'Backend connected. '
         status_text += 'Drone link active.' if _drone_state.get('connected') else 'Attempting drone link...'
         emit('status_message', {'text': status_text, 'type': 'info'})
+        
+        # Check if drone is already connected and emit connection status
+        if _drone_state.get('connected', False):
+            # Get current connection info from mavlink connection
+            current_mavlink_connection = _get_mavlink_connection()
+            if current_mavlink_connection:
+                # Try to get the actual connection details
+                try:
+                    # Import here to avoid circular imports
+                    from mavlink_connection_manager import get_current_connection_details
+                    
+                    ip, port = get_current_connection_details()
+                    
+                    if ip and port:
+                        emit('connection_status', {
+                            'status': 'connected',
+                            'ip': ip,
+                            'port': port
+                        })
+                        _log_wrapper_for_caller_info("CONNECTION_STATUS_SENT", details=f"Sent connected status to client {request.sid}: {ip}:{port}")
+                    else:
+                        # Fallback to config values if connection details not available
+                        from config import DRONE_TCP_ADDRESS, DRONE_TCP_PORT
+                        emit('connection_status', {
+                            'status': 'connected',
+                            'ip': DRONE_TCP_ADDRESS,
+                            'port': DRONE_TCP_PORT
+                        })
+                        _log_wrapper_for_caller_info("CONNECTION_STATUS_SENT_CONFIG", details=f"Sent connected status to client {request.sid} using config: {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}")
+                except Exception as e:
+                    # Fallback if we can't get the connection details
+                    emit('connection_status', {
+                        'status': 'connected',
+                        'ip': 'unknown',
+                        'port': 'unknown'
+                    })
+                    _log_wrapper_for_caller_info("CONNECTION_STATUS_SENT_FALLBACK", details=f"Sent connected status to client {request.sid} with unknown IP/port due to error: {e}")
+            else:
+                emit('connection_status', {
+                    'status': 'disconnected'
+                })
+        else:
+            emit('connection_status', {
+                'status': 'disconnected'
+            })
+        
         print(f"Web UI Client {request.sid} connected. Initial telemetry sent.")
 
     @_socketio.on('disconnect')
@@ -485,3 +533,94 @@ def init_socketio_handlers(socketio_instance, app_context):
         except Exception as e:
             _log_wrapper_for_caller_info("GOTO_ERROR_EXC", data, f"Exception in GOTO: {str(e)}", "ERROR")
             emit('goto_feedback', {'status': 'error', 'message': f'Error processing GOTO command: {str(e)}'}, room=sid)
+
+    @_socketio.on('drone_connect')
+    def handle_drone_connect(data):
+        """Handle drone connection request with custom IP and port."""
+        _log_wrapper_for_caller_info("DRONE_CONNECT_REQUEST", data, "UI requested connection to custom IP/port", "INFO")
+        
+        try:
+            ip = data.get('ip', '').strip()
+            port = data.get('port')
+            
+            # Validate inputs
+            if not ip:
+                emit('connection_status', {
+                    'status': 'error',
+                    'message': 'IP address is required'
+                })
+                return
+                
+            if not port or not isinstance(port, int) or port < 1 or port > 65535:
+                emit('connection_status', {
+                    'status': 'error', 
+                    'message': 'Valid port number (1-65535) is required'
+                })
+                return
+            
+            # Emit connecting status
+            emit('connection_status', {
+                'status': 'connecting',
+                'ip': ip,
+                'port': port
+            })
+            
+            # Import needed functions from app context
+            from mavlink_connection_manager import force_reconnect_with_new_address
+            
+            # Create new connection string
+            connection_string = f'tcp:{ip}:{port}'
+            
+            # Get drone_state_lock from app context (we need to add this to the context)
+            drone_state_lock = globals().get('_drone_state_lock')
+            
+            # Trigger reconnection with new address
+            success = force_reconnect_with_new_address(connection_string, _drone_state, drone_state_lock)
+            
+            if success:
+                emit('connection_status', {
+                    'status': 'connected',
+                    'ip': ip,
+                    'port': port
+                })
+                _log_wrapper_for_caller_info("DRONE_CONNECT_SUCCESS", data, f"Successfully connected to {ip}:{port}", "INFO")
+            else:
+                emit('connection_status', {
+                    'status': 'error',
+                    'message': f'Failed to connect to {ip}:{port}'
+                })
+                _log_wrapper_for_caller_info("DRONE_CONNECT_FAILED", data, f"Failed to connect to {ip}:{port}", "ERROR")
+                
+        except Exception as e:
+            _log_wrapper_for_caller_info("DRONE_CONNECT_ERROR", data, f"Exception during connection: {str(e)}", "ERROR")
+            emit('connection_status', {
+                'status': 'error',
+                'message': f'Connection error: {str(e)}'
+            })
+
+    @_socketio.on('drone_disconnect')
+    def handle_drone_disconnect():
+        """Handle drone disconnection request."""
+        _log_wrapper_for_caller_info("DRONE_DISCONNECT_REQUEST", None, "UI requested disconnection", "INFO")
+        
+        try:
+            # Import needed functions from app context
+            from mavlink_connection_manager import force_disconnect
+            
+            # Get drone_state_lock from app context
+            drone_state_lock = globals().get('_drone_state_lock')
+            
+            # Trigger disconnection
+            force_disconnect(_drone_state, drone_state_lock)
+            
+            emit('connection_status', {
+                'status': 'disconnected'
+            })
+            _log_wrapper_for_caller_info("DRONE_DISCONNECT_SUCCESS", None, "Successfully disconnected", "INFO")
+            
+        except Exception as e:
+            _log_wrapper_for_caller_info("DRONE_DISCONNECT_ERROR", None, f"Exception during disconnection: {str(e)}", "ERROR")
+            emit('connection_status', {
+                'status': 'error',
+                'message': f'Disconnection error: {str(e)}'
+            })

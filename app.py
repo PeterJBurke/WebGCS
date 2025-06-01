@@ -368,7 +368,7 @@ def periodic_telemetry_update():
 # --- Flask Routes and SocketIO Handlers ---
 @app.route('/')
 def index():
-    return render_template("index.html", version="v2.63-Desktop-TCP-AckEkf")
+    return render_template("index.html", version="v1.5-Desktop-Connection-Management")
 
 @app.route('/static/<path:path>')
 def send_static(path):
@@ -381,17 +381,11 @@ def favicon():
 
 @app.route('/mavlink_dump')
 def mavlink_dump():
-    return render_template("mavlink_dump.html", version="v2.63-Desktop-TCP-AckEkf")
+    return render_template("mavlink_dump.html", version="v1.5-Desktop-Connection-Management")
 
 @app.route('/health')
-def health_check():
-    return jsonify({
-        'status': 'ok',
-        'timestamp': time.time(),
-        'drone_connected': drone_state.get('connected', False),
-        'drone_mode': drone_state.get('mode', 'UNKNOWN'),
-        'drone_armed': drone_state.get('armed', False)
-    })
+def health():
+    return {"status": "healthy", "drone_connected": drone_state.get("connected", False)}
 
 # handle_connect moved to socketio_handlers.py
 
@@ -417,6 +411,7 @@ if __name__ == '__main__':
         'log_command_action': log_command_action,
         'get_mavlink_connection': get_mavlink_connection,
         'drone_state': drone_state,
+        'drone_state_lock': drone_state_lock,
         'pending_commands_dict': pending_commands,
         'AP_MODE_NAME_TO_ID': AP_CUSTOM_MODES,
         'schedule_fence_request_in_app': _schedule_fence_request,

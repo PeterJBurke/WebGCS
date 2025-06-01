@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Update title -->
-    <title>Drone Control Interface v2.63-Desktop-TCP-AckEkf</title>
+    <title>Drone Control Interface v1.5-Desktop-Connection-Management</title>
     <link rel="stylesheet" href="/static/lib/leaflet.css"/>
     <link rel="stylesheet" href="/static/css/style.css"/> <!-- Link to the updated style.css -->
     <style>
@@ -81,11 +81,110 @@
             filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5));
             z-index: 1000 !important;
         }
+        
+        /* Connection Controls Styles */
+        .connection-controls {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .connection-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .connection-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .connection-inputs .field-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        
+        .connection-inputs label {
+            font-weight: bold;
+            min-width: 70px;
+        }
+        
+        .connection-inputs input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        #drone-ip {
+            width: 130px;
+        }
+        
+        #drone-port {
+            width: 80px;
+        }
+        
+        .connection-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .connection-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .connection-btn:hover:not(:disabled) {
+            background-color: #f0f0f0;
+        }
+        
+        .connection-btn:disabled {
+            background-color: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        #btn-connect {
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        #btn-connect:hover:not(:disabled) {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        #btn-disconnect {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        #btn-disconnect:hover:not(:disabled) {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .connection-status-info {
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
     <!-- Update title -->
-    <h1 class="main-title">Drone Control Interface v2.63-Desktop-TCP-AckEkf</h1>
+    <h1 class="main-title">Drone Control Interface v1.5-Desktop-Connection-Management</h1>
     <div class="main-container">
         <div class="left-column">
             <!-- PFD Section -->
@@ -120,6 +219,30 @@
                             <div class="status-item"><strong>EKF Status:</strong> <span id="ekf-status" class="ekf-status ekf-error">INIT</span></div>
                             <div class="status-item"><strong>Mode:</strong> <span id="mode_value">---</span></div>
                             <div class="status-item"><strong>Arm Status:</strong> <span id="arm_status_value">---</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Connection Controls Section -->
+                <div class="connection-controls">
+                    <h2>Connection</h2>
+                    <div class="connection-form">
+                        <div class="connection-inputs">
+                            <div class="field-group">
+                                <label for="drone-ip">IP Address:</label>
+                                <input type="text" id="drone-ip" placeholder="192.168.1.100" value="192.168.193.63">
+                            </div>
+                            <div class="field-group">
+                                <label for="drone-port">Port:</label>
+                                <input type="number" id="drone-port" placeholder="5678" value="5678" min="1" max="65535">
+                            </div>
+                        </div>
+                        <div class="connection-actions">
+                            <button id="btn-connect" class="connection-btn">Connect</button>
+                            <button id="btn-disconnect" class="connection-btn" disabled>Disconnect</button>
+                        </div>
+                        <div class="connection-status-info">
+                            <span id="connection-info">Attempting to connect to default drone...</span>
                         </div>
                     </div>
                 </div>
@@ -1075,6 +1198,86 @@
             this.disabled = true;
             socket.emit('send_command', {command: 'REQUEST_MISSION'});
             setTimeout(() => { this.disabled = false; }, 2000);  // Re-enable after 2 seconds
+        });
+
+        // Connection control event handlers
+        const droneIpInput = document.getElementById('drone-ip');
+        const dronePortInput = document.getElementById('drone-port');
+        const connectBtn = document.getElementById('btn-connect');
+        const disconnectBtn = document.getElementById('btn-disconnect');
+        const connectionInfo = document.getElementById('connection-info');
+
+        // Connect button event handler
+        connectBtn.addEventListener('click', function() {
+            const ip = droneIpInput.value.trim();
+            const port = parseInt(dronePortInput.value);
+
+            // Validate inputs
+            if (!ip) {
+                connectionInfo.textContent = 'Please enter an IP address';
+                connectionInfo.style.color = '#dc3545';
+                return;
+            }
+
+            if (!port || port < 1 || port > 65535) {
+                connectionInfo.textContent = 'Please enter a valid port (1-65535)';
+                connectionInfo.style.color = '#dc3545';
+                return;
+            }
+
+            // Disable connect button and show connecting status
+            connectBtn.disabled = true;
+            connectBtn.textContent = 'Connecting...';
+            connectionInfo.textContent = `Connecting to ${ip}:${port}...`;
+            connectionInfo.style.color = '#007bff';
+
+            // Send connection request to server
+            socket.emit('drone_connect', {
+                ip: ip,
+                port: port
+            });
+        });
+
+        // Disconnect button event handler
+        disconnectBtn.addEventListener('click', function() {
+            disconnectBtn.disabled = true;
+            disconnectBtn.textContent = 'Disconnecting...';
+            connectionInfo.textContent = 'Disconnecting from drone...';
+            connectionInfo.style.color = '#007bff';
+
+            // Send disconnect request to server
+            socket.emit('drone_disconnect');
+        });
+
+        // Socket.IO connection status updates
+        socket.on('connection_status', function(data) {
+            const connectionInfo = document.getElementById('connection-info');
+            const connectBtn = document.getElementById('btn-connect');
+            const disconnectBtn = document.getElementById('btn-disconnect');
+            
+            if (data.status === 'connected') {
+                connectionInfo.textContent = `Connected to drone at ${data.ip}:${data.port}`;
+                connectionInfo.style.color = '#28a745'; // Green
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                
+                // Update the input fields with the connected IP/port
+                droneIpInput.value = data.ip;
+                dronePortInput.value = data.port;
+                
+            } else if (data.status === 'disconnected') {
+                const reason = data.reason ? ` (${data.reason})` : '';
+                connectionInfo.textContent = `Disconnected from drone${reason}`;
+                connectionInfo.style.color = '#dc3545'; // Red
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                
+            } else if (data.status === 'failed') {
+                connectionInfo.textContent = `Connection failed: ${data.message}`;
+                connectionInfo.style.color = '#dc3545'; // Red
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
         });
 
     </script>
