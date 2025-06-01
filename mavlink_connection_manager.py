@@ -326,7 +326,7 @@ def mavlink_receive_loop_runner(
                 
                 messages_processed_this_cycle += 1
                 msg_type = msg.get_type()
-                print(f"[RECV-LOOP-DEBUG] Received MAVLink MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade: Log every received message
+#                print(f"[RECV-LOOP-DEBUG] Received MAVLink MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade: Log every received message
                 current_time_unix = time.time() # Capture time immediately after getting msg_type message
                 # print(f"[LOOP_TIMING] Received {msg_type} at {current_msg_receive_time:.4f}")
 
@@ -342,10 +342,10 @@ def mavlink_receive_loop_runner(
                     if heartbeat_changed:
                         drone_state_changed_iteration = True
                 else: # Not a HEARTBEAT
-                    print(f"[HANDLER-DISPATCH] Processing non-HEARTBEAT MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade Debug
+#                    print(f"[HANDLER-DISPATCH] Processing non-HEARTBEAT MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade Debug
                     handler = MAVLINK_MESSAGE_HANDLERS.get(msg_type)
                     if handler:
-                        print(f"[HANDLER-DISPATCH] Found handler: {handler.__name__} for {msg_type}. Preparing to call.") # Cascade Debug
+#                        print(f"[HANDLER-DISPATCH] Found handler: {handler.__name__} for {msg_type}. Preparing to call.") # Cascade Debug
                         try:
                             handler_kwargs = {
                                 'msg': msg,
@@ -366,9 +366,9 @@ def mavlink_receive_loop_runner(
                             sig = inspect.signature(handler)
                             valid_kwargs = {k: v for k, v in handler_kwargs.items() if k in sig.parameters}
                             
-                            print(f"[HANDLER-DISPATCH] Calling handler {handler.__name__} with keys: {list(valid_kwargs.keys())}") # Cascade Debug
+#                            print(f"[HANDLER-DISPATCH] Calling handler {handler.__name__} with keys: {list(valid_kwargs.keys())}") # Cascade Debug
                             handler_changed_state = handler(**valid_kwargs)
-                            print(f"[HANDLER-DISPATCH] Handler {handler.__name__} for {msg_type} returned: {handler_changed_state}") # Cascade Debug
+#                            print(f"[HANDLER-DISPATCH] Handler {handler.__name__} for {msg_type} returned: {handler_changed_state}") # Cascade Debug
                             if handler_changed_state:
                                 drone_state_changed_iteration = True # Update flag if handler reported change
                         except Exception as e:
@@ -376,7 +376,8 @@ def mavlink_receive_loop_runner(
                             import traceback
                             traceback.print_exc() # Cascade: Add full traceback for errors
                     else:
-                        print(f"[HANDLER-DISPATCH] No handler found for MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade Debug
+#                        print(f"[HANDLER-DISPATCH] No handler found for MSG ID: {msg.get_msgId()}, Type: {msg_type}") # Cascade Debug
+                        pass
                 
                 # Handle message-specific post-processing
                 if msg_type == 'HEARTBEAT':

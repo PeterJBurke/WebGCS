@@ -215,7 +215,8 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
         # Debug output for HEARTBEAT messages specifically
         if msg.get_type() == 'HEARTBEAT':
             # Log the debug message for every heartbeat (no rate limiting)
-            print(f"[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI")
+#            print(f"[REAL-HB] Real MAVLink HEARTBEAT received and emitted to UI")
+            pass
         
         # Log telemetry data for debugging
         # with drone_state_lock:
@@ -252,7 +253,7 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
     drone_state_changed_local = False
     msg_src_system = msg.get_srcSystem()
     conn_target_system = getattr(mavlink_conn, 'target_system', 0) if mavlink_conn else -1 # Use -1 if mavlink_conn is None
-    print(f"[ALT-DEBUG-SYSID] GPI Handler: msg_src={msg_src_system}, conn_target={conn_target_system}, initial_check_passes={mavlink_conn and msg_src_system == conn_target_system}")
+#    print(f"[ALT-DEBUG-SYSID] GPI Handler: msg_src={msg_src_system}, conn_target={conn_target_system}, initial_check_passes={mavlink_conn and msg_src_system == conn_target_system}")
     if mavlink_conn and msg.get_srcSystem() == getattr(mavlink_conn, 'target_system', 0):
         with drone_state_lock:
             # MAVLink GLOBAL_POSITION_INT:
@@ -276,8 +277,8 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
             # DEBUG: Compare current and new altitude values
             current_alt_rel_in_state = drone_state.get('alt_rel')
             current_alt_abs_in_state = drone_state.get('alt_abs')
-            print(f"[ALT-DEBUG-VALCOMP] Comparing alt_rel: state='{current_alt_rel_in_state}', new_msg_val='{new_alt_rel}', changed={current_alt_rel_in_state != new_alt_rel}")
-            print(f"[ALT-DEBUG-VALCOMP] Comparing alt_abs: state='{current_alt_abs_in_state}', new_msg_val='{new_alt_msl}', changed={current_alt_abs_in_state != new_alt_msl}")
+#            print(f"[ALT-DEBUG-VALCOMP] Comparing alt_rel: state='{current_alt_rel_in_state}', new_msg_val='{new_alt_rel}', changed={current_alt_rel_in_state != new_alt_rel}")
+#            print(f"[ALT-DEBUG-VALCOMP] Comparing alt_abs: state='{current_alt_abs_in_state}', new_msg_val='{new_alt_msl}', changed={current_alt_abs_in_state != new_alt_msl}")
             
             # Check if any relevant value has changed to avoid unnecessary updates
             if (drone_state.get('lat') != new_lat or
@@ -299,7 +300,7 @@ def process_global_position_int(msg, drone_state, drone_state_lock, mavlink_conn
                 drone_state['vz'] = new_vz
                 
                 # DEBUG: Show altitude updates
-                print(f"[ALT-DEBUG] GLOBAL_POSITION_INT: alt_rel={new_alt_rel:.2f}m, alt_abs={new_alt_msl:.2f}m")
+#                print(f"[ALT-DEBUG] GLOBAL_POSITION_INT: alt_rel={new_alt_rel:.2f}m, alt_abs={new_alt_msl:.2f}m")
                 drone_state_changed_local = True
         
     return drone_state_changed_local
@@ -340,7 +341,7 @@ def process_vfr_hud(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_ac
                 drone_state['climb_rate'] = new_climb_rate
                 
                 # DEBUG: Show VFR_HUD altitude updates  
-                print(f"[ALT-DEBUG] VFR_HUD: alt={new_alt_vfr:.2f}m, climb_rate={new_climb_rate:.2f}m/s, groundspeed={new_groundspeed:.2f}m/s")
+#                print(f"[ALT-DEBUG] VFR_HUD: alt={new_alt_vfr:.2f}m, climb_rate={new_climb_rate:.2f}m/s, groundspeed={new_groundspeed:.2f}m/s")
                 drone_state_changed_local = True
     return drone_state_changed_local
 
@@ -442,12 +443,12 @@ def process_attitude(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_a
     system_ids_match = mavlink_conn and msg_src_system == conn_target_system
 
     # Debug print for system ID check
-    print(f"[ATT-DEBUG-SYSID] ATTITUDE Handler: msg_src={msg_src_system}, conn_target={conn_target_system}, check_passes={system_ids_match}")
+#    print(f"[ATT-DEBUG-SYSID] ATTITUDE Handler: msg_src={msg_src_system}, conn_target={conn_target_system}, check_passes={system_ids_match}")
 
     if system_ids_match: # Modified condition
         with drone_state_lock:
             new_roll = math.degrees(msg.roll)
-            print(f"[ATT-DEBUG-CONV] Roll (rad): {msg.roll:.4f}, Roll (deg): {new_roll:.2f}")
+            # print(f"[ATT-DEBUG-CONV] Roll (rad): {msg.roll:.4f}, Roll (deg): {new_roll:.2f}")
             new_pitch = math.degrees(msg.pitch)
             new_yaw = math.degrees(msg.yaw) # Note: GLOBAL_POSITION_INT.hdg is often preferred for 'heading'
             
@@ -456,7 +457,7 @@ def process_attitude(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_a
             #     new_yaw += 360
 
             # DEBUG: Show attitude updates
-            print(f"[ATT-DEBUG] ATTITUDE: roll={new_roll:.2f}, pitch={new_pitch:.2f}, yaw={new_yaw:.2f}")
+#            print(f"[ATT-DEBUG] ATTITUDE: roll={new_roll:.2f}, pitch={new_pitch:.2f}, yaw={new_yaw:.2f}")
 
             if (drone_state.get('roll') != new_roll or
                 drone_state.get('pitch') != new_pitch or

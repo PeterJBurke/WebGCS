@@ -13,6 +13,7 @@ from gevent import monkey
 monkey.patch_all()
 
 import sys
+import datetime
 import time
 import threading
 import json
@@ -271,8 +272,9 @@ def periodic_telemetry_update():
     """Periodically send telemetry updates to web clients."""
     global drone_state_changed
     update_count = 0
-    last_debug_time = time.time()
-    last_file_check_time = 0
+    last_debug_time = time.time() # For less frequent debug prints
+    last_file_check_time = 0 # Initialize to ensure first check happens immediately
+    last_console_log_time = time.time() # For once-per-second console logging
     
     while True:
         try:
@@ -325,21 +327,28 @@ def periodic_telemetry_update():
                 
                 last_debug_time = current_time
             
-            # Send telemetry update if state has changed
+            current_time_for_log = time.time()
+            if current_time_for_log - last_console_log_time >= 1.0:
+                with drone_state_lock: # Ensure thread-safe access to drone_state for logging
+                    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    conn_status = drone_state.get('connected', False)
+                    armed_status = drone_state.get('armed', False)
+                    mode_status = drone_state.get('mode', 'UNKNOWN')
+                    alt_rel_status = drone_state.get('alt_rel', 0.0)
+                    alt_vfr_status = drone_state.get('alt_rel_vfr', 0.0) # Assuming 'alt_rel_vfr' is the correct key for VFR altitude
+                    lat_status = drone_state.get('lat', 0.0)
+                    lon_status = drone_state.get('lon', 0.0)
+
+                    print(f"[{timestamp}] Conn: {conn_status}, Armed: {armed_status}, Mode: {mode_status}")
+                    print(f"  Alt (rel): {alt_rel_status:.2f}m, Alt (VFR): {alt_vfr_status:.2f}m")
+                    print(f"  Lat/Lon: {lat_status:.6f}, {lon_status:.6f}")
+                last_console_log_time = current_time_for_log
+
+            # Send telemetry update to UI if state has changed
             if drone_state_changed:
                 with drone_state_lock:
-                    # DEBUG: Show what's being sent to frontend
-#                    print(f"[TELEMETRY-EMIT] Sending update #{update_count+1} to frontend:")
-                    print(f"  Connected: {drone_state.get('connected', False)}")
-                    print(f"  Armed: {drone_state.get('armed', False)}")
-                    print(f"  Mode: {drone_state.get('mode', 'UNKNOWN')}")
-                    print(f"  Alt (rel): {drone_state.get('alt_rel', 0.0):.2f}m")
-                    print(f"  Alt (VFR): {drone_state.get('alt_rel_vfr', 0.0):.2f}m")
-                    print(f"  Lat/Lon: {drone_state.get('lat', 0.0):.6f}, {drone_state.get('lon', 0.0):.6f}")
-                    
                     # Emit telemetry update to all connected clients
                     socketio.emit('telemetry_update', drone_state)
-                    
                 drone_state_changed = False
                 update_count += 1
             
