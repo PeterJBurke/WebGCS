@@ -8,7 +8,7 @@
 # Creates Python virtual environment, installs dependencies, and downloads
 # required frontend libraries.
 #
-# Requirements: Linux OS, Python 3.7+, curl, git
+# Requirements: Linux OS, Python 3.8+, curl, git
 #
 # Usage:
 #   chmod +x setup_desktop.sh
@@ -29,7 +29,7 @@ readonly NC='\033[0m' # No Color
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly VENV_PATH="${SCRIPT_DIR}/venv"
 readonly STATIC_LIB_DIR="${SCRIPT_DIR}/static/lib"
-readonly MIN_PYTHON_VERSION="3.7"
+readonly MIN_PYTHON_VERSION="3.8"
 
 # Logging functions
 log_info() {
@@ -60,12 +60,29 @@ check_linux() {
     fi
 }
 
+# Update package lists (essential for fresh Ubuntu 24.04)
+update_package_lists() {
+    log_info "Updating package lists..."
+    if command -v apt &> /dev/null; then
+        sudo apt update
+        log_success "Package lists updated"
+    elif command -v dnf &> /dev/null; then
+        sudo dnf check-update || true
+        log_success "Package lists updated"
+    elif command -v yum &> /dev/null; then
+        sudo yum check-update || true
+        log_success "Package lists updated"
+    else
+        log_warning "Could not detect package manager to update package lists"
+    fi
+}
+
 # Check Python version
 check_python_version() {
     if ! command -v python3 &> /dev/null; then
-        log_error "Python 3 is not installed. Please install Python 3.7+ and try again."
-        log_error "On Ubuntu/Debian: sudo apt install python3 python3-venv python3-pip"
-        log_error "On CentOS/RHEL: sudo yum install python3 python3-pip"
+        log_error "Python 3 is not installed. Please install Python 3.8+ and try again."
+        log_error "On Ubuntu/Debian: sudo apt install python3 python3-venv python3-pip python3-dev"
+        log_error "On CentOS/RHEL: sudo dnf install python3 python3-pip python3-devel"
         log_error "On Arch: sudo pacman -S python python-pip"
         exit 1
     fi
@@ -73,7 +90,7 @@ check_python_version() {
     local python_version
     python_version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
     
-    if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 7) else 1)"; then
+    if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 8) else 1)"; then
         log_error "Python ${python_version} detected. WebGCS requires Python ${MIN_PYTHON_VERSION}+."
         log_error "Please upgrade Python and try again."
         exit 1
@@ -85,28 +102,50 @@ check_python_version() {
 # Check required system dependencies
 check_dependencies() {
     local missing_deps=()
+    local ubuntu_deps=()
     
     # Check for curl
     if ! command -v curl &> /dev/null; then
         missing_deps+=("curl")
+        ubuntu_deps+=("curl")
     fi
     
     # Check for git
     if ! command -v git &> /dev/null; then
         missing_deps+=("git")
+        ubuntu_deps+=("git")
     fi
     
     # Check for python3-venv (on some systems it's separate)
     if ! python3 -m venv --help &> /dev/null; then
         missing_deps+=("python3-venv")
+        ubuntu_deps+=("python3-venv")
+    fi
+    
+    # Check for python3-dev (needed for some pip packages)
+    if ! dpkg -l python3-dev &> /dev/null && command -v dpkg &> /dev/null; then
+        missing_deps+=("python3-dev")
+        ubuntu_deps+=("python3-dev")
+    fi
+    
+    # Check for build essentials (needed for compiling some Python packages)
+    if ! command -v gcc &> /dev/null; then
+        missing_deps+=("build-essential")
+        ubuntu_deps+=("build-essential")
     fi
     
     if [[ ${#missing_deps[@]} -gt 0 ]]; then
         log_error "Missing required dependencies: ${missing_deps[*]}"
         log_error "Please install them first:"
-        log_error "  Ubuntu/Debian: sudo apt install ${missing_deps[*]}"
-        log_error "  CentOS/RHEL: sudo yum install ${missing_deps[*]}"
-        log_error "  Arch: sudo pacman -S ${missing_deps[*]}"
+        if command -v apt &> /dev/null; then
+            log_error "  Ubuntu/Debian: sudo apt install ${ubuntu_deps[*]}"
+        elif command -v dnf &> /dev/null; then
+            log_error "  CentOS/RHEL/Fedora: sudo dnf install ${missing_deps[*]} python3-devel gcc"
+        elif command -v yum &> /dev/null; then
+            log_error "  CentOS/RHEL: sudo yum install ${missing_deps[*]} python3-devel gcc"
+        elif command -v pacman &> /dev/null; then
+            log_error "  Arch: sudo pacman -S ${missing_deps[*]} base-devel"
+        fi
         exit 1
     fi
     
@@ -145,7 +184,7 @@ setup_virtual_environment() {
     
     # Activate and upgrade pip
     source "${VENV_PATH}/bin/activate"
-    pip install --upgrade pip
+    pip install --upgrade pip wheel setuptools
     
     log_success "Virtual environment created at ${VENV_PATH}"
 }
@@ -345,6 +384,16 @@ verify_installation() {
         log_warning "app.py not found. Make sure you have all the project files."
     fi
     
+    # Run detailed verification script if available
+    if [[ -f "${SCRIPT_DIR}/verify_setup.py" ]]; then
+        log_info "Running detailed verification..."
+        if "${VENV_PATH}/bin/python" "${SCRIPT_DIR}/verify_setup.py"; then
+            log_success "Detailed verification completed successfully"
+        else
+            log_warning "Detailed verification found some issues. Check output above."
+        fi
+    fi
+    
     log_success "Installation verified successfully"
 }
 
@@ -429,7 +478,7 @@ print_manual_instructions() {
 # Main execution
 main() {
     echo "======================================================================"
-    echo "           WebGCS Linux Desktop Setup Script v1.4"
+    echo "           WebGCS Linux Desktop Setup Script v1.5"
     echo "======================================================================"
     echo
     
@@ -454,6 +503,7 @@ main() {
     fi
     
     check_linux
+    update_package_lists
     check_python_version
     check_dependencies
     create_directories
