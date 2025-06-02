@@ -198,6 +198,14 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
             status = "ARMED" if drone_state['armed'] else "DISARMED"
             log_cmd_action_cb("ARM_STATUS", None, f"Vehicle {status}")
             drone_state_changed_local = True
+            
+            # Emit arming status change event for voice announcement
+            if sio_instance:
+                sio_instance.emit('arming_status_voice', {
+                    'previous_status': "ARMED" if prev_armed else "DISARMED",
+                    'new_status': status,
+                    'message': status.lower()  # "armed" or "disarmed"
+                })
         lock_release_time = time.time()
         # print(f"[HB_PROC_TIMING] Lock released at {lock_release_time:.4f} (held for {lock_release_time - lock_acquired_time:.4f}s)")
 

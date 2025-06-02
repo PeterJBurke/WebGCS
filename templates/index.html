@@ -1095,6 +1095,29 @@
             }
         });
 
+        // Handle arming status voice announcements
+        socket.on("arming_status_voice", (data) => {
+            console.log("Arming status voice event received:", data);
+            addMessage(`Voice: ${data.message}`, "info");
+            
+            // Prevent duplicate voice announcements within 2 seconds
+            const now = Date.now();
+            const timeSinceLastVoice = now - lastVoiceTime;
+            const isDuplicate = data.message === lastVoiceAnnouncement && timeSinceLastVoice < 2000;
+            
+            if (voiceAnnouncementsEnabled && !isDuplicate) {
+                console.log('[VOICE] Using speakText function for arming status announcement');
+                
+                // Speak the arming status
+                speakText(data.message); // "armed" or "disarmed"
+                
+                lastVoiceAnnouncement = data.message;
+                lastVoiceTime = now;
+            } else if (isDuplicate) {
+                console.log(`[VOICE] Skipped duplicate voice announcement: "${data.message}"`);
+            }
+        });
+
         // Heartbeat trigger function
         function triggerHeartbeat() {
             const heartIcon = document.getElementById('heartbeat-indicator');
