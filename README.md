@@ -15,184 +15,104 @@ A modern web-based ground control interface for MAVLink-compatible drones and ve
 - **Responsive Design**: Works on desktop and mobile devices
 - **MAVLink Integration**: Direct TCP connection to autopilot systems
 
-## 🚀 Installation Options
+## 🚀 Quick Start
 
-WebGCS offers two installation methods to suit different use cases:
+Choose your platform for optimized installation:
 
-1. **[Manual Installation](#-manual-installation)** - Run the application manually when needed
-2. **[Automated Service Installation (Linux Only)](#-automated-service-installation-linux-only)** - Install as a system service that runs automatically
+### 🖥️ Ubuntu 24.04 LTS Desktop
 
----
+**Fastest installation for Ubuntu desktop systems:**
 
-## 📋 Manual Installation
-
-Perfect for development, testing, or when you want full control over when the application runs.
-
-### Prerequisites
-
-- Python 3.7+ 
-- Git (for cloning)
-- Network access to your drone/autopilot
-
-### Installation Steps
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/PeterJBurke/WebGCS.git
-   cd WebGCS
-   ```
-
-2. **Set up Python environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. **Configure connection** (optional)
-   
-   Create a `.env` file to customize settings:
-   ```bash
-   cp .env.example .env
-   nano .env  # Edit with your drone's IP and settings
-   ```
-
-4. **Run the application**
-   ```bash
-   python app.py
-   ```
-
-5. **Access the interface**
-   
-   Open your browser to: `http://localhost:5000`
-
-### Manual Operation
-
-- **Start**: `source venv/bin/activate && python app.py`
-- **Stop**: Press `Ctrl+C` in the terminal
-- **Logs**: Displayed in the terminal where you ran the application
-
----
-
-## 🐧 Automated Service Installation (Linux Only)
-
-Ideal for production deployments, headless servers, or when you want WebGCS to start automatically on boot.
-
-### Prerequisites
-
-- Linux operating system (Ubuntu, Debian, CentOS, RHEL, Arch, etc.)
-- Internet connection for downloading dependencies
-- `sudo` access for installing the system service
-
-### Installation Methods
-
-#### Option A: Interactive Setup
 ```bash
 git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
 chmod +x setup_desktop.sh
-./setup_desktop.sh
-# Choose "y" when prompted to install as a service
+./setup_desktop.sh --service  # Installs as system service
 ```
 
-#### Option B: Direct Service Installation
+- ✅ **Optimized for Ubuntu 24.04 LTS** with Python 3.10+ 
+- ✅ **Automatic dependency management** (build tools, libraries)
+- ✅ **Systemd service with security hardening**
+- ✅ **Frontend library downloads** (Bootstrap, Leaflet, Socket.IO)
+
+📖 **[Complete Ubuntu Setup Guide →](UBUNTU_24_04_SETUP.md)**
+
+### 🥧 Raspberry Pi OS (Bookworm)
+
+**Complete ground station setup for Raspberry Pi:**
+
 ```bash
 git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
-chmod +x setup_desktop.sh
-./setup_desktop.sh --service
+chmod +x setup_raspberry_pi.sh
+sudo ./setup_raspberry_pi.sh
+sudo reboot  # Required for UART configuration
 ```
 
-### What the Service Installation Does
+- ✅ **MAVLink Router integration** (UART ↔ TCP routing)
+- ✅ **UART configuration** for flight controller connection
+- ✅ **WiFi hotspot failover** (automatic backup hotspot)
+- ✅ **Service dependency management** with automatic startup
+- ✅ **Hardware connection setup** (GPIO UART pins)
 
-The automated setup script will:
-- ✅ Check for Linux OS and Python 3.7+ compatibility
-- ✅ Verify system dependencies (curl, git, python3-venv)
-- ✅ Create a Python virtual environment
-- ✅ Install all Python dependencies from requirements.txt
-- ✅ Download required frontend libraries (Leaflet, Socket.IO, Bootstrap)
-- ✅ Create a `.env.example` configuration template
-- ✅ **Install WebGCS as a systemd service**
-- ✅ **Enable auto-start on boot**
-- ✅ **Start the service immediately**
-- ✅ Verify the installation and service status
+📖 **[Complete Raspberry Pi Setup Guide →](RASPBERRY_PI_SETUP.md)**
 
-### Service Management
+### 💻 Manual Installation (Any Platform)
 
-Once installed as a service, WebGCS runs automatically and can be managed with standard systemd commands:
+**For development or custom deployments:**
 
-#### Check Service Status
 ```bash
-sudo systemctl status webgcs
+git clone https://github.com/PeterJBurke/WebGCS.git
+cd WebGCS
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python app.py  # Access at http://localhost:5000
 ```
-
-#### View Live Logs
-```bash
-sudo journalctl -u webgcs -f
-```
-
-#### Restart the Service
-```bash
-sudo systemctl restart webgcs
-```
-
-#### Stop the Service
-```bash
-sudo systemctl stop webgcs
-```
-
-#### Start the Service
-```bash
-sudo systemctl start webgcs
-```
-
-#### Disable Auto-start on Boot
-```bash
-sudo systemctl disable webgcs
-```
-
-#### Enable Auto-start on Boot
-```bash
-sudo systemctl enable webgcs
-```
-
-### Service Configuration
-
-#### Updating Configuration
-1. Edit the configuration file:
-   ```bash
-   nano /path/to/WebGCS/.env
-   ```
-
-2. Restart the service to apply changes:
-   ```bash
-   sudo systemctl restart webgcs
-   ```
-
-#### Service Details
-- **Service Name**: `webgcs`
-- **Service File**: `/etc/systemd/system/webgcs.service`
-- **User**: Runs under the user who installed it
-- **Auto-restart**: Automatically restarts if the application crashes
-- **Logs**: Available via `journalctl`
-
-### Supported Linux Distributions
-
-The setup script provides package installation commands for:
-- **Ubuntu/Debian**: `apt install`
-- **CentOS/RHEL**: `yum install`
-- **Arch Linux**: `pacman -S`
-
-### Service Benefits
-
-- 🚀 **Automatic startup** on system boot
-- 🔄 **Auto-restart** if the application crashes
-- 📋 **Centralized logging** via systemd journal
-- 🔒 **Security hardening** with systemd security features
-- 🎛️ **Easy management** with standard systemd commands
-- 🌐 **Always available** - no need to manually start
 
 ---
+
+## 🏗️ Platform-Specific Features
+
+### Ubuntu Desktop Features
+- **System service integration** with systemd
+- **Security hardening** with restricted permissions  
+- **Automatic startup** on boot
+- **Centralized logging** via journalctl
+- **Package manager integration** for dependencies
+
+### Raspberry Pi Features
+- **MAVLink Router** for serial communication with flight controllers
+- **UART configuration** (GPIO pins 8/10) with Bluetooth disabled
+- **WiFi hotspot failover** - creates "RaspberryPiHotspot" if internet fails
+- **Hardware integration** - optimized for Pi 3B+, 4B, and 5
+- **Headless operation** - perfect for field deployments
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DRONE_TCP_ADDRESS` | `127.0.0.1` | IP address of MAVLink TCP server |
+| `DRONE_TCP_PORT` | `5678` | MAVLink TCP port |
+| `WEB_SERVER_HOST` | `0.0.0.0` | Web server bind address |
+| `WEB_SERVER_PORT` | `5000` | Web server port |
+| `HEARTBEAT_TIMEOUT` | `15` | Heartbeat timeout (seconds) |
+| `REQUEST_STREAM_RATE_HZ` | `4` | MAVLink data stream rate |
+
+### MAVLink Connection Setup
+
+**For ArduPilot SITL:**
+```bash
+sim_vehicle.py --aircraft test --console --map --out tcpin:0.0.0.0:5678
+```
+
+**For Hardware Flight Controllers:**
+- **Raspberry Pi**: Connected via UART (automatic with Pi setup)
+- **Desktop**: Configure autopilot as TCP server on port 5678
 
 ## 🎮 Using the Interface
 
@@ -212,39 +132,50 @@ The setup script provides package installation commands for:
 - **Flight Status**: Armed state, GPS fix, EKF health
 - **Command Feedback**: Detailed success/error messages for all operations
 
-## ⚙️ Configuration
+## 🛠️ Service Management
 
-### Environment Variables
+### Ubuntu Desktop
+```bash
+# Service control
+sudo systemctl status webgcs
+sudo systemctl restart webgcs
+sudo journalctl -u webgcs -f
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DRONE_TCP_ADDRESS` | `192.168.1.247` | IP address of the drone |
-| `DRONE_TCP_PORT` | `5678` | MAVLink TCP port |
-| `WEB_SERVER_HOST` | `0.0.0.0` | Web server bind address |
-| `WEB_SERVER_PORT` | `5000` | Web server port |
-| `HEARTBEAT_TIMEOUT` | `15` | Heartbeat timeout (seconds) |
+# Configuration
+nano .env
+sudo systemctl restart webgcs
+```
 
-### Drone Setup Requirements
+### Raspberry Pi
+```bash
+# Check all services
+sudo systemctl status mavlink-router webgcs check_wifi
 
-Your autopilot must be configured as a **MAVLink TCP Server**:
-- Listen on port `5678` (or your configured port)
-- Accept incoming TCP connections
-- Be accessible on the network from your computer
+# View logs
+sudo journalctl -u webgcs -f
+sudo journalctl -u mavlink-router -f
+
+# Hardware connection
+ls -l /dev/serial0  # Should exist after reboot
+```
 
 ## 🔧 Troubleshooting
 
 ### Connection Issues
-- **No Heartbeat**: Verify drone IP address and MAVLink TCP server is running
-- **Connection Refused**: Check network connectivity with `ping <drone_ip>`
-- **Port Issues**: Ensure port `5678` is open and not blocked by firewalls
+- **No Heartbeat**: Verify MAVLink TCP server is running on correct IP/port
+- **Connection Refused**: Check network connectivity and firewall settings
+- **Raspberry Pi UART**: Ensure reboot after installation for UART activation
 
 ### Web Interface Issues  
-- **Page Won't Load**: Verify `python app.py` is running without errors
-- **Port Conflicts**: Change `WEB_SERVER_PORT` if port `5000` is in use
+- **Page Won't Load**: Check if service is running: `sudo systemctl status webgcs`
+- **Port Conflicts**: Change `WEB_SERVER_PORT` in `.env` file
+- **Permission Errors**: Verify user permissions and service configuration
 
-### Commands Not Working
-- **Mode Restrictions**: Some commands require specific flight modes (e.g., GUIDED for navigation)
-- **Safety Checks**: Ensure GPS lock and proper calibration before flight operations
+### Platform-Specific Issues
+- **Ubuntu**: Check Python 3.10+ requirement and system dependencies
+- **Raspberry Pi**: Verify UART devices (`/dev/serial0`) and MAVLink Router status
+
+📖 **Detailed troubleshooting guides available in platform-specific documentation**
 
 ## 🛠️ Development
 
@@ -254,6 +185,10 @@ WebGCS/
 ├── app.py                          # Main Flask application
 ├── socketio_handlers.py            # WebSocket event handlers  
 ├── mavlink_connection_manager.py   # MAVLink communication
+├── setup_desktop.sh               # Ubuntu/Linux setup script
+├── setup_raspberry_pi.sh          # Raspberry Pi setup script
+├── UBUNTU_24_04_SETUP.md          # Detailed Ubuntu guide
+├── RASPBERRY_PI_SETUP.md          # Detailed Pi guide
 ├── templates/                      # HTML templates
 ├── static/                         # CSS, JS, and assets
 └── requirements.txt               # Python dependencies
@@ -264,6 +199,19 @@ WebGCS/
 - **PyMAVLink**: MAVLink protocol implementation
 - **Leaflet.js**: Interactive mapping
 - **Bootstrap**: Responsive UI framework
+
+## 📋 System Requirements
+
+### Minimum Requirements
+- **Python**: 3.10+ (Ubuntu), 3.11+ (Raspberry Pi OS Bookworm)
+- **Memory**: 1GB RAM (2GB+ recommended)
+- **Storage**: 2GB free space
+- **Network**: WiFi or Ethernet connectivity
+
+### Recommended Hardware
+- **Ubuntu Desktop**: Any x64 machine with 4GB+ RAM
+- **Raspberry Pi**: Pi 4B with 4GB+ RAM for best performance
+- **Flight Controller**: ArduPilot/PX4 with MAVLink support
 
 ## 📝 License
 
@@ -281,6 +229,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/PeterJBurke/WebGCS/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/PeterJBurke/WebGCS/discussions)
+- **Ubuntu Setup**: [Ubuntu 24.04 Setup Guide](UBUNTU_24_04_SETUP.md)
+- **Raspberry Pi Setup**: [Raspberry Pi Setup Guide](RASPBERRY_PI_SETUP.md)
 
 ---
 
