@@ -2,7 +2,7 @@
 
 A modern web-based ground control interface for MAVLink-compatible drones and vehicles. Features real-time telemetry, map visualization, and comprehensive flight control capabilities.
 
-[![Version](https://img.shields.io/badge/version-1.4-blue.svg)](https://github.com/PeterJBurke/WebGCS/releases/tag/v1.4)
+[![Version](https://img.shields.io/badge/version-1.8-blue.svg)](https://github.com/PeterJBurke/WebGCS/releases/tag/v1.8)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## ✨ Features
