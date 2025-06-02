@@ -1050,10 +1050,12 @@
                 console.log('Stack trace:', new Error().stack);
                 console.log('===============================');
                 
-                // If this contains "flight mode", block it
-                if (text.toLowerCase().includes('flight mode') || 
-                    text.toLowerCase().includes('guided flight') ||
-                    text.toLowerCase().includes('stabilize flight')) {
+                // If this contains unwanted automatic browser speech, block it
+                // But allow our intentional "Mode change to ..." announcements
+                if ((text.toLowerCase().includes('flight mode') || 
+                     text.toLowerCase().includes('guided flight') ||
+                     text.toLowerCase().includes('stabilize flight')) &&
+                    !text.toLowerCase().includes('mode change to')) {
                     console.log('🚫 BLOCKING unwanted flight mode speech:', text);
                     return;
                 }
@@ -1069,7 +1071,7 @@
             };
         }
 
-        // Handle mode change voice announcements - MODIFIED APPROACH
+        // Handle mode change voice announcements - FIXED APPROACH
         socket.on("mode_change_voice", (data) => {
             console.log("Mode change voice event received:", data);
             addMessage(`Voice: ${data.message}`, "info");
@@ -1080,26 +1082,11 @@
             const isDuplicate = data.message === lastVoiceAnnouncement && timeSinceLastVoice < 2000;
             
             if (voiceAnnouncementsEnabled && !isDuplicate) {
-                console.log('[VOICE] NEW APPROACH: Modifying DOM text for browser to read correctly');
+                console.log('[VOICE] Using speakText function for mode change announcement');
                 
-                // Don't generate our own speech - let browser handle it naturally
-                // Instead, temporarily change the mode text to what we want the browser to say
-                const modeValueSpan = document.getElementById('mode-value');
-                if (modeValueSpan) {
-                    const originalText = modeValueSpan.textContent;
-                    const cleanMode = data.new_mode || data.message.replace(/.*mode change to /i, '');
-                    
-                    // Set the text to what we want the browser to read
-                    modeValueSpan.textContent = `mode change to ${cleanMode}`;
-                    
-                    console.log(`[VOICE] Set mode text to: "mode change to ${cleanMode}" for browser to read`);
-                    
-                    // Restore the normal mode text after browser has read it
-                    setTimeout(() => {
-                        modeValueSpan.textContent = originalText;
-                        console.log(`[VOICE] Restored original mode text: "${originalText}"`);
-                    }, 3000);
-                }
+                // Use the proper speakText function instead of DOM manipulation
+                const cleanMode = data.new_mode || data.message.replace(/.*mode change to /i, '');
+                speakText(`Mode change to ${cleanMode}`);
                 
                 lastVoiceAnnouncement = data.message;
                 lastVoiceTime = now;
