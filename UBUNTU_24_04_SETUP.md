@@ -1,325 +1,381 @@
-# WebGCS Ubuntu 24.04 Setup Guide
+# Ubuntu 24.04 LTS Setup Guide for WebGCS
 
-This document provides specific guidance for setting up WebGCS on Ubuntu 24.04 LTS.
+This guide provides detailed instructions for setting up WebGCS on Ubuntu 24.04 LTS. The setup script has been optimized specifically for Ubuntu 24.04 and includes all necessary dependencies and configurations.
 
-## 📋 Prerequisites
+## System Requirements
 
-### System Requirements
-- **OS**: Ubuntu 24.04 LTS (fresh installation supported)
-- **Python**: 3.8+ (Ubuntu 24.04 comes with Python 3.12 by default)
+- **Operating System**: Ubuntu 24.04 LTS (recommended), Ubuntu 22.04, or Ubuntu 20.04
+- **Python**: 3.10+ (Ubuntu 24.04 includes Python 3.12 by default)
 - **Memory**: Minimum 1GB RAM (2GB+ recommended)
-- **Storage**: 500MB free space for dependencies
-- **Network**: Internet connection for downloading dependencies
+- **Storage**: Minimum 2GB free space
+- **Network**: Internet connection for initial setup
+- **Privileges**: sudo access for system service installation
 
-### Required System Packages
-The setup script will automatically check and prompt for installation of:
+## Quick Start
+
+### Automated Installation
+
+The fastest way to get WebGCS running on Ubuntu 24.04:
 
 ```bash
-# Core dependencies
-sudo apt install python3 python3-venv python3-pip python3-dev build-essential curl git -y
-```
-
-## 🚀 Quick Setup
-
-### Option 1: Automated Service Installation (Recommended)
-```bash
+# Clone the repository
+git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
+
+# Run the setup script
 chmod +x setup_desktop.sh
+./setup_desktop.sh
+
+# For automatic service installation (runs WebGCS as a system service)
 ./setup_desktop.sh --service
 ```
 
-### Option 2: Manual Setup
+### What the Script Does
+
+The `setup_desktop.sh` script automatically:
+
+1. **System Verification**
+   - Checks Ubuntu version compatibility
+   - Verifies Python 3.10+ availability
+   - Updates package lists
+
+2. **Dependency Installation**
+   - Installs required system packages:
+     - `python3`, `python3-venv`, `python3-pip`, `python3-dev`
+     - `build-essential`, `pkg-config`, `libevent-dev`
+     - `git`, `curl`
+   - Downloads and installs Python packages via pip
+
+3. **Environment Setup**
+   - Creates Python virtual environment
+   - Downloads frontend libraries (Bootstrap, Leaflet, Socket.IO)
+   - Sets proper file permissions
+
+4. **Configuration**
+   - Creates `.env.example` template
+   - Generates default `.env` configuration file
+   - Configures for localhost TCP connection (127.0.0.1:5678)
+
+5. **Service Installation** (optional)
+   - Creates systemd service file with security settings
+   - Enables and starts the WebGCS service
+   - Configures automatic startup on boot
+
+## Manual Installation
+
+If you prefer to install manually or need to customize the process:
+
+### 1. Install System Dependencies
+
 ```bash
+# Update package lists
+sudo apt update
+
+# Install required packages
+sudo apt install -y \
+    python3 \
+    python3-venv \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    pkg-config \
+    libevent-dev \
+    git \
+    curl
+```
+
+### 2. Clone and Setup WebGCS
+
+```bash
+# Clone the repository
+git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
-chmod +x setup_desktop.sh
-./setup_desktop.sh
-```
 
-## 🔧 Manual Installation Steps
-
-If you prefer to install manually or encounter issues:
-
-### 1. Update System
-```bash
-sudo apt update && sudo apt upgrade -y
-```
-
-### 2. Install Dependencies
-```bash
-sudo apt install python3 python3-venv python3-pip python3-dev build-essential curl git -y
-```
-
-### 3. Create Virtual Environment
-```bash
-cd WebGCS
+# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
-```
 
-### 4. Install Python Packages
-```bash
+# Install Python dependencies
 pip install --upgrade pip wheel setuptools
 pip install -r requirements.txt
 ```
 
-### 5. Download Frontend Libraries
+### 3. Download Frontend Libraries
+
 ```bash
+# Create directories
 mkdir -p static/lib
-cd static/lib
 
-# Download required libraries
-curl -o leaflet.css https://unpkg.com/leaflet@1.9.4/dist/leaflet.css
-curl -o leaflet.js https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
-curl -o socket.io.min.js https://cdn.socket.io/4.7.4/socket.io.min.js
-curl -o bootstrap.min.css https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
-curl -o bootstrap.bundle.min.js https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js
-
-cd ../..
+# Download required JavaScript libraries
+curl -fsSL https://unpkg.com/leaflet@1.9.4/dist/leaflet.css -o static/lib/leaflet.css
+curl -fsSL https://unpkg.com/leaflet@1.9.4/dist/leaflet.js -o static/lib/leaflet.js
+curl -fsSL https://cdn.socket.io/4.7.4/socket.io.min.js -o static/lib/socket.io.min.js
+curl -fsSL https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css -o static/lib/bootstrap.min.css
+curl -fsSL https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js -o static/lib/bootstrap.bundle.min.js
 ```
 
-### 6. Configure Environment
+### 4. Configuration
+
+Create a `.env` file:
+
 ```bash
-cp .env.example .env
-nano .env  # Edit with your drone's IP and settings
-```
-
-### 7. Test Installation
-```bash
-python3 verify_setup.py  # Run verification script
-python3 app.py          # Test manual start
-```
-
-## 🐧 Systemd Service Setup
-
-### Create Service File
-```bash
-sudo nano /etc/systemd/system/webgcs.service
-```
-
-Add the following content (replace `/path/to/WebGCS` and `username`):
-
-```ini
-[Unit]
-Description=WebGCS - Web-Based Ground Control Station
-After=network.target
-Wants=network.target
-
-[Service]
-Type=simple
-User=username
-Group=username
-WorkingDirectory=/path/to/WebGCS
-Environment=PATH=/path/to/WebGCS/venv/bin
-ExecStart=/path/to/WebGCS/venv/bin/python /path/to/WebGCS/app.py
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-SyslogIdentifier=webgcs
-
-# Security settings
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ReadWritePaths=/path/to/WebGCS
-ProtectHome=true
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Enable and Start Service
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable webgcs
-sudo systemctl start webgcs
-sudo systemctl status webgcs
-```
-
-## 🔧 Configuration
-
-### Environment Variables (.env file)
-```bash
-# Drone Connection Settings
-DRONE_TCP_ADDRESS=192.168.1.247
+cat > .env << EOF
+# WebGCS Configuration
+DRONE_TCP_ADDRESS=127.0.0.1
 DRONE_TCP_PORT=5678
-
-# Web Server Settings
 WEB_SERVER_HOST=0.0.0.0
 WEB_SERVER_PORT=5000
 SECRET_KEY=your_secure_secret_key_here
-
-# MAVLink Settings
 HEARTBEAT_TIMEOUT=15
 REQUEST_STREAM_RATE_HZ=4
 COMMAND_ACK_TIMEOUT=5
 TELEMETRY_UPDATE_INTERVAL=0.1
+EOF
 ```
 
-### Firewall Configuration
+## Running WebGCS
+
+### Manual Execution
+
 ```bash
-# Allow WebGCS port
-sudo ufw allow 5000/tcp
-
-# Enable firewall if not already enabled
-sudo ufw enable
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues and Solutions
-
-#### 1. Python Version Issues
-```bash
-# Check Python version
-python3 --version
-
-# If version is less than 3.8, install newer Python
-sudo apt install python3.11 python3.11-venv python3.11-dev
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-```
-
-#### 2. Permission Errors
-```bash
-# Fix ownership of WebGCS directory
-sudo chown -R $USER:$USER /path/to/WebGCS
-
-# Make scripts executable
-chmod +x setup_desktop.sh
-chmod +x verify_setup.py
-```
-
-#### 3. Virtual Environment Issues
-```bash
-# Remove and recreate virtual environment
-rm -rf venv
-python3 -m venv venv
+# Activate virtual environment
 source venv/bin/activate
-pip install --upgrade pip wheel setuptools
-pip install -r requirements.txt
+
+# Run the application
+python app.py
 ```
 
-#### 4. Service Not Starting
+Access WebGCS at: http://localhost:5000
+
+### As a System Service
+
+If you installed with the `--service` option:
+
 ```bash
 # Check service status
 sudo systemctl status webgcs
 
-# View service logs
+# View logs
 sudo journalctl -u webgcs -f
-
-# Check file permissions
-ls -la /path/to/WebGCS/app.py
 
 # Restart service
 sudo systemctl restart webgcs
-```
-
-#### 5. Network Connection Issues
-```bash
-# Test network connectivity
-ping google.com
-
-# Check if port is open
-sudo netstat -tulpn | grep :5000
-
-# Test application directly
-cd /path/to/WebGCS
-source venv/bin/activate
-python3 app.py
-```
-
-### Log Files
-- Application logs: `./logs/` directory
-- Service logs: `sudo journalctl -u webgcs`
-- System logs: `/var/log/syslog`
-
-## 📊 Service Management
-
-### Service Commands
-```bash
-# Check status
-sudo systemctl status webgcs
-
-# Start service
-sudo systemctl start webgcs
 
 # Stop service
 sudo systemctl stop webgcs
 
-# Restart service
-sudo systemctl restart webgcs
-
-# Enable auto-start on boot
-sudo systemctl enable webgcs
-
-# Disable auto-start on boot
-sudo systemctl disable webgcs
-
-# View real-time logs
-sudo journalctl -u webgcs -f
+# Start service
+sudo systemctl start webgcs
 ```
 
-### Web Interface Access
-- Local: http://localhost:5000
-- Network: http://YOUR_SERVER_IP:5000
+## Configuration Options
 
-## 🔒 Security Considerations
+### Environment Variables
 
-### Network Security
-- Change default SECRET_KEY in .env file
-- Configure firewall to restrict access
-- Use HTTPS in production (consider reverse proxy)
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DRONE_TCP_ADDRESS` | `127.0.0.1` | IP address of MAVLink TCP server |
+| `DRONE_TCP_PORT` | `5678` | TCP port for MAVLink connection |
+| `WEB_SERVER_HOST` | `0.0.0.0` | Web server bind address |
+| `WEB_SERVER_PORT` | `5000` | Web server port |
+| `SECRET_KEY` | Generated | Flask session secret key |
+| `HEARTBEAT_TIMEOUT` | `15` | Heartbeat timeout (seconds) |
+| `REQUEST_STREAM_RATE_HZ` | `4` | MAVLink data stream rate |
+| `COMMAND_ACK_TIMEOUT` | `5` | Command acknowledgment timeout |
+| `TELEMETRY_UPDATE_INTERVAL` | `0.1` | UI update interval (seconds) |
 
-### File Permissions
+### MAVLink Connection Setup
+
+WebGCS connects to autopilots via TCP. Your flight controller or simulator must be configured as a MAVLink TCP server:
+
+#### ArduPilot SITL (Software-in-the-Loop)
 ```bash
-# Secure the configuration file
-chmod 600 .env
+# Start ArduPilot SITL with TCP output
+sim_vehicle.py --aircraft test --console --map --out tcpin:0.0.0.0:5678
+```
 
-# Ensure proper ownership
+#### Mission Planner TCP Server
+1. Open Mission Planner
+2. Go to `CONFIG/TUNING` → `Full Parameter List`
+3. Set `SERIAL2_PROTOCOL` to `2` (MAVLink2)
+4. Set `SERIAL2_BAUD` to `57600`
+5. Connect via UDP/TCP → TCP → Listen on port 5678
+
+#### QGroundControl
+1. Go to Application Settings → Comm Links
+2. Add new link: TCP
+3. Host Address: 0.0.0.0, Port: 5678
+4. Enable "Automatically Connect on Start"
+
+## Troubleshooting
+
+### Common Issues
+
+#### Python Version Issues
+Ubuntu 20.04 ships with Python 3.8. For WebGCS, you need Python 3.10+:
+```bash
+# Install Python 3.10 on Ubuntu 20.04
+sudo apt install python3.10 python3.10-venv python3.10-dev
+# Use python3.10 instead of python3 in commands
+```
+
+#### Permission Errors
+```bash
+# Fix permissions for the project directory
 sudo chown -R $USER:$USER /path/to/WebGCS
+chmod -R u+rwX /path/to/WebGCS
 ```
 
-## 📋 Verification Checklist
+#### Port Already in Use
+```bash
+# Check what's using port 5000
+sudo netstat -tulnp | grep :5000
 
-Run the verification script to ensure everything is properly installed:
+# Change the port in .env file
+echo "WEB_SERVER_PORT=5001" >> .env
+```
+
+#### GeEvent Compilation Issues
+```bash
+# Install additional development headers
+sudo apt install libevent-dev python3-dev build-essential
+```
+
+### Connection Issues
+
+#### No Heartbeat from Drone
+1. Verify MAVLink TCP server is running on correct IP/port
+2. Check firewall settings:
+   ```bash
+   # Allow incoming connections on port 5678
+   sudo ufw allow 5678/tcp
+   ```
+3. Test connection with telnet:
+   ```bash
+   telnet 127.0.0.1 5678
+   ```
+
+#### Web Interface Not Loading
+1. Check if WebGCS is running:
+   ```bash
+   ps aux | grep python | grep app.py
+   ```
+2. Check logs for errors:
+   ```bash
+   # For service installation
+   sudo journalctl -u webgcs -f
+   
+   # For manual execution
+   tail -f logs/app.log
+   ```
+
+### Verification Commands
+
+Run these commands to verify your installation:
 
 ```bash
-python3 verify_setup.py
+# Check Python version
+python3 --version
+
+# Test virtual environment
+source venv/bin/activate
+python -c "import flask, flask_socketio, pymavlink, gevent; print('All packages imported successfully')"
+deactivate
+
+# Check service status (if installed as service)
+sudo systemctl status webgcs
+
+# Test web server accessibility
+curl -I http://localhost:5000
 ```
 
-The script checks:
-- ✅ Python version compatibility
-- ✅ Required Python packages
-- ✅ Project files
-- ✅ Template files
-- ✅ Static library files
-- ✅ Configuration files
+## Security Considerations
 
-## 🆘 Getting Help
+### Firewall Configuration
+
+```bash
+# Allow WebGCS web interface
+sudo ufw allow 5000/tcp
+
+# Allow MAVLink connections (if accepting external connections)
+sudo ufw allow 5678/tcp
+
+# Enable firewall
+sudo ufw enable
+```
+
+### Service Security
+
+The systemd service includes security hardening:
+- `NoNewPrivileges=yes` - Prevents privilege escalation
+- `PrivateTmp=yes` - Isolated temporary directory
+- `ProtectSystem=strict` - Read-only system directories
+- `ProtectHome=yes` - Restricted home directory access
+
+## Performance Optimization
+
+### For Low-End Systems
+Adjust these settings in `.env`:
+```bash
+REQUEST_STREAM_RATE_HZ=2        # Reduce telemetry rate
+TELEMETRY_UPDATE_INTERVAL=0.2   # Slower UI updates
+```
+
+### For High-Performance Systems
+```bash
+REQUEST_STREAM_RATE_HZ=10       # Higher telemetry rate
+TELEMETRY_UPDATE_INTERVAL=0.05  # Faster UI updates
+```
+
+## Ubuntu Version Specific Notes
+
+### Ubuntu 24.04 LTS (Recommended)
+- Python 3.12 available by default
+- All dependencies available in repositories
+- Best performance and compatibility
+
+### Ubuntu 22.04 LTS
+- Python 3.10 available by default
+- Full compatibility with WebGCS
+- Stable long-term support
+
+### Ubuntu 20.04 LTS
+- Requires Python 3.10 installation
+- Some packages may need manual compilation
+- Consider upgrading to newer Ubuntu version
+
+## Getting Help
 
 If you encounter issues:
 
-1. **Run the verification script**: `python3 verify_setup.py`
-2. **Check service logs**: `sudo journalctl -u webgcs -f`
-3. **Verify dependencies**: Re-run `./setup_desktop.sh`
-4. **Check network connectivity**: Ensure drone is accessible
-5. **Review configuration**: Verify .env file settings
+1. Check the logs:
+   ```bash
+   # Service logs
+   sudo journalctl -u webgcs -f
+   
+   # Application logs
+   tail -f logs/app.log
+   ```
 
-## 📝 Notes for Ubuntu 24.04
+2. Run the verification script:
+   ```bash
+   python verify_setup.py
+   ```
 
-### Key Improvements in Setup Script v1.5:
-- ✅ **Updated Python requirement**: Now requires Python 3.8+ (was 3.7+)
-- ✅ **Package list update**: Automatically runs `apt update` before dependency checks
-- ✅ **Enhanced dependency checking**: Includes python3-dev and build-essential
-- ✅ **Better error messages**: Distribution-specific installation commands
-- ✅ **Improved pip installation**: Upgrades wheel and setuptools along with pip
-- ✅ **Comprehensive verification**: Integrated verification script
-- ✅ **Security hardening**: Enhanced systemd service security settings
+3. Check GitHub issues: https://github.com/PeterJBurke/WebGCS/issues
 
-### Ubuntu 24.04 Specific Features:
-- Native support for Python 3.12
-- Improved systemd service management
-- Enhanced security policies
-- Better package dependency resolution
+4. Verify your MAVLink connection:
+   ```bash
+   python test_mavlink_connection.py
+   ```
 
-This setup has been tested on fresh Ubuntu 24.04 LTS installations and should work reliably for WebGCS deployment. 
+## Next Steps
+
+After successful installation:
+
+1. **Configure your autopilot** to output MAVLink on TCP port 5678
+2. **Access the web interface** at http://localhost:5000
+3. **Test the connection** using the built-in diagnostics
+4. **Customize settings** in the `.env` file as needed
+
+The setup is now complete and WebGCS should be ready for use! 

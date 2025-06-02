@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # ==============================================================================
-# WebGCS Linux Desktop Setup Script
+# WebGCS Linux Desktop Setup Script for Ubuntu 24.04 LTS
 # ==============================================================================
 #
 # Automated setup script for WebGCS on Linux systems.
 # Creates Python virtual environment, installs dependencies, and downloads
 # required frontend libraries.
 #
-# Requirements: Linux OS, Python 3.8+, curl, git
+# Requirements: Ubuntu 24.04 LTS, Python 3.10+, curl, git
 #
 # Usage:
 #   chmod +x setup_desktop.sh
@@ -29,7 +29,11 @@ readonly NC='\033[0m' # No Color
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly VENV_PATH="${SCRIPT_DIR}/venv"
 readonly STATIC_LIB_DIR="${SCRIPT_DIR}/static/lib"
-readonly MIN_PYTHON_VERSION="3.8"
+readonly MIN_PYTHON_VERSION="3.10"
+
+# Record start time
+START_TIME=$(date +%s)
+START_TIME_HUMAN=$(date)
 
 # Logging functions
 log_info() {
@@ -60,6 +64,29 @@ check_linux() {
     fi
 }
 
+# Check Ubuntu version compatibility
+check_ubuntu_version() {
+    if [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        log_info "Detected OS: $NAME $VERSION_ID"
+        
+        # Check if it's Ubuntu
+        if [[ "$ID" == "ubuntu" ]]; then
+            # Check version compatibility (20.04, 22.04, 24.04)
+            case "$VERSION_ID" in
+                "20.04"|"22.04"|"24.04")
+                    log_success "Ubuntu $VERSION_ID is supported"
+                    ;;
+                *)
+                    log_warning "Ubuntu $VERSION_ID may work but is not specifically tested"
+                    ;;
+            esac
+        else
+            log_warning "$NAME may work but Ubuntu is recommended"
+        fi
+    fi
+}
+
 # Update package lists (essential for fresh Ubuntu 24.04)
 update_package_lists() {
     log_info "Updating package lists..."
@@ -80,19 +107,20 @@ update_package_lists() {
 # Check Python version
 check_python_version() {
     if ! command -v python3 &> /dev/null; then
-        log_error "Python 3 is not installed. Please install Python 3.8+ and try again."
-        log_error "On Ubuntu/Debian: sudo apt install python3 python3-venv python3-pip python3-dev"
-        log_error "On CentOS/RHEL: sudo dnf install python3 python3-pip python3-devel"
-        log_error "On Arch: sudo pacman -S python python-pip"
+        log_error "Python 3 is not installed. Please install Python 3.10+ and try again."
+        log_error "On Ubuntu 24.04: sudo apt install python3 python3-venv python3-pip python3-dev"
+        log_error "On Ubuntu 22.04: sudo apt install python3 python3-venv python3-pip python3-dev"
+        log_error "On Ubuntu 20.04: sudo apt install python3.10 python3.10-venv python3.10-dev python3-pip"
         exit 1
     fi
 
     local python_version
     python_version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
     
-    if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 8) else 1)"; then
+    if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
         log_error "Python ${python_version} detected. WebGCS requires Python ${MIN_PYTHON_VERSION}+."
         log_error "Please upgrade Python and try again."
+        log_error "On Ubuntu 20.04, install python3.10: sudo apt install python3.10 python3.10-venv"
         exit 1
     fi
     
@@ -122,8 +150,8 @@ check_dependencies() {
         ubuntu_deps+=("python3-venv")
     fi
     
-    # Check for python3-dev (needed for some pip packages)
-    if ! dpkg -l python3-dev &> /dev/null && command -v dpkg &> /dev/null; then
+    # Check for python3-dev (needed for some pip packages like gevent)
+    if ! dpkg -l python3-dev &> /dev/null 2>&1 && command -v dpkg &> /dev/null; then
         missing_deps+=("python3-dev")
         ubuntu_deps+=("python3-dev")
     fi
@@ -132,6 +160,18 @@ check_dependencies() {
     if ! command -v gcc &> /dev/null; then
         missing_deps+=("build-essential")
         ubuntu_deps+=("build-essential")
+    fi
+    
+    # Check for pkg-config (needed for some Python packages)
+    if ! command -v pkg-config &> /dev/null; then
+        missing_deps+=("pkg-config")
+        ubuntu_deps+=("pkg-config")
+    fi
+    
+    # Check for system development headers
+    if ! dpkg -l libevent-dev &> /dev/null 2>&1 && command -v dpkg &> /dev/null; then
+        missing_deps+=("libevent-dev")
+        ubuntu_deps+=("libevent-dev")
     fi
     
     if [[ ${#missing_deps[@]} -gt 0 ]]; then
@@ -268,7 +308,7 @@ create_env_template() {
 # Copy this file to .env and modify as needed
 
 # Drone Connection Settings
-DRONE_TCP_ADDRESS=192.168.1.247
+DRONE_TCP_ADDRESS=127.0.0.1
 DRONE_TCP_PORT=5678
 
 # Web Server Settings
@@ -283,6 +323,12 @@ COMMAND_ACK_TIMEOUT=5
 TELEMETRY_UPDATE_INTERVAL=0.1
 EOF
         log_success "Created .env.example configuration template"
+        
+        # If no .env exists, create one from example
+        if [[ ! -f "${SCRIPT_DIR}/.env" ]]; then
+            cp "$env_file" "${SCRIPT_DIR}/.env"
+            log_info "Created default .env file from template"
+        fi
     fi
 }
 
@@ -296,31 +342,50 @@ create_systemd_service() {
     local python_path="${VENV_PATH}/bin/python"
     local app_path="${SCRIPT_DIR}/app.py"
     
+    # Verify app.py exists
+    if [[ ! -f "$app_path" ]]; then
+        log_error "app.py not found at $app_path"
+        return 1
+    fi
+    
     # Create the service file content
     local service_content="[Unit]
 Description=WebGCS - Web-Based Ground Control Station
-After=network.target
-Wants=network.target
+Documentation=https://github.com/PeterJBurke/WebGCS
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
 
 [Service]
 Type=simple
 User=${current_user}
 Group=${current_user}
 WorkingDirectory=${SCRIPT_DIR}
-Environment=PATH=${VENV_PATH}/bin
+Environment=PATH=${VENV_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PYTHONPATH=${SCRIPT_DIR}
 ExecStart=${python_path} ${app_path}
-Restart=always
+Restart=on-failure
 RestartSec=10
+TimeoutStartSec=30
+TimeoutStopSec=30
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=webgcs
 
-# Security settings
-NoNewPrivileges=true
-PrivateTmp=true
+# Security settings for Ubuntu 24.04
+NoNewPrivileges=yes
+PrivateTmp=yes
 ProtectSystem=strict
+ProtectHome=yes
 ReadWritePaths=${SCRIPT_DIR}
-ProtectHome=true
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RemoveIPC=yes
+PrivateDevices=yes
 
 [Install]
 WantedBy=multi-user.target"
@@ -352,7 +417,7 @@ WantedBy=multi-user.target"
             log_success "WebGCS service started successfully"
             
             # Wait a moment and check status
-            sleep 2
+            sleep 3
             if sudo systemctl is-active --quiet "$service_name"; then
                 log_success "Service is running properly"
             else
@@ -374,7 +439,7 @@ verify_installation() {
     log_info "Verifying installation..."
     
     # Check if virtual environment works
-    if ! "${VENV_PATH}/bin/python" -c "import flask, flask_socketio, pymavlink" 2>/dev/null; then
+    if ! "${VENV_PATH}/bin/python" -c "import flask, flask_socketio, pymavlink, gevent" 2>/dev/null; then
         log_error "Installation verification failed. Some Python packages may not be installed correctly."
         exit 1
     fi
@@ -433,7 +498,8 @@ print_service_instructions() {
     echo
     echo "🌐 Access the interface:"
     echo "   ${BLUE}http://localhost:5000${NC}"
-    echo "   ${BLUE}http://$(hostname -I | awk '{print $1}'):5000${NC}"
+    local ip_address=$(hostname -I | awk '{print $1}' 2>/dev/null || echo "IP_ADDRESS")
+    echo "   ${BLUE}http://${ip_address}:5000${NC}"
     echo
     echo "⚙️  Configuration:"
     echo "   Edit: ${BLUE}${SCRIPT_DIR}/.env${NC}"
@@ -457,7 +523,6 @@ print_manual_instructions() {
     echo "   ${GREEN}source venv/bin/activate${NC}"
     echo
     echo "2. (Optional) Configure your settings:"
-    echo "   ${BLUE}cp .env.example .env${NC}"
     echo "   ${BLUE}nano .env${NC}  # Edit with your drone's IP and settings"
     echo
     echo "3. Ensure your drone/autopilot is configured as a MAVLink TCP server"
@@ -475,10 +540,26 @@ print_manual_instructions() {
     echo "======================================================================"
 }
 
+# Calculate and display timing information
+print_timing_summary() {
+    local end_time=$(date +%s)
+    local end_time_human=$(date)
+    local duration=$((end_time - START_TIME))
+    local hours=$((duration / 3600))
+    local minutes=$(( (duration % 3600) / 60 ))
+    local seconds=$((duration % 60))
+
+    echo -e "\nInstallation timing summary:"
+    echo "Started : $START_TIME_HUMAN"
+    echo "Finished: $end_time_human"
+    echo "Duration: ${hours}h ${minutes}m ${seconds}s"
+}
+
 # Main execution
 main() {
     echo "======================================================================"
-    echo "           WebGCS Linux Desktop Setup Script v1.5"
+    echo "           WebGCS Linux Desktop Setup Script v2.0"
+    echo "           Optimized for Ubuntu 24.04 LTS"
     echo "======================================================================"
     echo
     
@@ -503,6 +584,7 @@ main() {
     fi
     
     check_linux
+    check_ubuntu_version
     update_package_lists
     check_python_version
     check_dependencies
@@ -525,6 +607,7 @@ main() {
         print_manual_instructions
     fi
     
+    print_timing_summary
     echo
     log_success "Setup completed successfully!"
 }
