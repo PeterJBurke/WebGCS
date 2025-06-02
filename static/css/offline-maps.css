@@ -1,0 +1,351 @@
+/* Offline Maps UI Styles */
+
+.offline-maps-panel {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 320px;
+    background: rgba(42, 42, 42, 0.95);
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+    backdrop-filter: blur(10px);
+    display: none;
+}
+
+.offline-maps-panel.visible {
+    display: block;
+}
+
+.offline-maps-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #555;
+}
+
+.offline-maps-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ddd;
+}
+
+.form-row {
+    display: flex;
+    gap: 8px;
+}
+
+.form-row input {
+    flex: 1;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background: rgba(60, 60, 60, 0.8);
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.checkbox-item input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #545b62;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.progress-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #555;
+}
+
+.progress-bar-container {
+    background: rgba(60, 60, 60, 0.8);
+    border-radius: 4px;
+    height: 8px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #ccc;
+    margin-bottom: 4px;
+}
+
+.cache-stats {
+    background: rgba(60, 60, 60, 0.5);
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 16px;
+}
+
+.cache-stats h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #ddd;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.stat-label {
+    color: #ccc;
+}
+
+.stat-value {
+    color: #fff;
+    font-weight: 500;
+}
+
+.download-area-hint {
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 4px;
+}
+
+.area-preview {
+    margin-top: 12px;
+    padding: 8px;
+    background: rgba(60, 60, 60, 0.5);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.area-preview-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+/* Map toggle button */
+.offline-maps-toggle {
+    position: absolute;
+    top: 160px;
+    right: 20px;
+    z-index: 999;
+    background: rgba(42, 42, 42, 0.9);
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+}
+
+.offline-maps-toggle:hover {
+    background: rgba(60, 60, 60, 0.9);
+}
+
+/* Connection status indicator */
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-online {
+    background: #28a745;
+}
+
+.status-offline {
+    background: #dc3545;
+}
+
+/* Area selection overlay */
+.area-selection-mode {
+    cursor: crosshair !important;
+}
+
+.area-selection-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    display: none;
+}
+
+.area-selection-overlay.active {
+    display: block;
+}
+
+.area-selection-hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    z-index: 1000;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .offline-maps-panel {
+        width: calc(100vw - 40px);
+        right: 20px;
+        left: 20px;
+        max-width: none;
+    }
+    
+    .offline-maps-toggle {
+        right: 20px;
+        top: 120px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .checkbox-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+} 

@@ -7,6 +7,7 @@
     <title>Drone Control Interface v1.5-Desktop-Connection-Management</title>
     <link rel="stylesheet" href="/static/lib/leaflet.css"/>
     <link rel="stylesheet" href="/static/css/style.css"/> <!-- Link to the updated style.css -->
+    <link rel="stylesheet" href="/static/css/offline-maps.css"/> <!-- Offline maps styles -->
     <style>
         /* Basic layout styles */
         body { display: flex; flex-direction: column; height: 100vh; margin: 0; }
@@ -301,10 +302,121 @@
             </div>
         </div>
     </div>
+    
+    <!-- Offline Maps Toggle Button -->
+    <button class="offline-maps-toggle" id="offline-maps-toggle" title="Open offline maps panel">
+        📡 Offline Maps
+    </button>
+    
+    <!-- Offline Maps Panel -->
+    <div class="offline-maps-panel" id="offline-maps-panel">
+        <div class="offline-maps-header">
+            <h3 class="offline-maps-title">Offline Maps</h3>
+            <button class="close-btn" id="close-offline-panel" title="Close">&times;</button>
+        </div>
+        
+        <div class="connection-status">
+            <span class="status-indicator" id="connection-indicator"></span>
+            <span id="connection-text">Checking connection...</span>
+        </div>
+        
+        <div class="form-group">
+            <label>Download Area</label>
+            <div class="form-row">
+                <input type="number" id="north-lat" placeholder="North Lat" step="0.000001">
+                <input type="number" id="west-lng" placeholder="West Lng" step="0.000001">
+            </div>
+            <div class="form-row">
+                <input type="number" id="south-lat" placeholder="South Lat" step="0.000001">
+                <input type="number" id="east-lng" placeholder="East Lng" step="0.000001">
+            </div>
+            <button class="btn btn-secondary" id="btn-use-current-view" style="margin-top: 8px; width: 100%;">
+                Use Current Map View
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label>Zoom Levels</label>
+            <div class="form-row">
+                <input type="number" id="min-zoom" value="2" min="1" max="20" placeholder="Min">
+                <input type="number" id="max-zoom" value="16" min="1" max="20" placeholder="Max">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Map Types</label>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="include-osm" checked>
+                    <label for="include-osm">Street Map</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="include-satellite" checked>
+                    <label for="include-satellite">Satellite</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="area-preview" id="area-preview" style="display: none;">
+            <div class="area-preview-item">
+                <span>Estimated tiles:</span>
+                <span id="estimated-tiles">0</span>
+            </div>
+            <div class="area-preview-item">
+                <span>Estimated size:</span>
+                <span id="estimated-size">0 MB</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="btn-download-tiles">
+                Download
+            </button>
+            <button class="btn btn-secondary" id="btn-stop-download" disabled>
+                Stop
+            </button>
+        </div>
+        
+        <div class="progress-section" id="progress-section" style="display: none;">
+            <div class="progress-text" id="progress-text">Downloading tiles...</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-text" id="progress-details">0 / 0 tiles</div>
+        </div>
+        
+        <div class="cache-stats" id="cache-stats">
+            <h4>Cache Statistics</h4>
+            <div class="stat-item">
+                <span class="stat-label">Street tiles:</span>
+                <span class="stat-value" id="osm-count">Loading...</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Satellite tiles:</span>
+                <span class="stat-value" id="satellite-count">Loading...</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total tiles:</span>
+                <span class="stat-value" id="total-count">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 16px;">
+            <button class="btn btn-danger" id="btn-clear-cache">
+                Clear Cache
+            </button>
+        </div>
+        
+        <div class="download-area-hint">
+            💡 Tip: Use "Use Current Map View" to quickly set the download area, or manually enter coordinates. Higher zoom levels download more detailed tiles but require more storage.
+        </div>
+    </div>
+    
     <a href="/mavlink_dump" id="dump-link-button" target="_blank" title="Open MAVLink Message Dump">Dump</a>
 
     <script src="/static/lib/leaflet.js"></script>
     <script src="/static/lib/socket.io.min.js"></script>
+    <script src="/static/offline-maps.js"></script>
     <script>
         // --- Global Variables & DOM Elements ---
         const map = L.map('map', {
@@ -315,14 +427,14 @@
             zoomSnap: 0.5  // Allow half-step zoom levels
         }).setView([0, 0], 2);
         
-        // Base layers
-        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Create offline-capable tile layers
+        const osmLayer = offlineMapManager.createOfflineTileLayer('osm', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 22,
             maxNativeZoom: 19
         });
 
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        const satelliteLayer = offlineMapManager.createOfflineTileLayer('satellite', {
             attribution: '© Esri',
             maxZoom: 22,
             maxNativeZoom: 18
@@ -340,6 +452,211 @@
             position: 'topright',
             collapsed: false  // Always show the control expanded
         }).addTo(map);
+        
+        // Initialize offline maps UI
+        initializeOfflineMapsUI();
+        
+        function initializeOfflineMapsUI() {
+            // Check internet connection status
+            function updateConnectionStatus() {
+                const indicator = document.getElementById('connection-indicator');
+                const text = document.getElementById('connection-text');
+                
+                if (navigator.onLine) {
+                    indicator.className = 'status-indicator status-online';
+                    text.textContent = 'Online - can download tiles';
+                } else {
+                    indicator.className = 'status-indicator status-offline';
+                    text.textContent = 'Offline - using cached tiles';
+                }
+            }
+            
+            // Update connection status on load and when online status changes
+            updateConnectionStatus();
+            window.addEventListener('online', updateConnectionStatus);
+            window.addEventListener('offline', updateConnectionStatus);
+            
+            // Update cache statistics
+            async function updateCacheStats() {
+                try {
+                    const stats = await offlineMapManager.getCacheStats();
+                    document.getElementById('osm-count').textContent = stats.osmTiles.toLocaleString();
+                    document.getElementById('satellite-count').textContent = stats.satelliteTiles.toLocaleString();
+                    document.getElementById('total-count').textContent = (stats.osmTiles + stats.satelliteTiles).toLocaleString();
+                } catch (error) {
+                    console.error('Error updating cache stats:', error);
+                    document.getElementById('osm-count').textContent = 'Error';
+                    document.getElementById('satellite-count').textContent = 'Error';
+                    document.getElementById('total-count').textContent = 'Error';
+                }
+            }
+            
+            // Update cache stats initially and every 5 seconds
+            updateCacheStats();
+            setInterval(updateCacheStats, 5000);
+            
+            // Toggle panel visibility
+            document.getElementById('offline-maps-toggle').addEventListener('click', function() {
+                const panel = document.getElementById('offline-maps-panel');
+                panel.classList.toggle('visible');
+            });
+            
+            // Close panel
+            document.getElementById('close-offline-panel').addEventListener('click', function() {
+                document.getElementById('offline-maps-panel').classList.remove('visible');
+            });
+            
+            // Use current map view button
+            document.getElementById('btn-use-current-view').addEventListener('click', function() {
+                const bounds = map.getBounds();
+                
+                document.getElementById('north-lat').value = bounds.getNorth().toFixed(6);
+                document.getElementById('south-lat').value = bounds.getSouth().toFixed(6);
+                document.getElementById('west-lng').value = bounds.getWest().toFixed(6);
+                document.getElementById('east-lng').value = bounds.getEast().toFixed(6);
+                
+                updateAreaPreview();
+            });
+            
+            // Update area preview when inputs change
+            function updateAreaPreview() {
+                const northLat = parseFloat(document.getElementById('north-lat').value);
+                const southLat = parseFloat(document.getElementById('south-lat').value);
+                const westLng = parseFloat(document.getElementById('west-lng').value);
+                const eastLng = parseFloat(document.getElementById('east-lng').value);
+                const minZoom = parseInt(document.getElementById('min-zoom').value);
+                const maxZoom = parseInt(document.getElementById('max-zoom').value);
+                const includeOsm = document.getElementById('include-osm').checked;
+                const includeSatellite = document.getElementById('include-satellite').checked;
+                
+                // Validate inputs
+                if (isNaN(northLat) || isNaN(southLat) || isNaN(westLng) || isNaN(eastLng) || 
+                    isNaN(minZoom) || isNaN(maxZoom) || minZoom > maxZoom) {
+                    document.getElementById('area-preview').style.display = 'none';
+                    return;
+                }
+                
+                // Calculate estimated tiles
+                const bounds = L.latLngBounds([southLat, westLng], [northLat, eastLng]);
+                const tiles = offlineMapManager.calculateTilesForArea(bounds, minZoom, maxZoom);
+                
+                let sources = [];
+                if (includeOsm) sources.push('osm');
+                if (includeSatellite) sources.push('satellite');
+                
+                const totalTiles = tiles.length * sources.length;
+                const estimatedSizeMB = (totalTiles * 25) / 1024; // Rough estimate: 25KB per tile
+                
+                document.getElementById('estimated-tiles').textContent = totalTiles.toLocaleString();
+                document.getElementById('estimated-size').textContent = estimatedSizeMB.toFixed(1) + ' MB';
+                document.getElementById('area-preview').style.display = 'block';
+            }
+            
+            // Add event listeners for area preview updates
+            ['north-lat', 'south-lat', 'west-lng', 'east-lng', 'min-zoom', 'max-zoom', 'include-osm', 'include-satellite'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateAreaPreview);
+                document.getElementById(id).addEventListener('change', updateAreaPreview);
+            });
+            
+            // Download tiles button
+            document.getElementById('btn-download-tiles').addEventListener('click', function() {
+                const northLat = parseFloat(document.getElementById('north-lat').value);
+                const southLat = parseFloat(document.getElementById('south-lat').value);
+                const westLng = parseFloat(document.getElementById('west-lng').value);
+                const eastLng = parseFloat(document.getElementById('east-lng').value);
+                const minZoom = parseInt(document.getElementById('min-zoom').value);
+                const maxZoom = parseInt(document.getElementById('max-zoom').value);
+                const includeOsm = document.getElementById('include-osm').checked;
+                const includeSatellite = document.getElementById('include-satellite').checked;
+                
+                // Validate inputs
+                if (isNaN(northLat) || isNaN(southLat) || isNaN(westLng) || isNaN(eastLng) || 
+                    isNaN(minZoom) || isNaN(maxZoom) || minZoom > maxZoom) {
+                    alert('Please fill in all fields with valid values');
+                    return;
+                }
+                
+                if (!includeOsm && !includeSatellite) {
+                    alert('Please select at least one map type to download');
+                    return;
+                }
+                
+                // Check if area is too large
+                const bounds = L.latLngBounds([southLat, westLng], [northLat, eastLng]);
+                const tiles = offlineMapManager.calculateTilesForArea(bounds, minZoom, maxZoom);
+                
+                let sources = [];
+                if (includeOsm) sources.push('osm');
+                if (includeSatellite) sources.push('satellite');
+                
+                const totalTiles = tiles.length * sources.length;
+                
+                if (totalTiles > 10000) {
+                    if (!confirm(`This will download ${totalTiles.toLocaleString()} tiles. This might take a long time and use significant bandwidth. Continue?`)) {
+                        return;
+                    }
+                }
+                
+                // Start download
+                document.getElementById('btn-download-tiles').disabled = true;
+                document.getElementById('btn-stop-download').disabled = false;
+                document.getElementById('progress-section').style.display = 'block';
+                
+                offlineMapManager.downloadTilesForArea(bounds, {
+                    minZoom: minZoom,
+                    maxZoom: maxZoom,
+                    sources: sources,
+                    onProgress: function(progress) {
+                        const percentage = (progress.completed / progress.total) * 100;
+                        document.getElementById('progress-bar').style.width = percentage + '%';
+                        document.getElementById('progress-details').textContent = 
+                            `${progress.completed} / ${progress.total} tiles (${progress.failed} failed)`;
+                    },
+                    onComplete: function(progress) {
+                        document.getElementById('btn-download-tiles').disabled = false;
+                        document.getElementById('btn-stop-download').disabled = true;
+                        document.getElementById('progress-section').style.display = 'none';
+                        
+                        if (progress.failed > 0) {
+                            alert(`Download completed with ${progress.failed} failures out of ${progress.total} tiles`);
+                        } else {
+                            alert(`Successfully downloaded ${progress.completed} tiles`);
+                        }
+                        
+                        updateCacheStats();
+                    },
+                    onError: function(error) {
+                        console.error('Download error:', error);
+                        alert('Download failed: ' + error.message);
+                        
+                        document.getElementById('btn-download-tiles').disabled = false;
+                        document.getElementById('btn-stop-download').disabled = true;
+                        document.getElementById('progress-section').style.display = 'none';
+                    }
+                });
+            });
+            
+            // Stop download button
+            document.getElementById('btn-stop-download').addEventListener('click', function() {
+                offlineMapManager.stopDownload();
+                document.getElementById('btn-download-tiles').disabled = false;
+                document.getElementById('btn-stop-download').disabled = true;
+                document.getElementById('progress-section').style.display = 'none';
+            });
+            
+            // Clear cache button
+            document.getElementById('btn-clear-cache').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all cached map tiles? This cannot be undone.')) {
+                    offlineMapManager.clearCache().then(() => {
+                        alert('Cache cleared successfully');
+                        updateCacheStats();
+                    }).catch(error => {
+                        console.error('Error clearing cache:', error);
+                        alert('Failed to clear cache: ' + error.message);
+                    });
+                }
+            });
+        }
         
         let droneMarker = null, homeMarker = null, firstLocationUpdate = true;
         let flyToTargetMarker = null;

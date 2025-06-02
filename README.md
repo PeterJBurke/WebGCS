@@ -1,6 +1,6 @@
 # WebGCS - Web-Based Ground Control Station
 
-A modern web-based ground control interface for MAVLink-compatible drones and vehicles. Features real-time telemetry, map visualization, and comprehensive flight control capabilities.
+A modern web-based ground control interface for MAVLink-compatible drones and vehicles. Features real-time telemetry, map visualization, offline mapping capabilities, and comprehensive flight control capabilities.
 
 [![Version](https://img.shields.io/badge/version-1.8-blue.svg)](https://github.com/PeterJBurke/WebGCS/releases/tag/v1.8)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -9,6 +9,7 @@ A modern web-based ground control interface for MAVLink-compatible drones and ve
 
 - **Real-time Flight Control**: Arm/disarm, takeoff, landing, and mode changes
 - **Interactive Map Navigation**: Point-and-click "Go To" functionality with visual markers
+- **🗺️ Offline Maps**: Download and cache map tiles for use without internet connectivity
 - **Live Telemetry Display**: Attitude indicator, GPS position, and flight status
 - **Mission Planning**: Visualize and manage waypoints and geofences
 - **Command Feedback**: Detailed acknowledgment and error reporting
@@ -126,11 +127,140 @@ sim_vehicle.py --aircraft test --console --map --out tcpin:0.0.0.0:5678
 - **Go To**: Click on map or enter coordinates to command navigation
 - **Real-time Tracking**: Live position updates with flight path history
 - **Waypoint Visualization**: View mission plans and geofences
+- **🗺️ Offline Maps**: Pre-download map tiles for offline operation
 
 ### Status Monitoring  
 - **Connection Status**: Real-time link quality and heartbeat monitoring
 - **Flight Status**: Armed state, GPS fix, EKF health
 - **Command Feedback**: Detailed success/error messages for all operations
+
+## 🗺️ Offline Maps
+
+WebGCS includes powerful offline mapping capabilities that allow you to download and cache map tiles for use in areas without internet connectivity. This is essential for field operations, remote locations, or when network reliability is a concern.
+
+### 🌟 Key Features
+
+- **🏠 Local Storage**: Map tiles stored in browser's IndexedDB for fast access
+- **🌍 Dual Map Types**: Download both street maps (OpenStreetMap) and satellite imagery (Esri)
+- **📡 Smart Fallback**: Automatically switches between cached and online tiles
+- **📊 Progress Monitoring**: Real-time download progress with detailed statistics
+- **💾 Storage Management**: View cache statistics and clear cached data when needed
+- **🎯 Area Selection**: Define download areas by map view or manual coordinates
+
+### 🚀 Quick Start Guide
+
+#### 1. Access Offline Maps Panel
+Click the **"📡 Offline Maps"** button in the top-right corner of the map interface.
+
+#### 2. Define Download Area
+**Option A - Current Map View:**
+1. Navigate to your area of interest on the map
+2. Click **"Use Current Map View"** to automatically set coordinates
+
+**Option B - Manual Coordinates:**
+1. Enter coordinates manually:
+   - **North Lat**: Northern boundary latitude
+   - **South Lat**: Southern boundary latitude  
+   - **West Lng**: Western boundary longitude
+   - **East Lng**: Eastern boundary longitude
+
+#### 3. Configure Download Settings
+- **Zoom Levels**: Select minimum and maximum zoom levels (2-20)
+  - Lower zoom = wider area, less detail
+  - Higher zoom = more detail, larger file size
+- **Map Types**: Choose which maps to download:
+  - ✅ **Street Map**: OpenStreetMap road and terrain data
+  - ✅ **Satellite**: High-resolution aerial imagery
+
+#### 4. Review and Download
+1. **Estimate Preview**: Review estimated tile count and download size
+2. **Start Download**: Click **"Download"** to begin caching tiles
+3. **Monitor Progress**: Watch real-time progress with success/failure counts
+4. **Stop if Needed**: Use **"Stop"** button to halt download at any time
+
+### 📏 Planning Your Downloads
+
+#### Zoom Level Guidelines
+
+| Zoom Level | Use Case | Detail Level | Tiles per km² |
+|------------|----------|--------------|---------------|
+| 2-6 | Continental view | Country/state level | 1-64 |
+| 7-10 | Regional planning | City/county level | 128-1K |
+| 11-14 | Local operations | Neighborhood level | 2K-16K |
+| 15-18 | Detailed navigation | Street/building level | 32K-262K |
+| 19-20 | Precision work | Sub-meter detail | 524K+ |
+
+#### Storage Estimates
+
+- **Average tile size**: ~25KB (varies by content)
+- **Small area (1km²)** at zoom 10-16: ~50-200MB
+- **Medium area (25km²)** at zoom 8-14: ~100-500MB  
+- **Large area (100km²)** at zoom 6-12: ~200MB-1GB
+
+💡 **Tip**: Start with lower zoom levels (8-14) for larger areas, then download higher detail for specific zones.
+
+### 🔧 Advanced Usage
+
+#### Connection Status Indicator
+The panel shows your current connection status:
+- 🟢 **Online**: Can download new tiles
+- 🔴 **Offline**: Using cached tiles only
+
+#### Cache Management
+- **View Statistics**: See how many tiles are cached for each map type
+- **Clear Cache**: Remove all cached tiles to free up storage
+- **Automatic Cleanup**: Browser manages storage automatically
+
+#### Best Practices
+
+1. **Pre-flight Planning**: Download maps while connected to WiFi
+2. **Layered Approach**: Download large areas at low zoom, then specific zones at high zoom
+3. **Regular Updates**: Periodically refresh cached tiles for updated imagery
+4. **Storage Monitoring**: Check available browser storage before large downloads
+
+### ⚠️ Important Considerations
+
+#### Data Usage
+- Downloads use your internet connection and may count against data limits
+- Large areas with high zoom levels can result in significant data usage
+- Plan downloads when connected to WiFi or unlimited connections
+
+#### Storage Limits
+- Browser storage typically limited to several GB per domain
+- Large downloads may prompt browser storage permission requests
+- Clear cache periodically to maintain performance
+
+#### Tile Services
+- **OpenStreetMap**: Free, community-driven maps with good coverage
+- **Esri Satellite**: High-quality satellite imagery with global coverage
+- Respect tile service usage policies and avoid excessive downloads
+
+### 🐛 Troubleshooting
+
+#### Download Issues
+- **Slow Downloads**: Reduce concurrent downloads or check internet speed
+- **Failed Tiles**: Some tiles may fail - download will continue with remaining tiles
+- **Storage Full**: Clear cache or increase browser storage allocation
+
+#### Offline Operation
+- **Missing Tiles**: Download didn't complete or area not covered
+- **Low Detail**: Increase maximum zoom level for more detailed tiles
+- **Mixed Quality**: Normal - different zoom levels provide different detail
+
+#### Browser Compatibility
+- **IndexedDB Required**: Modern browsers (Chrome 24+, Firefox 29+, Safari 10+)
+- **Storage Quota**: Varies by browser and system settings
+- **Private Mode**: May have reduced storage capacity
+
+### 📱 Mobile Considerations
+
+When using WebGCS on mobile devices:
+- **Smaller Downloads**: Mobile browsers have stricter storage limits
+- **WiFi Recommended**: Avoid large downloads over cellular data
+- **Battery Impact**: Large downloads may drain battery faster
+- **Touch Interface**: Use pinch-to-zoom for area selection
+
+---
 
 ## 🛠️ Service Management
 
@@ -171,6 +301,13 @@ ls -l /dev/serial0  # Should exist after reboot
 - **Port Conflicts**: Change `WEB_SERVER_PORT` in `.env` file
 - **Permission Errors**: Verify user permissions and service configuration
 
+### Offline Maps Issues
+- **Maps Not Loading**: Check browser console for IndexedDB errors
+- **Download Failures**: Verify internet connection and tile service availability
+- **Storage Warnings**: Clear cache or use smaller download areas
+- **Performance Issues**: Reduce concurrent downloads or clear browser cache
+- **Missing Offline Panel**: Ensure JavaScript is enabled and `offline-maps.js` is loaded
+
 ### Platform-Specific Issues
 - **Ubuntu**: Check Python 3.10+ requirement and system dependencies
 - **Raspberry Pi**: Verify UART devices (`/dev/serial0`) and MAVLink Router status
@@ -189,15 +326,23 @@ WebGCS/
 ├── setup_raspberry_pi.sh          # Raspberry Pi setup script
 ├── UBUNTU_24_04_SETUP.md          # Detailed Ubuntu guide
 ├── RASPBERRY_PI_SETUP.md          # Detailed Pi guide
-├── templates/                      # HTML templates
-├── static/                         # CSS, JS, and assets
+├── templates/
+│   └── index.html                  # Main web interface
+├── static/
+│   ├── lib/                        # External libraries (Leaflet, etc.)
+│   ├── css/
+│   │   ├── style.css              # Main application styles
+│   │   └── offline-maps.css       # Offline maps UI styles
+│   ├── offline-maps.js            # Offline maps functionality
+│   └── ...                        # Other static assets
 └── requirements.txt               # Python dependencies
 ```
 
 ### Key Components
 - **Flask + SocketIO**: Real-time web communication
 - **PyMAVLink**: MAVLink protocol implementation
-- **Leaflet.js**: Interactive mapping
+- **Leaflet.js**: Interactive mapping with offline tile support
+- **IndexedDB**: Client-side tile storage for offline maps
 - **Bootstrap**: Responsive UI framework
 
 ## 📋 System Requirements
