@@ -186,6 +186,14 @@ def process_heartbeat(msg, drone_state, drone_state_lock, mavlink_conn, log_cmd_
             drone_state['mode'] = new_mode
             drone_state_changed_local = True
             
+            # Emit mode change event for voice announcement
+            if sio_instance:
+                sio_instance.emit('mode_change_voice', {
+                    'previous_mode': prev_mode,
+                    'new_mode': new_mode,
+                    'message': f"Mode change to {new_mode}"
+                })
+            
         if drone_state['armed'] != prev_armed:
             status = "ARMED" if drone_state['armed'] else "DISARMED"
             log_cmd_action_cb("ARM_STATUS", None, f"Vehicle {status}")

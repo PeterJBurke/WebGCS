@@ -202,7 +202,7 @@
                     <div id="alt-tape-container"><canvas id="alt-canvas" width="70" height="250"></canvas></div>
                     <div id="arming-status-overlay" class="pfd-overlay">DISARMED</div>
                     <div id="battery-overlay" class="pfd-overlay">Bat: <span id="battery-value">--.-</span>V</div>
-                    <div id="mode-overlay" class="pfd-overlay">Mode: <span id="mode-value">------</span></div>
+                    <div id="mode-overlay" class="pfd-overlay" aria-live="off" aria-hidden="true" role="presentation">Mode: <span id="mode-value" aria-live="off" aria-hidden="true" role="presentation">------</span></div>
                     <div id="current-overlay" class="pfd-overlay">Cur: <span id="current-value">--.-</span>A</div>
                     <div id="gps-overlay" class="pfd-overlay">GPS: <span id="gps-fix-value">---</span> (<span id="gps-sats-value">0</span>) HDOP:<span id="gps-hdop-value">--.-</span></div>
                     <div id="latlon-overlay" class="pfd-overlay">Lat: <span id="lat-value">--.------</span><br>Lon: <span id="lon-value">--.------</span></div>
@@ -253,7 +253,7 @@
                     <!-- Controls section remains unchanged -->
                      <h2>Controls</h2>
                     <div><button id="btn-arm">Arm</button> <button id="btn-disarm">Disarm</button> <button id="btn-takeoff">Takeoff</button> (Alt: <input type="number" id="takeoff-alt" value="5" step="1" min="1" max="1000" style="width:45px"> m) <button id="btn-land">Land</button> <button id="btn-rtl">RTL</button></div>
-                    <div class="mode-select-control"><label for="mode-select">Set Mode:</label> <select id="mode-select"><option value="">--Select Mode--</option><option value="STABILIZE">Stabilize</option><option value="ALT_HOLD">Alt Hold</option><option value="POS_HOLD">Pos Hold</option><option value="LOITER">Loiter</option><option value="GUIDED">Guided</option><option value="RTL">RTL</option><option value="LAND">Land</option><option value="AUTO">Auto</option><option value="BRAKE">Brake</option></select> <button id="btn-set-mode">Set</button></div>
+                    <div class="mode-select-control"><label for="mode-select">Set Mode:</label> <select id="mode-select" aria-hidden="true" role="presentation"><option value="">--Select Mode--</option><option value="STABILIZE">Stabilize</option><option value="ALT_HOLD">Alt Hold</option><option value="POS_HOLD">Pos Hold</option><option value="LOITER">Loiter</option><option value="GUIDED">Guided</option><option value="RTL">RTL</option><option value="LAND">Land</option><option value="AUTO">Auto</option><option value="BRAKE">Brake</option></select> <button id="btn-set-mode">Set</button></div>
                     <hr>
                     <div class="goto-controls">
                         <div class="field-group">
@@ -276,6 +276,14 @@
                     <div class="request-controls">
                         <button id="btn-request-fence">Request Fence</button>
                         <button id="btn-request-mission">Request Mission</button>
+                    </div>
+                    <hr>
+                    <!-- Voice Announcements Control -->
+                    <div style="margin-top: 10px;">
+                        <label>
+                            <input type="checkbox" id="voice-toggle" checked> 
+                            Voice Announcements
+                        </label>
                     </div>
                 </div>
                 
@@ -780,6 +788,17 @@
         commandControls["clear-goto"].addEventListener("click",function(){document.getElementById("goto-lat").value="";document.getElementById("goto-lon").value="";document.getElementById("goto-alt").value="10";addMessage("GoTo fields cleared.","info")});
         commandControls["center-map"].addEventListener("click",function(){if(droneMarker){map.setView(droneMarker.getLatLng(),map.getZoom()<14?16:map.getZoom());addMessage("Map centered on drone.","info")}else{addMessage("Drone location not available to center map.","warning")}});
         
+        // Voice toggle event listener
+        document.getElementById('voice-toggle').addEventListener('change', function() {
+            voiceAnnouncementsEnabled = this.checked;
+            addMessage(`Voice announcements ${this.checked ? 'enabled' : 'disabled'}`, 'info');
+            
+            // Test voice when enabled
+            if (this.checked) {
+                speakText('Voice announcements enabled');
+            }
+        });
+        
         // Add Fly To Mode Functionality
         let flyToModeActive = false;
         const flyToButton = document.getElementById('btn-fly-to-mode');
@@ -949,6 +968,146 @@
             // The simple 'command_result' handler might still be needed for basic send failures.
         });
 
+
+        // Voice synthesis functionality for mode change announcements
+        function speakText(text) {
+            // Check if speech synthesis is available
+            if ('speechSynthesis' in window) {
+                // Aggressively cancel any ongoing speech from any source
+                window.speechSynthesis.cancel();
+                
+                // Wait to ensure cancellation completes
+                setTimeout(() => {
+                    window.speechSynthesis.cancel(); // Second cancel to be absolutely sure
+                    
+                    // Create a new speech synthesis utterance
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Configure voice settings
+                    utterance.rate = 0.9;      // Slightly slower speech
+                    utterance.pitch = 1.0;     // Normal pitch
+                    utterance.volume = 0.8;    // Slightly quieter
+                    
+                    // Use Google US English voice (index 48) or find by name
+                    const voices = window.speechSynthesis.getVoices();
+                    let preferredVoice = null;
+                    
+                    // First try to find Google US English by name
+                    preferredVoice = voices.find(voice => 
+                        voice.name.toLowerCase().includes('google') && 
+                        voice.name.toLowerCase().includes('us') &&
+                        voice.name.toLowerCase().includes('english')
+                    );
+                    
+                    // If not found by name, try index 48
+                    if (!preferredVoice && voices.length > 48) {
+                        preferredVoice = voices[48];
+                    }
+                    
+                    // Fallback to any available voice if Google US English not found
+                    if (!preferredVoice && voices.length > 0) {
+                        preferredVoice = voices[0];
+                    }
+                    
+                    if (preferredVoice) {
+                        utterance.voice = preferredVoice;
+                        console.log(`[VOICE] Using voice: "${preferredVoice.name}" (index: ${voices.indexOf(preferredVoice)})`);
+                    } else {
+                        console.log('[VOICE] No specific voice found, using default');
+                    }
+                    
+                    // Speak the text - this is the GOOD voice we want to keep
+                    window.speechSynthesis.speak(utterance);
+                    
+                    console.log(`[VOICE] Speaking: "${text}"`);
+                }, 50); // Small delay to ensure cancellation takes effect
+            } else {
+                console.warn('[VOICE] Speech synthesis not available in this browser');
+                addMessage('Voice announcements not available in this browser', 'warning');
+            }
+        }
+
+        // Voice settings and controls
+        let voiceAnnouncementsEnabled = true;
+        let lastVoiceAnnouncement = '';
+        let lastVoiceTime = 0;
+        let speechBlocked = false; // Global speech blocking flag
+        let blockModeUpdates = false; // Flag to prevent mode updates during voice announcement
+
+        // COMPREHENSIVE SPEECH DEBUGGING - Override ALL speech synthesis
+        if ('speechSynthesis' in window) {
+            const originalSpeak = window.speechSynthesis.speak;
+            const originalCancel = window.speechSynthesis.cancel;
+            
+            window.speechSynthesis.speak = function(utterance) {
+                const text = utterance.text;
+                const timestamp = Date.now();
+                
+                console.log('=== SPEECH SYNTHESIS CALL ===');
+                console.log('Text:', text);
+                console.log('Voice:', utterance.voice ? utterance.voice.name : 'default');
+                console.log('Time:', timestamp);
+                console.log('Stack trace:', new Error().stack);
+                console.log('===============================');
+                
+                // If this contains "flight mode", block it
+                if (text.toLowerCase().includes('flight mode') || 
+                    text.toLowerCase().includes('guided flight') ||
+                    text.toLowerCase().includes('stabilize flight')) {
+                    console.log('🚫 BLOCKING unwanted flight mode speech:', text);
+                    return;
+                }
+                
+                // Allow everything else
+                console.log('✅ ALLOWING speech:', text);
+                return originalSpeak.call(this, utterance);
+            };
+            
+            window.speechSynthesis.cancel = function() {
+                console.log('🛑 Speech synthesis cancel called');
+                return originalCancel.call(this);
+            };
+        }
+
+        // Handle mode change voice announcements - MODIFIED APPROACH
+        socket.on("mode_change_voice", (data) => {
+            console.log("Mode change voice event received:", data);
+            addMessage(`Voice: ${data.message}`, "info");
+            
+            // Prevent duplicate voice announcements within 2 seconds
+            const now = Date.now();
+            const timeSinceLastVoice = now - lastVoiceTime;
+            const isDuplicate = data.message === lastVoiceAnnouncement && timeSinceLastVoice < 2000;
+            
+            if (voiceAnnouncementsEnabled && !isDuplicate) {
+                console.log('[VOICE] NEW APPROACH: Modifying DOM text for browser to read correctly');
+                
+                // Don't generate our own speech - let browser handle it naturally
+                // Instead, temporarily change the mode text to what we want the browser to say
+                const modeValueSpan = document.getElementById('mode-value');
+                if (modeValueSpan) {
+                    const originalText = modeValueSpan.textContent;
+                    const cleanMode = data.new_mode || data.message.replace(/.*mode change to /i, '');
+                    
+                    // Set the text to what we want the browser to read
+                    modeValueSpan.textContent = `mode change to ${cleanMode}`;
+                    
+                    console.log(`[VOICE] Set mode text to: "mode change to ${cleanMode}" for browser to read`);
+                    
+                    // Restore the normal mode text after browser has read it
+                    setTimeout(() => {
+                        modeValueSpan.textContent = originalText;
+                        console.log(`[VOICE] Restored original mode text: "${originalText}"`);
+                    }, 3000);
+                }
+                
+                lastVoiceAnnouncement = data.message;
+                lastVoiceTime = now;
+            } else if (isDuplicate) {
+                console.log(`[VOICE] Skipped duplicate voice announcement: "${data.message}"`);
+            }
+        });
+
         // Heartbeat trigger function
         function triggerHeartbeat() {
             const heartIcon = document.getElementById('heartbeat-indicator');
@@ -1018,7 +1177,12 @@
                 // Only update PFD overlay for mode when connected
                 const pfdModeEl = document.getElementById('mode-overlay');
                 if (pfdModeEl && connectionStatus === 'connected') {
-                    pfdModeEl.textContent = "Mode: " + modeString;
+                    // Instead, just update the span element without the "Mode:" prefix
+                    const modeValueSpan = document.getElementById('mode-value');
+                    if (modeValueSpan) {
+                        modeValueSpan.textContent = modeString;
+                        console.log(`[HB-MODE] Updated mode display to: ${modeString}`);
+                    }
                 }
             }
         });
@@ -1354,6 +1518,14 @@
                 }
             }
         });
+
+        // Override the speakText function to check if voice is enabled
+        const originalSpeakText = speakText;
+        speakText = function(text) {
+            if (voiceAnnouncementsEnabled) {
+                originalSpeakText(text);
+            }
+        };
 
     </script>
 </body>
