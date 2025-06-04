@@ -483,7 +483,7 @@ PrivateDevices=yes
 [Install]
 WantedBy=multi-user.target"
 
-    # Check if we need sudo for service installation
+    # Check if we need sudo for service installation or are running as root
     if [[ ! -w "/etc/systemd/system" ]]; then
         log_info "Installing systemd service (requires sudo)..."
         if ! command -v sudo &> /dev/null; then
@@ -522,9 +522,38 @@ WantedBy=multi-user.target"
             return 1
         fi
     else
-        log_error "Cannot write to /etc/systemd/system without sudo privileges"
-        log_error "Service installation failed. Falling back to manual mode."
-        return 1
+        # Running as root or have write access
+        log_info "Installing systemd service (running with root privileges)..."
+        
+        # Create service file directly
+        echo "$service_content" > "$service_file"
+        
+        # Set proper permissions
+        chmod 644 "$service_file"
+        
+        # Reload systemd and enable the service
+        systemctl daemon-reload
+        systemctl enable "$service_name"
+        
+        log_success "Systemd service created and enabled"
+        
+        # Start the service
+        log_info "Starting WebGCS service..."
+        if systemctl start "$service_name"; then
+            log_success "WebGCS service started successfully"
+            
+            # Wait a moment and check status
+            sleep 3
+            if systemctl is-active --quiet "$service_name"; then
+                log_success "Service is running properly"
+            else
+                log_warning "Service may have issues. Check with: systemctl status $service_name"
+            fi
+        else
+            log_error "Failed to start WebGCS service"
+            log_error "Check the service status with: systemctl status $service_name"
+            return 1
+        fi
     fi
 }
 
@@ -555,7 +584,7 @@ verify_installation() {
             missing_packages+=("gevent")
         fi
         
-        if ! "${VENV_PATH}/bin/python" -c "import gevent.websocket" 2>/dev/null; then
+        if ! "${VENV_PATH}/bin/python" -c "import geventwebsocket" 2>/dev/null; then
             missing_packages+=("gevent-websocket")
         fi
         
@@ -683,7 +712,7 @@ print_timing_summary() {
 # Main execution
 main() {
     echo "======================================================================"
-    echo "           WebGCS Linux Desktop Setup Script v2.1"
+    echo "           WebGCS Linux Desktop Setup Script v2.2"
     echo "           Optimized for Ubuntu 24.04 LTS"
     echo "======================================================================"
     echo

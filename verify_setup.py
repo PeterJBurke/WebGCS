@@ -41,7 +41,7 @@ def main():
         ('flask', 'Flask'),
         ('flask_socketio', 'Flask-SocketIO'),
         ('gevent', 'gevent'),
-        ('gevent.websocket', 'gevent-websocket'),
+        ('geventwebsocket', 'gevent-websocket'),
         ('pymavlink', 'pymavlink'),
         ('dotenv', 'python-dotenv'),
         ('engineio', 'python-engineio'),
