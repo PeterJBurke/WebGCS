@@ -630,34 +630,34 @@ print_service_instructions() {
     echo "📋 Service Management Commands:"
     echo
     echo "   Check service status:"
-    echo -e "   ${GREEN}sudo systemctl status $service_name${NC}"
+    printf "   %bsudo systemctl status %s%b\n" "${GREEN}" "$service_name" "${NC}"
     echo
     echo "   View service logs:"
-    echo -e "   ${BLUE}sudo journalctl -u $service_name -f${NC}"
+    printf "   %bsudo journalctl -u %s -f%b\n" "${BLUE}" "$service_name" "${NC}"
     echo
     echo "   Restart the service:"
-    echo -e "   ${YELLOW}sudo systemctl restart $service_name${NC}"
+    printf "   %bsudo systemctl restart %s%b\n" "${YELLOW}" "$service_name" "${NC}"
     echo
     echo "   Stop the service:"
-    echo -e "   ${RED}sudo systemctl stop $service_name${NC}"
+    printf "   %bsudo systemctl stop %s%b\n" "${RED}" "$service_name" "${NC}"
     echo
     echo "   Start the service:"
-    echo -e "   ${GREEN}sudo systemctl start $service_name${NC}"
+    printf "   %bsudo systemctl start %s%b\n" "${GREEN}" "$service_name" "${NC}"
     echo
     echo "   Disable auto-start on boot:"
-    echo -e "   ${YELLOW}sudo systemctl disable $service_name${NC}"
+    printf "   %bsudo systemctl disable %s%b\n" "${YELLOW}" "$service_name" "${NC}"
     echo
     echo "   Enable auto-start on boot:"
-    echo -e "   ${GREEN}sudo systemctl enable $service_name${NC}"
+    printf "   %bsudo systemctl enable %s%b\n" "${GREEN}" "$service_name" "${NC}"
     echo
     echo "🌐 Access the interface:"
-    echo -e "   ${BLUE}http://localhost:5000${NC}"
+    printf "   %bhttp://localhost:5000%b\n" "${BLUE}" "${NC}"
     local ip_address=$(hostname -I | awk '{print $1}' 2>/dev/null || echo "IP_ADDRESS")
-    echo -e "   ${BLUE}http://${ip_address}:5000${NC}"
+    printf "   %bhttp://%s:5000%b\n" "${BLUE}" "${ip_address}" "${NC}"
     echo
     echo "⚙️  Configuration:"
-    echo -e "   Edit: ${BLUE}${SCRIPT_DIR}/.env${NC}"
-    echo -e "   After changes: ${YELLOW}sudo systemctl restart $service_name${NC}"
+    printf "   Edit: %b%s/.env%b\n" "${BLUE}" "${SCRIPT_DIR}" "${NC}"
+    printf "   After changes: %bsudo systemctl restart %s%b\n" "${YELLOW}" "$service_name" "${NC}"
     echo
     echo "📁 Project directory: ${SCRIPT_DIR}"
     echo "📋 Service file: /etc/systemd/system/$service_name.service"
@@ -674,21 +674,21 @@ print_manual_instructions() {
     echo "Next steps:"
     echo
     echo "1. Activate the virtual environment:"
-    echo -e "   ${GREEN}source venv/bin/activate${NC}"
+    printf "   %bsource venv/bin/activate%b\n" "${GREEN}" "${NC}"
     echo
     echo "2. (Optional) Configure your settings:"
-    echo -e "   ${BLUE}nano .env${NC}  # Edit with your drone's IP and settings"
+    printf "   %bnano .env%b  # Edit with your drone's IP and settings\n" "${BLUE}" "${NC}"
     echo
     echo "3. Ensure your drone/autopilot is configured as a MAVLink TCP server"
     echo "   listening on port 5678 (or your configured port)"
     echo
     echo "4. Run the application:"
-    echo -e "   ${GREEN}python app.py${NC}"
+    printf "   %bpython app.py%b\n" "${GREEN}" "${NC}"
     echo
     echo "5. Open your browser to:"
-    echo -e "   ${BLUE}http://localhost:5000${NC}"
+    printf "   %bhttp://localhost:5000%b\n" "${BLUE}" "${NC}"
     echo
-    echo "6. To stop the application, press ${YELLOW}Ctrl+C${NC}"
+    echo "6. To stop the application, press $(printf "%bCtrl+C%b" "${YELLOW}" "${NC}")"
     echo
     echo "For troubleshooting, check the logs in the 'logs/' directory"
     echo "======================================================================"
@@ -712,7 +712,7 @@ print_timing_summary() {
 # Main execution
 main() {
     echo "======================================================================"
-    echo "           WebGCS Linux Desktop Setup Script v2.2"
+    echo "           WebGCS Linux Desktop Setup Script v2.3"
     echo "           Optimized for Ubuntu 24.04 LTS"
     echo "======================================================================"
     echo
