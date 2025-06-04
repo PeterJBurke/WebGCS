@@ -104,14 +104,84 @@ update_package_lists() {
     fi
 }
 
+# Install missing system dependencies
+install_system_dependencies() {
+    log_info "Installing required system dependencies..."
+    
+    local packages_to_install=()
+    
+    # Always install these core packages for Python development
+    if command -v apt &> /dev/null; then
+        # For Ubuntu/Debian
+        packages_to_install+=(
+            "python3"
+            "python3-venv" 
+            "python3-pip"
+            "python3-dev"
+            "build-essential"
+            "pkg-config"
+            "libevent-dev"
+            "curl"
+            "git"
+        )
+        
+        log_info "Installing packages: ${packages_to_install[*]}"
+        sudo apt install -y "${packages_to_install[@]}"
+        
+    elif command -v dnf &> /dev/null; then
+        # For CentOS/RHEL/Fedora
+        packages_to_install+=(
+            "python3"
+            "python3-venv"
+            "python3-pip"
+            "python3-devel"
+            "gcc"
+            "pkgconfig"
+            "libevent-devel"
+            "curl"
+            "git"
+        )
+        
+        log_info "Installing packages: ${packages_to_install[*]}"
+        sudo dnf install -y "${packages_to_install[@]}"
+        
+    elif command -v yum &> /dev/null; then
+        # For older CentOS/RHEL
+        packages_to_install+=(
+            "python3"
+            "python3-pip"
+            "python3-devel"
+            "gcc"
+            "pkgconfig"
+            "libevent-devel"
+            "curl"
+            "git"
+        )
+        
+        log_info "Installing packages: ${packages_to_install[*]}"
+        sudo yum install -y "${packages_to_install[@]}"
+        
+    else
+        log_error "Could not detect package manager. Please install the following manually:"
+        log_error "  - Python 3.10+"
+        log_error "  - python3-venv"
+        log_error "  - python3-dev"
+        log_error "  - build-essential/gcc"
+        log_error "  - pkg-config"
+        log_error "  - libevent-dev"
+        log_error "  - curl"
+        log_error "  - git"
+        exit 1
+    fi
+    
+    log_success "System dependencies installed"
+}
+
 # Check Python version
 check_python_version() {
     if ! command -v python3 &> /dev/null; then
-        log_error "Python 3 is not installed. Please install Python 3.10+ and try again."
-        log_error "On Ubuntu 24.04: sudo apt install python3 python3-venv python3-pip python3-dev"
-        log_error "On Ubuntu 22.04: sudo apt install python3 python3-venv python3-pip python3-dev"
-        log_error "On Ubuntu 20.04: sudo apt install python3.10 python3.10-venv python3.10-dev python3-pip"
-        exit 1
+        log_error "Python 3 is not installed. Installing it now..."
+        install_system_dependencies
     fi
 
     local python_version
@@ -175,21 +245,27 @@ check_dependencies() {
     fi
     
     if [[ ${#missing_deps[@]} -gt 0 ]]; then
-        log_error "Missing required dependencies: ${missing_deps[*]}"
-        log_error "Please install them first:"
+        log_warning "Missing dependencies detected: ${missing_deps[*]}"
+        log_info "Installing missing dependencies automatically..."
+        
         if command -v apt &> /dev/null; then
-            log_error "  Ubuntu/Debian: sudo apt install ${ubuntu_deps[*]}"
+            sudo apt install -y "${ubuntu_deps[@]}"
         elif command -v dnf &> /dev/null; then
-            log_error "  CentOS/RHEL/Fedora: sudo dnf install ${missing_deps[*]} python3-devel gcc"
+            sudo dnf install -y "${missing_deps[@]}" python3-devel gcc
         elif command -v yum &> /dev/null; then
-            log_error "  CentOS/RHEL: sudo yum install ${missing_deps[*]} python3-devel gcc"
+            sudo yum install -y "${missing_deps[@]}" python3-devel gcc
         elif command -v pacman &> /dev/null; then
-            log_error "  Arch: sudo pacman -S ${missing_deps[*]} base-devel"
+            sudo pacman -S --noconfirm "${missing_deps[@]}" base-devel
+        else
+            log_error "Could not install missing dependencies automatically"
+            log_error "Please install them manually and re-run this script"
+            exit 1
         fi
-        exit 1
+        
+        log_success "Missing dependencies installed"
+    else
+        log_success "All system dependencies found"
     fi
-    
-    log_success "All system dependencies found"
 }
 
 # Create directory structure
@@ -236,7 +312,24 @@ install_python_dependencies() {
     # Check if requirements.txt exists
     if [[ -f "${SCRIPT_DIR}/requirements.txt" ]]; then
         log_info "Installing from requirements.txt..."
-        "${VENV_PATH}/bin/pip" install -r "${SCRIPT_DIR}/requirements.txt"
+        
+        # Install dependencies with retry logic for gevent-websocket
+        if ! "${VENV_PATH}/bin/pip" install -r "${SCRIPT_DIR}/requirements.txt"; then
+            log_warning "Initial installation failed, trying alternative approach..."
+            
+            # Install gevent first, then gevent-websocket
+            "${VENV_PATH}/bin/pip" install gevent==23.9.1
+            "${VENV_PATH}/bin/pip" install gevent-websocket==0.10.1
+            
+            # Install remaining packages
+            "${VENV_PATH}/bin/pip" install \
+                Flask==3.0.2 \
+                Flask-SocketIO==5.3.6 \
+                pymavlink==2.4.39 \
+                python-dotenv==1.0.1 \
+                python-engineio==4.9.0 \
+                python-socketio==5.11.1
+        fi
     else
         log_warning "requirements.txt not found, installing core dependencies..."
         "${VENV_PATH}/bin/pip" install \
@@ -430,6 +523,7 @@ WantedBy=multi-user.target"
         fi
     else
         log_error "Cannot write to /etc/systemd/system without sudo privileges"
+        log_error "Service installation failed. Falling back to manual mode."
         return 1
     fi
 }
@@ -441,6 +535,37 @@ verify_installation() {
     # Check if virtual environment works
     if ! "${VENV_PATH}/bin/python" -c "import flask, flask_socketio, pymavlink, gevent" 2>/dev/null; then
         log_error "Installation verification failed. Some Python packages may not be installed correctly."
+        
+        # Try to identify specific missing packages
+        local missing_packages=()
+        
+        if ! "${VENV_PATH}/bin/python" -c "import flask" 2>/dev/null; then
+            missing_packages+=("Flask")
+        fi
+        
+        if ! "${VENV_PATH}/bin/python" -c "import flask_socketio" 2>/dev/null; then
+            missing_packages+=("Flask-SocketIO")
+        fi
+        
+        if ! "${VENV_PATH}/bin/python" -c "import pymavlink" 2>/dev/null; then
+            missing_packages+=("pymavlink")
+        fi
+        
+        if ! "${VENV_PATH}/bin/python" -c "import gevent" 2>/dev/null; then
+            missing_packages+=("gevent")
+        fi
+        
+        if ! "${VENV_PATH}/bin/python" -c "import gevent.websocket" 2>/dev/null; then
+            missing_packages+=("gevent-websocket")
+        fi
+        
+        if [[ ${#missing_packages[@]} -gt 0 ]]; then
+            log_error "Missing packages: ${missing_packages[*]}"
+            log_error "Try installing them manually:"
+            log_error "  source venv/bin/activate"
+            log_error "  pip install ${missing_packages[*]}"
+        fi
+        
         exit 1
     fi
     
@@ -476,34 +601,34 @@ print_service_instructions() {
     echo "📋 Service Management Commands:"
     echo
     echo "   Check service status:"
-    echo "   ${GREEN}sudo systemctl status $service_name${NC}"
+    echo -e "   ${GREEN}sudo systemctl status $service_name${NC}"
     echo
     echo "   View service logs:"
-    echo "   ${BLUE}sudo journalctl -u $service_name -f${NC}"
+    echo -e "   ${BLUE}sudo journalctl -u $service_name -f${NC}"
     echo
     echo "   Restart the service:"
-    echo "   ${YELLOW}sudo systemctl restart $service_name${NC}"
+    echo -e "   ${YELLOW}sudo systemctl restart $service_name${NC}"
     echo
     echo "   Stop the service:"
-    echo "   ${RED}sudo systemctl stop $service_name${NC}"
+    echo -e "   ${RED}sudo systemctl stop $service_name${NC}"
     echo
     echo "   Start the service:"
-    echo "   ${GREEN}sudo systemctl start $service_name${NC}"
+    echo -e "   ${GREEN}sudo systemctl start $service_name${NC}"
     echo
     echo "   Disable auto-start on boot:"
-    echo "   ${YELLOW}sudo systemctl disable $service_name${NC}"
+    echo -e "   ${YELLOW}sudo systemctl disable $service_name${NC}"
     echo
     echo "   Enable auto-start on boot:"
-    echo "   ${GREEN}sudo systemctl enable $service_name${NC}"
+    echo -e "   ${GREEN}sudo systemctl enable $service_name${NC}"
     echo
     echo "🌐 Access the interface:"
-    echo "   ${BLUE}http://localhost:5000${NC}"
+    echo -e "   ${BLUE}http://localhost:5000${NC}"
     local ip_address=$(hostname -I | awk '{print $1}' 2>/dev/null || echo "IP_ADDRESS")
-    echo "   ${BLUE}http://${ip_address}:5000${NC}"
+    echo -e "   ${BLUE}http://${ip_address}:5000${NC}"
     echo
     echo "⚙️  Configuration:"
-    echo "   Edit: ${BLUE}${SCRIPT_DIR}/.env${NC}"
-    echo "   After changes: ${YELLOW}sudo systemctl restart $service_name${NC}"
+    echo -e "   Edit: ${BLUE}${SCRIPT_DIR}/.env${NC}"
+    echo -e "   After changes: ${YELLOW}sudo systemctl restart $service_name${NC}"
     echo
     echo "📁 Project directory: ${SCRIPT_DIR}"
     echo "📋 Service file: /etc/systemd/system/$service_name.service"
@@ -520,19 +645,19 @@ print_manual_instructions() {
     echo "Next steps:"
     echo
     echo "1. Activate the virtual environment:"
-    echo "   ${GREEN}source venv/bin/activate${NC}"
+    echo -e "   ${GREEN}source venv/bin/activate${NC}"
     echo
     echo "2. (Optional) Configure your settings:"
-    echo "   ${BLUE}nano .env${NC}  # Edit with your drone's IP and settings"
+    echo -e "   ${BLUE}nano .env${NC}  # Edit with your drone's IP and settings"
     echo
     echo "3. Ensure your drone/autopilot is configured as a MAVLink TCP server"
     echo "   listening on port 5678 (or your configured port)"
     echo
     echo "4. Run the application:"
-    echo "   ${GREEN}python app.py${NC}"
+    echo -e "   ${GREEN}python app.py${NC}"
     echo
     echo "5. Open your browser to:"
-    echo "   ${BLUE}http://localhost:5000${NC}"
+    echo -e "   ${BLUE}http://localhost:5000${NC}"
     echo
     echo "6. To stop the application, press ${YELLOW}Ctrl+C${NC}"
     echo
@@ -558,7 +683,7 @@ print_timing_summary() {
 # Main execution
 main() {
     echo "======================================================================"
-    echo "           WebGCS Linux Desktop Setup Script v2.0"
+    echo "           WebGCS Linux Desktop Setup Script v2.1"
     echo "           Optimized for Ubuntu 24.04 LTS"
     echo "======================================================================"
     echo
@@ -586,8 +711,9 @@ main() {
     check_linux
     check_ubuntu_version
     update_package_lists
+    install_system_dependencies  # This now installs missing dependencies automatically
     check_python_version
-    check_dependencies
+    check_dependencies  # This now handles any remaining missing dependencies
     create_directories
     setup_virtual_environment
     install_python_dependencies
