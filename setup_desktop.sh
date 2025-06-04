@@ -435,11 +435,34 @@ create_systemd_service() {
     local python_path="${VENV_PATH}/bin/python"
     local app_path="${SCRIPT_DIR}/app.py"
     
-    # Verify app.py exists
-    if [[ ! -f "$app_path" ]]; then
-        log_error "app.py not found at $app_path"
+    # Debug: Show the paths being used
+    log_info "Service configuration paths:"
+    log_info "  Script directory: ${SCRIPT_DIR}"
+    log_info "  Virtual environment: ${VENV_PATH}"
+    log_info "  Python executable: ${python_path}"
+    log_info "  App path: ${app_path}"
+    log_info "  Current user: ${current_user}"
+    
+    # Verify paths exist and are correct
+    if [[ ! -f "$python_path" ]]; then
+        log_error "Python executable not found at: $python_path"
         return 1
     fi
+    
+    if [[ ! -f "$app_path" ]]; then
+        log_error "app.py not found at: $app_path"
+        return 1
+    fi
+    
+    # Ensure we have absolute paths
+    python_path="$(realpath "$python_path")"
+    app_path="$(realpath "$app_path")"
+    SCRIPT_DIR="$(realpath "$SCRIPT_DIR")"
+    
+    log_info "Resolved absolute paths:"
+    log_info "  Script directory: ${SCRIPT_DIR}"
+    log_info "  Python executable: ${python_path}"
+    log_info "  App path: ${app_path}"
     
     # Create the service file content
     local service_content="[Unit]

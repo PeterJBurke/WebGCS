@@ -69,4 +69,7 @@ coverage.xml
 # Runtime files
 *.log
 telemetry_data.json
-command.json 
+command.json
+
+# Utility scripts
+fix_service.sh 
