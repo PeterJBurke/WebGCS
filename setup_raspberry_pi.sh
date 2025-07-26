@@ -427,7 +427,7 @@ systemctl enable enable-webgcs-services
 print_info "Enabling WiFi failover service..."
 systemctl daemon-reload
 systemctl enable check_wifi.service
-systemctl start check_wifi.service
+#systemctl start check_wifi.service # it should start at reboot or you get disconnected
 
 # Calculate and display duration
 END_TIME=$(date +%s)
