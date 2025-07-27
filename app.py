@@ -167,6 +167,27 @@ telemetry_update_thread = None
 drone_state_changed = False # Used by periodic_telemetry_update
 drone_state_lock = threading.Lock() # Shared lock for drone_state
 
+def reset_drone_state_to_defaults():
+    """Reset drone_state to clean default values to prevent stale data persistence."""
+    global drone_state
+    with drone_state_lock:
+        drone_state.clear()
+        drone_state.update({
+            'connected': False, # Default to False, will be set to True upon receiving a heartbeat
+            'armed': False, 'mode': 'UNKNOWN',
+            'lat': 0.0, 'lon': 0.0, 'alt_rel': 0.0, 'alt_abs': 0.0, 'heading': 0.0,
+            'vx': 0.0, 'vy': 0.0, 'vz': 0.0,
+            'airspeed': 0.0, 'groundspeed': 0.0,
+            'battery_voltage': 0.0, 'battery_remaining': -1, 'battery_current': -1.0,
+            'gps_fix_type': 0, 'satellites_visible': 0, 'hdop': 99.99,
+            'system_status': 0,
+            'pitch': 0.0, 'roll': 0.0,
+            'home_lat': None, 'home_lon': None,
+            'ekf_flags': 0,
+            'ekf_status_report': 'EKF INIT',
+        })
+    print("Drone state reset to clean default values")
+
 # drone_state remains central, accessed by multiple modules
 drone_state = {
     'connected': False, # Default to False, will be set to True upon receiving a heartbeat
@@ -447,6 +468,13 @@ from socketio_handlers import init_socketio_handlers
 
 if __name__ == '__main__':
     print(f"Starting server on http://{WEB_SERVER_HOST}:{WEB_SERVER_PORT}")
+    
+    # Reset drone state to clean defaults to prevent stale data persistence
+    reset_drone_state_to_defaults()
+    
+    # Debug: Print current drone_state values to verify clean initialization
+    with drone_state_lock:
+        print(f"DEBUG: Initial drone_state after reset: connected={drone_state.get('connected')}, lat={drone_state.get('lat')}, lon={drone_state.get('lon')}")
     
     # Initialize contexts for handlers first
     app_context = {
