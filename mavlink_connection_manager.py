@@ -319,8 +319,35 @@ def mavlink_receive_loop_runner(
                 gevent.sleep(5) # Use gevent.sleep
                 continue
             # If connect_mavlink was successful, mavlink_connection_instance is now set.
-            # data_streams_requested_instance is reset within connect_mavlink.
-            # The loop will then proceed to check for target_system and request streams if needed.
+            # Verify that we receive a heartbeat within a timeout to confirm a real connection.
+            print("Connection object created. Waiting for first heartbeat...")
+            wait_for_heartbeat_start_time = time.time()
+            initial_heartbeat_received = False
+            while time.time() - wait_for_heartbeat_start_time < 5: # 5-second timeout
+                msg = mavlink_connection_instance.recv_match(type='HEARTBEAT', blocking=False)
+                if msg:
+                    print("First heartbeat received! Connection confirmed.")
+                    last_heartbeat_time_instance = time.time()
+                    initial_heartbeat_received = True
+                    # Manually process this first heartbeat
+                    handler_context = {
+                        'drone_state': drone_state,
+                        'drone_state_lock': drone_state_lock,
+                        'last_heartbeat_time_ref': (lambda: last_heartbeat_time_instance, lambda t: globals().__setitem__('last_heartbeat_time_instance', t)),
+                        'connection_event': connection_event_instance,
+                        'notify_state_changed': notify_state_changed_cb,
+                        'log_heartbeat': heartbeat_log_cb
+                    }
+                    process_heartbeat(msg, handler_context)
+                    break
+                gevent.sleep(0.1)
+
+            if not initial_heartbeat_received:
+                print("No heartbeat received within 5 seconds. Closing connection and retrying.")
+                mavlink_connection_instance.close()
+                mavlink_connection_instance = None
+                gevent.sleep(5)
+                continue
 
         # Ensure streams are requested if connected
         if mavlink_connection_instance and mavlink_connection_instance.target_system != 0 and not data_streams_requested_instance:
