@@ -359,6 +359,8 @@ def mavlink_receive_loop_runner(
             print(f"Heartbeat timeout (>{heartbeat_timeout_config}s). Drone disconnected.")
             with drone_state_lock:
                 drone_state['connected'] = False
+            if notify_state_changed_cb:
+                notify_state_changed_cb()
             if mavlink_connection_instance:
                 mavlink_connection_instance.close()
             mavlink_connection_instance = None
@@ -523,6 +525,8 @@ def mavlink_receive_loop_runner(
             connection_event_instance.clear()
             with drone_state_lock:
                 drone_state['connected'] = False
+            if notify_state_changed_cb:
+                notify_state_changed_cb()
             sio.emit('drone_disconnected', {'reason': 'MAVLink receive error'})
             gevent.sleep(1) # Wait a bit before trying to reconnect
             continue # To the start of the while loop to attempt reconnection
@@ -536,6 +540,8 @@ def mavlink_receive_loop_runner(
             connection_event_instance.clear()
             with drone_state_lock:
                 drone_state['connected'] = False
+            if notify_state_changed_cb:
+                notify_state_changed_cb()
             sio.emit('drone_disconnected', {'reason': 'Unexpected loop error'})
             gevent.sleep(5) # Longer sleep for unexpected errors
             continue # To the start of the while loop
@@ -551,6 +557,8 @@ def mavlink_receive_loop_runner(
             connection_event_instance.clear()
             with drone_state_lock:
                 drone_state['connected'] = False
+            if notify_state_changed_cb:
+                notify_state_changed_cb()
             sio.emit('drone_disconnected', {'reason': f'Receive loop error: {e}'})
             time.sleep(1) # Brief pause before attempting to reconnect
         
