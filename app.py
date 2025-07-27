@@ -281,6 +281,7 @@ def periodic_telemetry_update():
     last_debug_time = time.time() # For less frequent debug prints
     last_file_check_time = 0 # Initialize to ensure first check happens immediately
     last_console_log_time = time.time() # For once-per-second console logging
+    initial_state_sent = False # Flag to ensure we send initial disconnected state
     
     while True:
         try:
@@ -321,6 +322,19 @@ def periodic_telemetry_update():
 #                    print(f"  Alt (rel): {alt_rel_status:.2f}m, Alt (VFR): {alt_vfr_status:.2f}m")
 #                    print(f"  Lat/Lon: {lat_status:.6f}, {lon_status:.6f}")
                 last_console_log_time = current_time_for_log
+
+            # Send initial disconnected state on startup
+            if not initial_state_sent:
+                with drone_state_lock:
+                    if not drone_state.get('connected', False):
+                        # Send initial disconnected state to ensure UI starts with correct state
+                        socketio.emit('telemetry_update', {
+                            'connected': False, 
+                            'armed': False, 
+                            'mode': 'UNKNOWN',
+                            'lat': 0.0, 'lon': 0.0, 'alt_rel': 0.0, 'alt_abs': 0.0, 'heading': 0.0
+                        })
+                initial_state_sent = True
 
             # Send telemetry update to UI if state has changed
             if drone_state_changed:

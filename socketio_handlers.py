@@ -192,7 +192,20 @@ def init_socketio_handlers(socketio_instance, app_context):
     @_socketio.on('connect')
     def handle_connect():
         _log_wrapper_for_caller_info("CLIENT_CONNECTED", details=f"Client {request.sid} connected.")
-        emit('telemetry_update', _drone_state)
+        
+        # Send initial telemetry using the same filtering logic as periodic updates
+        with _drone_state_lock:
+            if _drone_state.get('connected', False):
+                # Only send actual drone data if truly connected
+                emit('telemetry_update', _drone_state)
+            else:
+                # Send disconnected state to ensure UI shows correct initial state
+                emit('telemetry_update', {
+                    'connected': False, 
+                    'armed': False, 
+                    'mode': 'UNKNOWN',
+                    'lat': 0.0, 'lon': 0.0, 'alt_rel': 0.0, 'alt_abs': 0.0, 'heading': 0.0
+                })
         status_text = 'Backend connected. '
         status_text += 'Drone link active.' if _drone_state.get('connected') else 'Attempting drone link...'
         emit('status_message', {'text': status_text, 'type': 'info'})
