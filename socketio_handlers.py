@@ -341,9 +341,11 @@ def init_socketio_handlers(socketio_instance, app_context):
                 
                 # Check current mode
                 current_mode = _drone_state.get('mode', 'UNKNOWN')
+                print(f"DEBUG TAKEOFF: Current mode is '{current_mode}', checking if GUIDED mode change needed")
                 
                 # First, set to GUIDED mode if not already in GUIDED mode
                 if current_mode != 'GUIDED':
+                    print(f"DEBUG TAKEOFF: Mode is not GUIDED ('{current_mode}'), will set GUIDED mode first")
                     _log_wrapper_for_caller_info("TAKEOFF_SET_GUIDED", {"current_mode": current_mode}, 
                                            f"Setting GUIDED mode before takeoff (was {current_mode})", "INFO")
                     
@@ -355,11 +357,13 @@ def init_socketio_handlers(socketio_instance, app_context):
                     }
                     
                     # Send SET_MODE to GUIDED command first
+                    print(f"DEBUG TAKEOFF: Sending SET_MODE command to GUIDED (mode_id={_AP_MODE_NAME_TO_ID['GUIDED']})")
                     guided_success, guided_msg = _send_mavlink_command_handler(
                         mavutil.mavlink.MAV_CMD_DO_SET_MODE,
                         p1=mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
                         p2=_AP_MODE_NAME_TO_ID['GUIDED']
                     )
+                    print(f"DEBUG TAKEOFF: SET_MODE result: success={guided_success}, msg='{guided_msg}'")
                     
                     if not guided_success:
                         success = False
@@ -376,6 +380,7 @@ def init_socketio_handlers(socketio_instance, app_context):
                         msg = f'Set GUIDED mode and takeoff to {alt:.1f}m commands sent.' if success else f'TAKEOFF Failed: {msg_send}'
                 else:
                     # Already in GUIDED mode, send takeoff directly
+                    print(f"DEBUG TAKEOFF: Already in GUIDED mode, sending takeoff command directly")
                     success, msg_send = _send_mavlink_command_handler(
                         mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
                         p7=alt  # param7 = altitude
