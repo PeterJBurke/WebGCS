@@ -353,11 +353,24 @@ def periodic_telemetry_update():
             # Send telemetry update to UI if state has changed
             if drone_state_changed:
                 with drone_state_lock:
-                    # Emit telemetry update to all connected clients
-                    socketio.emit('telemetry_update', drone_state)
-                drone_state_changed = False
-                update_count += 1
-            
+                    # Only send telemetry if the drone is actually connected.
+                    # This prevents fake data from the telemetry.json file from being displayed.
+                    if drone_state.get('connected', False):
+                        socketio.emit('telemetry_update', drone_state)
+                    else:
+                        # If not connected, still send one final update to ensure the UI reflects the disconnected state.
+                        socketio.emit('telemetry_update', {
+                            'connected': False, 
+                            'armed': False, 
+                            'mode': 'UNKNOWN',
+                            'lat': 0.0, 'lon': 0.0, 'alt_rel': 0.0, 'alt_abs': 0.0, 'heading': 0.0
+                        })
+
+                    # Reset the flag after processing
+                    drone_state_changed = False
+                    
+                    # For debugging: Log when an update is sent
+                    # print(f"[UI UPDATE] Sent telemetry update. New state: {drone_state}")
             gevent.sleep(TELEMETRY_UPDATE_INTERVAL)
         except Exception as e:
             print(f"Error in telemetry update: {e}")
