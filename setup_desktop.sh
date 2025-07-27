@@ -432,7 +432,7 @@ create_systemd_service() {
     local service_name="webgcs"
     local service_file="/etc/systemd/system/${service_name}.service"
     local current_user="$(whoami)"
-    local python_path="${VENV_PATH}/bin/python"
+    local python_path="${VENV_PATH}/bin/python3"
     local app_path="${SCRIPT_DIR}/app.py"
     
     # Debug: Show the paths being used
