@@ -475,8 +475,8 @@ StartLimitBurst=3
 
 [Service]
 Type=simple
-User=${current_user}
-Group=${current_user}
+User=root
+Group=root
 WorkingDirectory=${SCRIPT_DIR}
 Environment=PATH=${VENV_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 Environment=PYTHONPATH=${SCRIPT_DIR}
@@ -493,7 +493,7 @@ SyslogIdentifier=webgcs
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
-ProtectHome=yes
+# ProtectHome=yes is removed because WorkingDirectory may be in /root
 ReadWritePaths=${SCRIPT_DIR}
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
