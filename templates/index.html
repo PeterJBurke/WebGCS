@@ -1095,13 +1095,13 @@
         });
 
         // --- Command Button Event Listeners ---
-        commandControls.ARM.addEventListener("click",function(){if(confirm("ARM drone?")){this.disabled=!0;socket.emit("send_command",{command:"ARM"})}});
-        commandControls.DISARM.addEventListener("click",function(){if(confirm("DISARM drone?")){this.disabled=!0;socket.emit("send_command",{command:"DISARM"})}});
-        commandControls.TAKEOFF.addEventListener("click",function(){const e=document.getElementById("takeoff-alt"),t=parseFloat(e.value);if(isNaN(t)||t<=0||t>1e3)return addMessage("Invalid takeoff altitude (must be > 0 and <= 1000).","warning"),void e.focus();if(confirm(`Takeoff to ${t}m?`)){this.disabled=!0;socket.emit("send_command",{command:"TAKEOFF",altitude:t})}});
-        commandControls.LAND.addEventListener("click",function(){if(confirm("LAND drone?")){this.disabled=!0;socket.emit("send_command",{command:"LAND"})}});
-        commandControls.RTL.addEventListener("click",function(){if(confirm("Return-To-Launch (RTL)?")){this.disabled=!0;socket.emit("send_command",{command:"RTL"})}});
-        commandControls.SET_MODE.addEventListener("click",function(){const e=modeSelect.value;if(!e)return void addMessage("Please select a flight mode.","warning");if(confirm(`Set mode to ${e}?`)){this.disabled=!0;modeSelect.disabled=!0;socket.emit("send_command",{command:"SET_MODE",mode_name:e})}});
-        commandControls.GOTO.addEventListener("click",function(){const e=document.getElementById("goto-lat"),t=document.getElementById("goto-lon"),o=document.getElementById("goto-alt"),a=parseFloat(e.value),n=parseFloat(t.value),i=parseFloat(o.value);let s=!0,l="Invalid GoTo parameters: ";if(isNaN(a)||a<-90||a>90){s=!1;l+=" Latitude invalid.";e.focus()}else if(isNaN(n)||n<-180||n>180){s=!1;l+=" Longitude invalid.";t.focus()}else if(isNaN(i)||i<-100||i>5e3){s=!1;l+=" Altitude invalid.";o.focus()}if(!s)return void addMessage(l,"warning");if(confirm(`Go to Lat: ${a.toFixed(6)}, Lon: ${n.toFixed(6)}, Alt: ${i.toFixed(1)}m?`)){this.disabled=!0;socket.emit("send_command",{command:"GOTO",lat:a,lon:n,alt:i})}});
+        commandControls.ARM.addEventListener("click",function(){/*if(confirm("ARM drone?")){*/this.disabled=!0;socket.emit("send_command",{command:"ARM"})/*}*/});
+        commandControls.DISARM.addEventListener("click",function(){/*if(confirm("DISARM drone?")){*/this.disabled=!0;socket.emit("send_command",{command:"DISARM"})/*}*/});
+        commandControls.TAKEOFF.addEventListener("click",function(){const e=document.getElementById("takeoff-alt"),t=parseFloat(e.value);if(isNaN(t)||t<=0||t>1e3)return addMessage("Invalid takeoff altitude (must be > 0 and <= 1000).","warning"),void e.focus();/*if(confirm(`Takeoff to ${t}m?`)){*/this.disabled=!0;socket.emit("send_command",{command:"TAKEOFF",altitude:t})/*}*/});
+        commandControls.LAND.addEventListener("click",function(){/*if(confirm("LAND drone?")){*/this.disabled=!0;socket.emit("send_command",{command:"LAND"})/*}*/});
+        commandControls.RTL.addEventListener("click",function(){/*if(confirm("Return-To-Launch (RTL)?")){*/this.disabled=!0;socket.emit("send_command",{command:"RTL"})/*}*/});
+        commandControls.SET_MODE.addEventListener("click",function(){const e=modeSelect.value;if(!e)return void addMessage("Please select a flight mode.","warning");/*if(confirm(`Set mode to ${e}?`)){*/this.disabled=!0;modeSelect.disabled=!0;socket.emit("send_command",{command:"SET_MODE",mode_name:e})/*}*/});
+        commandControls.GOTO.addEventListener("click",function(){const e=document.getElementById("goto-lat"),t=document.getElementById("goto-lon"),o=document.getElementById("goto-alt"),a=parseFloat(e.value),n=parseFloat(t.value),i=parseFloat(o.value);let s=!0,l="Invalid GoTo parameters: ";if(isNaN(a)||a<-90||a>90){s=!1;l+=" Latitude invalid.";e.focus()}else if(isNaN(n)||n<-180||n>180){s=!1;l+=" Longitude invalid.";t.focus()}else if(isNaN(i)||i<-100||i>5e3){s=!1;l+=" Altitude invalid.";o.focus()}if(!s)return void addMessage(l,"warning");/*if(confirm(`Go to Lat: ${a.toFixed(6)}, Lon: ${n.toFixed(6)}, Alt: ${i.toFixed(1)}m?`)){*/this.disabled=!0;socket.emit("send_command",{command:"GOTO",lat:a,lon:n,alt:i})/*}*/});
         commandControls["clear-goto"].addEventListener("click",function(){document.getElementById("goto-lat").value="";document.getElementById("goto-lon").value="";document.getElementById("goto-alt").value="10";addMessage("GoTo fields cleared.","info")});
         commandControls["center-map"].addEventListener("click",function(){if(droneMarker){map.setView(droneMarker.getLatLng(),map.getZoom()<14?16:map.getZoom());addMessage("Map centered on drone.","info")}else{addMessage("Drone location not available to center map.","warning")}});
         
@@ -1208,7 +1208,7 @@
                 console.log("Created fly-to target marker");
                 
                 // Confirm before sending command
-                if (confirm(`Send drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m?`)) {
+                /*if (confirm(`Send drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m?`)) {*/
                     // Send the command
                     socket.emit('send_command', {
                         command: 'GOTO',
@@ -1218,7 +1218,7 @@
                     });
                     
                     addMessage(`Sent drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m`, "info");
-                }
+                /*}*/
             }
         });
 
