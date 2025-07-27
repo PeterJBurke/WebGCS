@@ -286,35 +286,7 @@ def periodic_telemetry_update():
         try:
             current_time = time.time()
             
-            # Check for telemetry data from file every 1 second (only as fallback if no live connection)
-            mavlink_conn = get_mavlink_connection()
-            if current_time - last_file_check_time >= 1 and not mavlink_conn:
-                file_data, success = read_telemetry_from_file()
-                if success and file_data:
-                    with drone_state_lock:
-                        # Update drone_state with data from file (fallback only)
-                        for key, value in file_data.items():
-                            if key in drone_state:
-                                drone_state[key] = value
-                        
-                        # Set connected flag based on the file data's connected status
-                        drone_state['connected'] = file_data.get('connected', False)
-                        
-                        # For testing: Accept any telemetry data as connected (comment out heartbeat timeout check)
-                        # last_heartbeat_time = file_data.get('last_heartbeat_time', 0)
-                        # if current_time - last_heartbeat_time > 300:  # Consider disconnected if no heartbeat within 300 seconds (5 minutes)
-                        #     drone_state['connected'] = False
-                        
-                        # Signal that drone_state has changed
-                        drone_state_changed = True
-                        
-                        # Print debug info about the connection status
-                        # print(f"[FALLBACK] Connection status from file: {file_data.get('connected')}, Updated status: {drone_state['connected']}")
-                        # print(f"[FALLBACK] Last heartbeat time: {file_data.get('last_heartbeat_time', 0)}, Current time: {current_time}, Diff: {current_time - file_data.get('last_heartbeat_time', 0)}s")
-                        
-                        # No simulated heartbeats - only real MAVLink heartbeats should trigger heart animation
-                
-                last_file_check_time = current_time
+            # The file-based telemetry fallback has been removed to prevent showing fake data.
             
             # Log telemetry status every 5 seconds for debugging
             if current_time - last_debug_time >= 5:
