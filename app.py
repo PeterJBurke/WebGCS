@@ -506,14 +506,15 @@ if __name__ == '__main__':
     telemetry_update_thread.start()
     print("Telemetry update thread started")
     
-    # Start MAVLink connection in background - don't wait for it
-    def start_mavlink_connection_async():
+    # Initialize MAVLink infrastructure without auto-connecting
+    def init_mavlink_infrastructure_only():
         try:
-            print(f"Attempting to connect to drone at {DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT} via {MAVLINK_CONNECTION_STRING}")
+            print("Initializing MAVLink infrastructure (no auto-connect)")
             
-            # Start the MAVLink connection thread
+            # Start the MAVLink connection thread with None as connection string
+            # This initializes the infrastructure but doesn't connect to any drone
             mavlink_thread = gevent.spawn(mavlink_receive_loop_runner, 
-                                        MAVLINK_CONNECTION_STRING, 
+                                        None,  # None connection string - no auto-connect
                                         drone_state, 
                                         drone_state_lock, 
                                         pending_commands, 
@@ -530,14 +531,13 @@ if __name__ == '__main__':
                                         log_heartbeat_message)
             return mavlink_thread
         except Exception as e:
-            print(f"Error starting MAVLink thread: {e}")
-            print("Continuing without MAVLink connection.")
+            print(f"Error initializing MAVLink infrastructure: {e}")
+            print("Continuing without MAVLink infrastructure.")
             return None
     
-    # Start MAVLink connection in a background thread - don't block server startup
-    # COMMENTED OUT: Disable automatic connection on page load - require manual connection
-    # mavlink_connection_thread = threading.Thread(target=start_mavlink_connection_async, daemon=True)
-    # mavlink_connection_thread.start()
+    # Initialize MAVLink infrastructure but don't auto-connect to any drone
+    mavlink_infrastructure_thread = threading.Thread(target=init_mavlink_infrastructure_only, daemon=True)
+    mavlink_infrastructure_thread.start()
     
     # Start Flask-SocketIO server immediately 
     print(">>> Starting Flask-SocketIO server...")

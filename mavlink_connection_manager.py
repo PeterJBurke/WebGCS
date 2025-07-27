@@ -313,6 +313,11 @@ def mavlink_receive_loop_runner(
             # Use dynamic connection string if available, otherwise use config
             connection_string_to_use = current_connection_string if current_connection_string else mavlink_connection_string_config
             
+            # Skip auto-connection if no connection string is provided (None or empty)
+            if not connection_string_to_use:
+                gevent.sleep(1)  # Sleep and continue checking for manual connection requests
+                continue
+            
             # Attempt to create a new connection object
             if not connect_mavlink(drone_state, drone_state_lock, connection_string_to_use):
                 print("MAVLink connection object creation failed, retrying in 5s...")
