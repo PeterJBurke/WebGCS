@@ -330,15 +330,16 @@ def mavlink_receive_loop_runner(
                     last_heartbeat_time_instance = time.time()
                     initial_heartbeat_received = True
                     # Manually process this first heartbeat
-                    handler_context = {
-                        'drone_state': drone_state,
-                        'drone_state_lock': drone_state_lock,
-                        'last_heartbeat_time_ref': (lambda: last_heartbeat_time_instance, lambda t: globals().__setitem__('last_heartbeat_time_instance', t)),
-                        'connection_event': connection_event_instance,
-                        'notify_state_changed': notify_state_changed_cb,
-                        'log_heartbeat': heartbeat_log_cb
-                    }
-                    process_heartbeat(msg, handler_context)
+                    # Process the first heartbeat with correct arguments
+                    process_heartbeat(
+                        msg, 
+                        drone_state, 
+                        drone_state_lock, 
+                        mavlink_connection_instance, 
+                        log_function, 
+                        socketio_instance, 
+                        heartbeat_log_cb
+                    )
                     break
                 gevent.sleep(0.1)
 
