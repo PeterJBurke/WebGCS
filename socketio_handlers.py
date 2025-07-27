@@ -467,37 +467,83 @@ def init_socketio_handlers(socketio_instance, app_context):
                 current_rel_alt = _drone_state.get('alt_rel', 10.0)
                 alt = float(data.get('alt', current_rel_alt))
                 
+                # Check current mode
+                current_mode = _drone_state.get('mode', 'UNKNOWN')
+                print(f"DEBUG GOTO: Current mode is '{current_mode}', checking if GUIDED mode change needed")
+                
                 _log_wrapper_for_caller_info("GOTO_START", data, f"Initiating GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m using SET_POSITION_TARGET_GLOBAL_INT", "INFO")
                 
-                current_mav_connection = _get_mavlink_connection()
+                # Initialize variables
+                guided_success = True
+                guided_mode_set = False
                 
-                if current_mav_connection and hasattr(current_mav_connection, 'target_system') and current_mav_connection.target_system != 0:
-                    current_target_system = current_mav_connection.target_system
-                    current_target_component = current_mav_connection.target_component
-
-                    # Set type mask to ignore velocities, accelerations, and yaw
-                    type_mask = (
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_VX_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_VY_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_VZ_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_AX_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_AY_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
-                        mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE
+                # First, set to GUIDED mode if not already in GUIDED mode
+                if current_mode != 'GUIDED':
+                    print(f"DEBUG GOTO: Mode is not GUIDED ('{current_mode}'), will set GUIDED mode first")
+                    _log_wrapper_for_caller_info("GOTO_SET_GUIDED", {"current_mode": current_mode}, 
+                                           f"Setting GUIDED mode before GOTO (was {current_mode})", "INFO")
+                    
+                    # Store command details for the ACK handler
+                    _pending_commands_dict[mavutil.mavlink.MAV_CMD_DO_SET_MODE] = {
+                        'timestamp': time.time(),
+                        'ui_command_name': 'GOTO_SET_GUIDED',
+                        'mode_name': 'GUIDED'
+                    }
+                    
+                    # Send SET_MODE to GUIDED command first
+                    print(f"DEBUG GOTO: Sending SET_MODE command to GUIDED (mode_id={_AP_MODE_NAME_TO_ID['GUIDED']})")
+                    guided_success, guided_msg = _send_mavlink_command_handler(
+                        mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                        p1=mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                        p2=_AP_MODE_NAME_TO_ID['GUIDED']
                     )
+                    print(f"DEBUG GOTO: SET_MODE result: success={guided_success}, msg='{guided_msg}'")
+                    
+                    if not guided_success:
+                        success = False
+                        msg = f'GOTO Failed: Could not set GUIDED mode. {guided_msg}'
+                        cmd_type = 'error'
+                        _log_wrapper_for_caller_info("GOTO", {"lat": lat, "lon": lon, "alt": alt}, f"ERROR: {msg}", "ERROR")
+                    else:
+                        # GUIDED mode set successfully, now proceed with GOTO
+                        guided_mode_set = True
+                else:
+                    print(f"DEBUG GOTO: Already in GUIDED mode, proceeding with GOTO command")
+                
+                # Only proceed with GOTO if we're in GUIDED mode (either already or just set)
+                if current_mode == 'GUIDED' or (current_mode != 'GUIDED' and guided_success):
+                    current_mav_connection = _get_mavlink_connection()
+                    
+                    if current_mav_connection and hasattr(current_mav_connection, 'target_system') and current_mav_connection.target_system != 0:
+                        current_target_system = current_mav_connection.target_system
+                        current_target_component = current_mav_connection.target_component
 
-                    current_mav_connection.mav.set_position_target_global_int_send(
-                        0,  # time_boot_ms
-                        current_target_system, current_target_component,
-                        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
-                        type_mask,
-                        int(lat * 1e7), int(lon * 1e7), alt,
-                        0, 0, 0, 0, 0, 0, 0, 0  # vx, vy, vz, afx, afy, afz, yaw, yaw_rate (all ignored)
-                    )
-                    success = True
-                    msg = f'GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m command sent using SET_POSITION_TARGET_GLOBAL_INT.'
-                    _log_wrapper_for_caller_info("GOTO_SENT", data, msg, "INFO")
+                        # Set type mask to ignore velocities, accelerations, and yaw
+                        type_mask = (
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_VX_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_VY_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_VZ_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_AX_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_AY_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
+                            mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE
+                        )
+
+                        current_mav_connection.mav.set_position_target_global_int_send(
+                            0,  # time_boot_ms
+                            current_target_system, current_target_component,
+                            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+                            type_mask,
+                            int(lat * 1e7), int(lon * 1e7), alt,
+                            0, 0, 0, 0, 0, 0, 0, 0  # vx, vy, vz, afx, afy, afz, yaw, yaw_rate (all ignored)
+                        )
+                        success = True
+                        if guided_mode_set:
+                            msg = f'Set GUIDED mode and GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m commands sent.'
+                        else:
+                            msg = f'GOTO to Lat:{lat:.7f}, Lon:{lon:.7f}, Alt:{alt:.1f}m command sent using SET_POSITION_TARGET_GLOBAL_INT.'
+                        _log_wrapper_for_caller_info("GOTO_SENT", data, msg, "INFO")
                 else:
                     success = False
                     msg = "GOTO Failed: MAVLink connection not available or target system not identified."
