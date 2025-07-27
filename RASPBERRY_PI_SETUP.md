@@ -19,7 +19,7 @@ The fastest way to get WebGCS running on Raspberry Pi:
 
 ```bash
 # Install git and clone the repository
-sudo apt-get update && sudo apt-get install -y git
+sudo apt-get install -y git
 git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
 
@@ -390,7 +390,7 @@ If you need to install components manually:
 ### MAVLink Router Only
 ```bash
 cd /home/pi
-sudo apt-get update && sudo apt-get install -y git
+sudo apt-get install -y git
 git clone https://github.com/PeterJBurke/installmavlinkrouter2024.git
 cd installmavlinkrouter2024
 chmod +x install.sh
@@ -400,7 +400,7 @@ sudo ./install.sh
 ### WebGCS Only
 ```bash
 cd /home/pi
-sudo apt-get update && sudo apt-get install -y git
+sudo apt-get install -y git
 git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
 python3 -m venv venv
