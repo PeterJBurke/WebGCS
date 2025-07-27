@@ -26,8 +26,7 @@ readonly BLUE='\033[0;34m'
 readonly NC='\033[0m' # No Color
 
 # Script configuration
-#readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly VENV_PATH="${SCRIPT_DIR}/venv"
 readonly STATIC_LIB_DIR="${SCRIPT_DIR}/static/lib"
 readonly MIN_PYTHON_VERSION="3.10"
