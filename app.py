@@ -255,17 +255,41 @@ def log_command_action(command_name, params=None, details=None, level="INFO", ca
 # _execute_mission_request has been moved to request_handlers.py
 
 def read_telemetry_from_file():
-    """Read telemetry data from the file created by the telemetry bridge script."""
+    """Read telemetry data from the file created by the telemetry bridge script.
+    
+    Validates telemetry data freshness to prevent stale data from being used.
+    If the data is stale (older than 5 seconds), it's considered invalid.
+    """
     try:
         import json
         import os
+        import time
         
         telemetry_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'telemetry_data.json')
         
         if os.path.exists(telemetry_file):
+            # Check file modification time to detect stale data
+            file_mod_time = os.path.getmtime(telemetry_file)
+            current_time = time.time()
+            age_seconds = current_time - file_mod_time
+            
+            # If file is older than 5 seconds, consider it stale
+            if age_seconds > 5.0:
+                print(f"Telemetry file is stale (age: {age_seconds:.1f}s), ignoring to prevent misleading data")
+                return None, False
+            
             with open(telemetry_file, 'r') as f:
                 data = json.load(f)
-                print(f"Read telemetry data from file: connected={data.get('connected')}, mode={data.get('mode')}, armed={data.get('armed')}")
+                
+                # Additional validation: check if heartbeat timestamp is recent
+                last_heartbeat_time = data.get('last_heartbeat_time', 0)
+                if last_heartbeat_time > 0:
+                    heartbeat_age = current_time - last_heartbeat_time
+                    if heartbeat_age > 5.0:
+                        print(f"Telemetry heartbeat is stale (age: {heartbeat_age:.1f}s), ignoring to prevent misleading data")
+                        return None, False
+                
+                print(f"Read fresh telemetry data from file: connected={data.get('connected')}, mode={data.get('mode')}, armed={data.get('armed')}")
                 return data, True
         else:
             print(f"Telemetry file not found: {telemetry_file}")
@@ -335,6 +359,24 @@ def periodic_telemetry_update():
                             'lat': 0.0, 'lon': 0.0, 'alt_rel': 0.0, 'alt_abs': 0.0, 'heading': 0.0
                         })
                 initial_state_sent = True
+
+            # Clean up stale telemetry files when drone is disconnected
+            with drone_state_lock:
+                if not drone_state.get('connected', False):
+                    # Check if telemetry file exists and remove it to prevent stale data
+                    telemetry_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'telemetry_data.json')
+                    if os.path.exists(telemetry_file):
+                        try:
+                            # Check if file is old (older than 10 seconds) before removing
+                            file_mod_time = os.path.getmtime(telemetry_file)
+                            current_time = time.time()
+                            age_seconds = current_time - file_mod_time
+                            
+                            if age_seconds > 10.0:  # Only remove if file is old
+                                os.remove(telemetry_file)
+                                print(f"Removed stale telemetry file (age: {age_seconds:.1f}s) to prevent misleading data")
+                        except Exception as e:
+                            print(f"Error removing stale telemetry file: {e}")
 
             # Send telemetry update to UI if state has changed
             if drone_state_changed:
