@@ -169,7 +169,8 @@ drone_state_lock = threading.Lock() # Shared lock for drone_state
 
 # drone_state remains central, accessed by multiple modules
 drone_state = {
-    'connected': False, 'armed': False, 'mode': 'UNKNOWN',
+    'connected': False, # Default to False, will be set to True upon receiving a heartbeat
+    'armed': False, 'mode': 'UNKNOWN',
     'lat': 0.0, 'lon': 0.0, 'alt_rel': 0.0, 'alt_abs': 0.0, 'heading': 0.0,
     'vx': 0.0, 'vy': 0.0, 'vz': 0.0,
     'airspeed': 0.0, 'groundspeed': 0.0,
