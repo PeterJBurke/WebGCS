@@ -1504,15 +1504,32 @@
                 // Always update PFD overlay for mode when heartbeat is received
                 // If we're receiving heartbeats, we should definitely show the mode
                 const pfdModeEl = document.getElementById('mode-overlay');
-                if (pfdModeEl) {
+                const modeValueSpan = document.getElementById('mode-value');
+                
+                console.log(`[HB-MODE-DEBUG] Elements found - mode-overlay: ${!!pfdModeEl}, mode-value: ${!!modeValueSpan}`);
+                
+                if (pfdModeEl && modeValueSpan) {
                     // Update the span element without the "Mode:" prefix
-                    const modeValueSpan = document.getElementById('mode-value');
-                    if (modeValueSpan) {
-                        modeValueSpan.textContent = modeString;
-                        console.log(`[HB-MODE] Updated mode display to: ${modeString} (connection status: ${connectionStatus})`);
-                    }
+                    const oldText = modeValueSpan.textContent;
+                    modeValueSpan.textContent = modeString;
+                    console.log(`[HB-MODE] Updated mode display from '${oldText}' to '${modeString}' (connection status: ${connectionStatus})`);
+                    
+                    // Verify the update took effect
+                    setTimeout(() => {
+                        const currentText = modeValueSpan.textContent;
+                        if (currentText !== modeString) {
+                            console.log(`[HB-MODE] ERROR: Mode display reverted from '${modeString}' to '${currentText}'`);
+                        }
+                    }, 100);
                 } else {
-                    console.log(`[HB-MODE] WARNING: mode-overlay element not found!`);
+                    console.log(`[HB-MODE] WARNING: Required elements not found - mode-overlay: ${!!pfdModeEl}, mode-value: ${!!modeValueSpan}`);
+                    
+                    // Try alternative approach - update the entire mode-overlay text
+                    if (pfdModeEl) {
+                        const oldText = pfdModeEl.textContent;
+                        pfdModeEl.innerHTML = `Mode: <span id="mode-value">${modeString}</span>`;
+                        console.log(`[HB-MODE] FALLBACK: Updated entire mode-overlay from '${oldText}' to include mode: ${modeString}`);
+                    }
                 }
             }
         });
