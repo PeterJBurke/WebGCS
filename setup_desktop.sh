@@ -478,8 +478,7 @@ Type=simple
 User=root
 Group=root
 WorkingDirectory=${SCRIPT_DIR}
-Environment=PATH=${VENV_PATH}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-Environment=PYTHONPATH=${SCRIPT_DIR}
+Environment="PYTHONPATH=${SCRIPT_DIR}"
 ExecStart=${python_path} ${app_path}
 Restart=on-failure
 RestartSec=10
