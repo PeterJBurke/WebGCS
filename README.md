@@ -43,6 +43,7 @@ chmod +x setup_desktop.sh
 **Complete ground station setup for Raspberry Pi:**
 
 ```bash
+sudo apt-get update && sudo apt-get install -y git
 git clone https://github.com/PeterJBurke/WebGCS.git
 cd WebGCS
 chmod +x setup_raspberry_pi.sh
