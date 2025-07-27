@@ -1501,15 +1501,18 @@
                 currentHeartbeatMode = modeString.toUpperCase();
                 console.log(`[HB-MODE] Updated mode to '${modeString}' from heartbeat`);
 
-                // Only update PFD overlay for mode when connected
+                // Always update PFD overlay for mode when heartbeat is received
+                // If we're receiving heartbeats, we should definitely show the mode
                 const pfdModeEl = document.getElementById('mode-overlay');
-                if (pfdModeEl && connectionStatus === 'connected') {
-                    // Instead, just update the span element without the "Mode:" prefix
+                if (pfdModeEl) {
+                    // Update the span element without the "Mode:" prefix
                     const modeValueSpan = document.getElementById('mode-value');
                     if (modeValueSpan) {
                         modeValueSpan.textContent = modeString;
-                        console.log(`[HB-MODE] Updated mode display to: ${modeString}`);
+                        console.log(`[HB-MODE] Updated mode display to: ${modeString} (connection status: ${connectionStatus})`);
                     }
+                } else {
+                    console.log(`[HB-MODE] WARNING: mode-overlay element not found!`);
                 }
             }
         });
