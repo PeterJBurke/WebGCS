@@ -574,10 +574,17 @@ def init_socketio_handlers(socketio_instance, app_context):
             # Get drone_state_lock from app context (we need to add this to the context)
             drone_state_lock = globals().get('_drone_state_lock')
             
-            # Trigger reconnection with new address
-            success = force_reconnect_with_new_address(connection_string, _drone_state, drone_state_lock)
+            # Import the event and trigger reconnection
+            from mavlink_connection_manager import get_connection_event, force_reconnect_with_new_address
+            connection_event = get_connection_event()
             
-            if success:
+            # This function only initiates the reconnection process
+            force_reconnect_with_new_address(connection_string, _drone_state, drone_state_lock)
+
+            # Wait for the connection_event to be set by the MAVLink loop, with a timeout
+            connection_established = connection_event.wait(timeout=10.0) # Wait for up to 10 seconds
+
+            if connection_established:
                 emit('connection_status', {
                     'status': 'connected',
                     'ip': ip,
@@ -585,11 +592,12 @@ def init_socketio_handlers(socketio_instance, app_context):
                 })
                 _log_wrapper_for_caller_info("DRONE_CONNECT_SUCCESS", data, f"Successfully connected to {ip}:{port}", "INFO")
             else:
+                # If wait(timeout) returns False, it means the connection timed out
                 emit('connection_status', {
                     'status': 'error',
-                    'message': f'Failed to connect to {ip}:{port}'
+                    'message': f'Connection to {ip}:{port} timed out'
                 })
-                _log_wrapper_for_caller_info("DRONE_CONNECT_FAILED", data, f"Failed to connect to {ip}:{port}", "ERROR")
+                _log_wrapper_for_caller_info("DRONE_CONNECT_FAILED", data, f"Connection to {ip}:{port} timed out after 10 seconds", "ERROR")
                 
         except Exception as e:
             _log_wrapper_for_caller_info("DRONE_CONNECT_ERROR", data, f"Exception during connection: {str(e)}", "ERROR")
