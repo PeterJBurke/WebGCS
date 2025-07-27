@@ -1467,6 +1467,44 @@
             }
         });
 
+        // EKG monitor heartbeat sound function
+        function playHeartbeatSound() {
+            try {
+                // Create audio context for generating EKG beep sound
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create oscillator for the beep
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Connect oscillator to gain to speakers
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Configure the beep sound (like EKG monitor)
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz beep
+                oscillator.type = 'sine';
+                
+                // Configure volume envelope (quick attack, quick decay)
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01); // Quick attack
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1); // Quick decay
+                
+                // Play the beep for 100ms
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+                
+                // Clean up
+                oscillator.onended = () => {
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                };
+                
+            } catch (error) {
+                console.log('[HEARTBEAT SOUND] Audio not supported or failed:', error);
+            }
+        }
+
         // Heartbeat trigger function
         function triggerHeartbeat() {
             const heartIcon = document.getElementById('heartbeat-indicator');
@@ -1479,6 +1517,9 @@
                 
                 // Add the beating class to start animation
                 heartIcon.classList.add('beating');
+                
+                // Play EKG monitor heartbeat sound
+                playHeartbeatSound();
                 
                 console.log(`[HB-BEAT] Heart animation triggered #${heartbeatCount}`);
                 
