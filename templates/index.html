@@ -889,6 +889,38 @@
         // --- Utility Functions ---
         function addMessage(text, type = "info") { const p = document.createElement("p"); const timestamp = new Date().toLocaleTimeString(); p.textContent = `[${timestamp}] ${text}`; p.className = `msg-${type}`; messagesDiv.appendChild(p); messagesDiv.scrollTop = messagesDiv.scrollHeight; while (messagesDiv.children.length > 150) { messagesDiv.removeChild(messagesDiv.children[1]); } }
         function setControlsDisabled(disabled) { Object.values(commandControls).forEach(control => { if (control) control.disabled = disabled; }); if (modeSelect) modeSelect.disabled = disabled; const inputs = document.querySelectorAll('.controls input, .controls select'); inputs.forEach(input => input.disabled = disabled); if (modeSelect && !disabled) modeSelect.disabled = false; }
+        
+        // --- Audio Alert Function ---
+        function playAudioAlert(message) {
+            try {
+                if ('speechSynthesis' in window) {
+                    // Cancel any ongoing speech
+                    window.speechSynthesis.cancel();
+                    
+                    const utterance = new SpeechSynthesisUtterance(message);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+                    
+                    // Use a clear, neutral voice if available
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        // Try to find a good English voice
+                        const englishVoice = voices.find(voice => voice.lang.startsWith('en'));
+                        if (englishVoice) {
+                            utterance.voice = englishVoice;
+                        }
+                    }
+                    
+                    window.speechSynthesis.speak(utterance);
+                    console.log(`[AUDIO] Playing audio alert: "${message}"`);
+                } else {
+                    console.warn('[AUDIO] Speech synthesis not supported in this browser');
+                }
+            } catch (error) {
+                console.error('[AUDIO] Error playing audio alert:', error);
+            }
+        }
 
         // --- SocketIO Event Handlers ---
         socket.on("connect", () => { 
@@ -1796,6 +1828,9 @@
                 disconnectBtn.disabled = false;
                 disconnectBtn.textContent = 'Disconnect';
                 
+                // Play audio alert for connection
+                playAudioAlert('connected');
+                
                 // Update the input fields with the connected IP/port
                 droneIpInput.value = data.ip;
                 dronePortInput.value = data.port;
@@ -1809,6 +1844,9 @@
                 connectBtn.textContent = 'Connect';
                 disconnectBtn.disabled = true;
                 disconnectBtn.textContent = 'Disconnect';
+                
+                // Play audio alert for disconnection
+                playAudioAlert('disconnected');
                 
                 // Clear HUD displays when disconnected
                 const armingStatusOverlay = document.getElementById('arming-status-overlay');
