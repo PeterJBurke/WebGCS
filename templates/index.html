@@ -188,6 +188,54 @@
         .connected { color: #28a745; font-weight: bold; }
         .disconnected { color: #dc3545; font-weight: bold; }
         .connecting { color: #007bff; font-weight: bold; }
+        
+        /* Heartbeat sound toggle switch */
+        .heartbeat-sound-toggle {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .heartbeat-sound-toggle input[type="checkbox"] {
+            display: none;
+        }
+        
+        .toggle-slider {
+            display: inline-block;
+            width: 20px;
+            height: 12px;
+            background-color: #ccc;
+            border-radius: 6px;
+            position: relative;
+            transition: background-color 0.3s;
+            margin-right: 4px;
+        }
+        
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: white;
+            top: 1px;
+            left: 1px;
+            transition: transform 0.3s;
+        }
+        
+        .heartbeat-sound-toggle input:checked + .toggle-slider {
+            background-color: #28a745;
+        }
+        
+        .heartbeat-sound-toggle input:checked + .toggle-slider:before {
+            transform: translateX(8px);
+        }
+        
+        .heartbeat-sound-toggle:hover .toggle-slider {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -226,6 +274,10 @@
                                     <div class="connection-indicators">
                                         <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
                                         <span id="heartbeat-counter" style="font-size: 10px; color: #666;">(0)</span>
+                                        <label class="heartbeat-sound-toggle" title="Toggle heartbeat sound">
+                                            <input type="checkbox" id="heartbeat-sound-enabled" checked>
+                                            <span class="toggle-slider">🔊</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -1469,6 +1521,12 @@
 
         // EKG monitor heartbeat sound function
         function playHeartbeatSound() {
+            // Check if heartbeat sound is enabled
+            const soundToggle = document.getElementById('heartbeat-sound-enabled');
+            if (!soundToggle || !soundToggle.checked) {
+                return; // Sound is disabled, don't play
+            }
+            
             try {
                 // Create audio context for generating EKG beep sound
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
