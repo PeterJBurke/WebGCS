@@ -339,13 +339,50 @@ def init_socketio_handlers(socketio_instance, app_context):
                 if not (0 < alt <= 1000):
                     raise ValueError("Altitude must be > 0 and <= 1000")
                 
-                # Send direct MAVLink TAKEOFF command
-                success, msg_send = _send_mavlink_command_handler(
-                    mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
-                    p7=alt  # param7 = altitude
-                )
-                cmd_type = 'info' if success else 'error'
-                msg = f'Takeoff to {alt:.1f}m command sent.' if success else f'TAKEOFF Failed: {msg_send}'
+                # Check current mode
+                current_mode = _drone_state.get('mode', 'UNKNOWN')
+                
+                # First, set to GUIDED mode if not already in GUIDED mode
+                if current_mode != 'GUIDED':
+                    _log_wrapper_for_caller_info("TAKEOFF_SET_GUIDED", {"current_mode": current_mode}, 
+                                           f"Setting GUIDED mode before takeoff (was {current_mode})", "INFO")
+                    
+                    # Store command details for the ACK handler
+                    _pending_commands_dict[mavutil.mavlink.MAV_CMD_DO_SET_MODE] = {
+                        'timestamp': time.time(),
+                        'ui_command_name': 'TAKEOFF_SET_GUIDED',
+                        'mode_name': 'GUIDED'
+                    }
+                    
+                    # Send SET_MODE to GUIDED command first
+                    guided_success, guided_msg = _send_mavlink_command_handler(
+                        mavutil.mavlink.MAV_CMD_DO_SET_MODE,
+                        p1=mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                        p2=_AP_MODE_NAME_TO_ID['GUIDED']
+                    )
+                    
+                    if not guided_success:
+                        success = False
+                        msg = f'TAKEOFF Failed: Could not set GUIDED mode. {guided_msg}'
+                        cmd_type = 'error'
+                        _log_wrapper_for_caller_info("TAKEOFF", {"altitude": alt}, f"ERROR: {msg}", "ERROR")
+                    else:
+                        # GUIDED mode command sent successfully, now send takeoff
+                        success, msg_send = _send_mavlink_command_handler(
+                            mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                            p7=alt  # param7 = altitude
+                        )
+                        cmd_type = 'info' if success else 'error'
+                        msg = f'Set GUIDED mode and takeoff to {alt:.1f}m commands sent.' if success else f'TAKEOFF Failed: {msg_send}'
+                else:
+                    # Already in GUIDED mode, send takeoff directly
+                    success, msg_send = _send_mavlink_command_handler(
+                        mavutil.mavlink.MAV_CMD_NAV_TAKEOFF,
+                        p7=alt  # param7 = altitude
+                    )
+                    cmd_type = 'info' if success else 'error'
+                    msg = f'Takeoff to {alt:.1f}m command sent.' if success else f'TAKEOFF Failed: {msg_send}'
+                    
             except (ValueError, TypeError) as e:
                 success = False
                 msg = f"TAKEOFF Error: Invalid altitude '{data.get('altitude')}'. Details: {e}"
