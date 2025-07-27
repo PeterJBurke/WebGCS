@@ -535,8 +535,9 @@ if __name__ == '__main__':
             return None
     
     # Start MAVLink connection in a background thread - don't block server startup
-    mavlink_connection_thread = threading.Thread(target=start_mavlink_connection_async, daemon=True)
-    mavlink_connection_thread.start()
+    # COMMENTED OUT: Disable automatic connection on page load - require manual connection
+    # mavlink_connection_thread = threading.Thread(target=start_mavlink_connection_async, daemon=True)
+    # mavlink_connection_thread.start()
     
     # Start Flask-SocketIO server immediately 
     print(">>> Starting Flask-SocketIO server...")
