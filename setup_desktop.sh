@@ -26,7 +26,7 @@ readonly BLUE='\033[0;34m'
 readonly NC='\033[0m' # No Color
 
 # Script configuration
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 readonly VENV_PATH="${SCRIPT_DIR}/venv"
 readonly STATIC_LIB_DIR="${SCRIPT_DIR}/static/lib"
 readonly MIN_PYTHON_VERSION="3.10"
@@ -457,7 +457,7 @@ create_systemd_service() {
     # Ensure we have absolute paths
     python_path="$(realpath "$python_path")"
     app_path="$(realpath "$app_path")"
-    SCRIPT_DIR="$(realpath "$SCRIPT_DIR")"
+
     
     log_info "Resolved absolute paths:"
     log_info "  Script directory: ${SCRIPT_DIR}"
