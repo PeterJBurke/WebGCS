@@ -72,10 +72,8 @@ telemetry_data.json
 command.json
 
 # Claude Code Integration - Sensitive Files (NEVER COMMIT)
-claude-code/.env
-claude-code/.env.*
-claude-code/.claude/
-claude-code/logs/
+.claude/
+logs/
 
 # Additional security exclusions
 .anthropic/
