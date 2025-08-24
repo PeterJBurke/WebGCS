@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Update title -->
+    <title>Drone Control Interface v2.0</title>
+    <link rel="stylesheet" href="/static/lib/leaflet.css"/>
+    <link rel="stylesheet" href="/static/css/style.css"/> <!-- Link to the updated style.css -->
+    <link rel="stylesheet" href="/static/css/offline-maps.css"/> <!-- Offline maps styles -->
+    <style>
+        /* Basic layout styles */
+        body { display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        h1.main-title { background-color: #333; color: #fff; padding: 8px 15px; margin: 0; font-size: 1.2em; flex-shrink: 0; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        button:disabled, select:disabled { background-color: #cccccc; color: #666666; cursor: not-allowed; opacity: 0.7; }
+        .map-controls { position: absolute; top: 10px; left: 50px; z-index: 500; background: rgba(255,255,255,0.8); padding: 5px; border-radius: 4px; border: 1px solid #bbb; }
+        .map-controls button { font-size: 11px; padding: 3px 6px; margin-left: 5px; }
+        .goto-controls { 
+            display: flex; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 6px; 
+        }
+        .goto-controls input { 
+            flex-grow: 0; /* Don't let inputs grow automatically */
+            margin-right: 6px; 
+        }
+        /* Specific sizes for different fields */
+        #goto-lat, #goto-lon { 
+            min-width: 120px; 
+            width: 120px; 
+        }
+        #goto-alt { 
+            min-width: 50px; 
+            width: 50px; 
+        }
+        /* Create field groups to keep labels with inputs */
+        .field-group {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            margin-right: 4px;
+        }
+        .field-group label {
+            margin-right: 4px;
+        }
+        .mode-select-control { margin-left: 10px; }
+        .mode-select-control select { padding: 5px; font-size: 0.9em; }
+        
+        /* Fly To mode styling */
+        .mode-toggle.active {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        /* Add pulsing animation for target marker */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .pulsing {
+            animation: pulse 1s infinite ease-in-out;
+        }
+        
+        /* Request buttons styles - horizontal layout */
+        .request-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .request-controls button {
+            flex: 1;
+        }
+
+        /* Add CSS for the target marker to ensure visibility */
+        .target-marker {
+            filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.5));
+            z-index: 1000 !important;
+        }
+        
+        /* Connection Controls Styles */
+        .connection-controls {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            background-color: #ddd;
+        }
+        
+        .connection-controls h2 {
+            font-size: 1.1em;
+            margin: 0 0 8px 0;
+            color: #333;
+            border-bottom: 1px solid #bbb;
+            padding-bottom: 4px;
+        }
+        
+        .connection-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .connection-inputs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .connection-inputs .field-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        
+        .connection-inputs label {
+            font-weight: bold;
+            min-width: 70px;
+        }
+        
+        .connection-inputs input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+        
+        #drone-ip {
+            width: 130px;
+        }
+        
+        #drone-port {
+            width: 80px;
+        }
+        
+        .connection-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .connection-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .connection-btn:hover:not(:disabled) {
+            background-color: #f0f0f0;
+        }
+        
+        .connection-btn:disabled {
+            background-color: #e0e0e0;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        #btn-connect {
+            border-color: #28a745;
+            color: #28a745;
+        }
+        
+        #btn-connect:hover:not(:disabled) {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        #btn-disconnect {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        #btn-disconnect:hover:not(:disabled) {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* Connection status styling */
+        .connected { color: #28a745; font-weight: bold; }
+        .disconnected { color: #dc3545; font-weight: bold; }
+        .connecting { color: #007bff; font-weight: bold; }
+        
+        /* Heartbeat sound toggle switch */
+        .heartbeat-sound-toggle {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .heartbeat-sound-toggle input[type="checkbox"] {
+            display: none;
+        }
+        
+        .toggle-slider {
+            display: inline-block;
+            width: 20px;
+            height: 12px;
+            background-color: #ccc;
+            border-radius: 6px;
+            position: relative;
+            transition: background-color 0.3s;
+            margin-right: 4px;
+        }
+        
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: white;
+            top: 1px;
+            left: 1px;
+            transition: transform 0.3s;
+        }
+        
+        .heartbeat-sound-toggle input:checked + .toggle-slider {
+            background-color: #28a745;
+        }
+        
+        .heartbeat-sound-toggle input:checked + .toggle-slider:before {
+            transform: translateX(8px);
+        }
+        
+        .heartbeat-sound-toggle:hover .toggle-slider {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Update title -->
+    <h1 class="main-title">Drone Control Interface v2.0</h1>
+    <div class="main-container">
+        <div class="left-column">
+            <!-- PFD Section -->
+            <div class="pfd-section">
+                 <div id="attitude-indicator-wrapper">
+                    <canvas id="attitude-canvas" width="280" height="250"></canvas>
+                    <div id="asi-tape-container"><canvas id="asi-canvas" width="60" height="250"></canvas></div>
+                    <div id="alt-tape-container"><canvas id="alt-canvas" width="70" height="250"></canvas></div>
+                    <div id="arming-status-overlay" class="pfd-overlay">DISARMED</div>
+                    <div id="battery-overlay" class="pfd-overlay">Bat: <span id="battery-value">--.-</span>V</div>
+                    <div id="mode-overlay" class="pfd-overlay" aria-live="off" aria-hidden="true" role="presentation">Mode: <span id="mode-value" aria-live="off" aria-hidden="true" role="presentation">------</span></div>
+                    <div id="current-overlay" class="pfd-overlay">Cur: <span id="current-value">--.-</span>A</div>
+                    <div id="gps-overlay" class="pfd-overlay">GPS: <span id="gps-fix-value">---</span> (<span id="gps-sats-value">0</span>) HDOP:<span id="gps-hdop-value">--.-</span></div>
+                    <div id="latlon-overlay" class="pfd-overlay">Lat: <span id="lat-value">--.------</span><br>Lon: <span id="lon-value">--.------</span></div>
+                    <!-- <div id="pitch-overlay" class="pfd-overlay">Pitch: <span id="pitch-value">--.-</span>°</div> -->
+                    <!-- <div id="roll-overlay" class="pfd-overlay">Roll: <span id="roll-value">--.-</span>°</div> -->
+                </div>
+            </div>
+
+            <div class="info-controls-section">
+                <div class="status">
+                    <h2>Connection & Status</h2>
+                    <div class="status-grid">
+                        <div class="status-row">
+                            <div class="status-item">
+                                <div class="connection-content">
+                                    <div class="connection-status-text">
+                                        <strong>Connection:</strong>
+                                        <span id="status-connection" class="disconnected">Disconnected</span>
+                                    </div>
+                                    <div class="connection-indicators">
+                                        <span id="heartbeat-indicator" class="heartbeat-icon" title="Heartbeat Status">❤️</span>
+                                        <span id="heartbeat-counter" style="font-size: 10px; color: #666;">(0)</span>
+                                        <label class="heartbeat-sound-toggle" title="Toggle heartbeat sound">
+                                            <input type="checkbox" id="heartbeat-sound-enabled" checked>
+                                            <span class="toggle-slider">🔊</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection-form">
+                        <div class="connection-inputs">
+                            <div class="field-group">
+                                <label for="drone-ip">IP Address:</label>
+                                <input type="text" id="drone-ip" placeholder="192.168.1.100" value="192.168.193.63">
+                            </div>
+                            <div class="field-group">
+                                <label for="drone-port">Port:</label>
+                                <input type="number" id="drone-port" placeholder="5678" value="5678" min="1" max="65535">
+                            </div>
+                        </div>
+                        <div class="connection-actions">
+                            <button id="btn-connect" class="connection-btn">Connect</button>
+                            <button id="btn-disconnect" class="connection-btn" disabled>Disconnect</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <!-- Controls section remains unchanged -->
+                     <h2>Controls</h2>
+                    <div><button id="btn-arm">Arm</button> <button id="btn-disarm">Disarm</button> <button id="btn-takeoff">Takeoff</button> (Alt: <input type="number" id="takeoff-alt" value="5" step="1" min="1" max="1000" style="width:45px"> m) <button id="btn-land">Land</button> <button id="btn-rtl">RTL</button></div>
+                    <div class="mode-select-control"><label for="mode-select">Set Mode:</label> <select id="mode-select" aria-hidden="true" role="presentation"><option value="">--Select Mode--</option><option value="STABILIZE">Stabilize</option><option value="ALT_HOLD">Alt Hold</option><option value="POS_HOLD">Pos Hold</option><option value="LOITER">Loiter</option><option value="GUIDED">Guided</option><option value="RTL">RTL</option><option value="LAND">Land</option><option value="AUTO">Auto</option><option value="BRAKE">Brake</option></select> <button id="btn-set-mode">Set</button></div>
+                    <hr>
+                    <div class="goto-controls">
+                        <div class="field-group">
+                            <label for="goto-lat">Lat</label>
+                            <input type="number" step="any" id="goto-lat" placeholder="[-90,90]">
+                        </div>
+                        <div class="field-group">
+                            <label for="goto-lon">Lon</label>
+                            <input type="number" step="any" id="goto-lon" placeholder="[-180,180]">
+                        </div>
+                        <div class="field-group">
+                            <label for="goto-alt">Alt</label>
+                            <input type="number" step="any" id="goto-alt" placeholder="AGL" value="10" min="-100" max="5000">
+                        </div>
+                        <button id="btn-goto">Go To</button>
+                        <button id="btn-clear-goto" title="Clear GoTo Fields">Clear</button>
+                    </div>
+                    <hr>
+                    <!-- Add mission and fence request buttons horizontally -->
+                    <div class="request-controls">
+                        <button id="btn-request-fence">Request Fence</button>
+                        <button id="btn-request-mission">Request Mission</button>
+                    </div>
+                    <hr>
+                    <!-- Voice Announcements Control -->
+                    <div style="margin-top: 10px;">
+                        <label>
+                            <input type="checkbox" id="voice-toggle" checked> 
+                            Voice Announcements
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Messages section moved to appear after controls -->
+                <div class="messages-section">
+                    <h2>Messages</h2>
+                    <div id="messages" class="message-log"><strong>Messages:</strong><br></div>
+                </div>
+            </div>
+        </div>
+        <div class="right-column" id="map">
+            <div class="map-controls"> 
+                <button id="btn-center-map" title="Center map on drone">Center Map</button>
+                <button id="btn-fly-to-mode" title="Click on map to fly the drone to that position" class="mode-toggle">Fly To: OFF</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Offline Maps Toggle Button -->
+    <button class="offline-maps-toggle" id="offline-maps-toggle" title="Open offline maps panel">
+        📡 Offline Maps
+    </button>
+    
+    <!-- Offline Maps Panel -->
+    <div class="offline-maps-panel" id="offline-maps-panel">
+        <div class="offline-maps-header">
+            <h3 class="offline-maps-title">Offline Maps</h3>
+            <button class="close-btn" id="close-offline-panel" title="Close">&times;</button>
+        </div>
+        
+        <div class="connection-status">
+            <span class="status-indicator" id="connection-indicator"></span>
+            <span id="connection-text">Checking connection...</span>
+        </div>
+        
+        <div class="form-group">
+            <label>Download Area</label>
+            <div class="form-row">
+                <input type="number" id="north-lat" placeholder="North Lat" step="0.000001">
+                <input type="number" id="west-lng" placeholder="West Lng" step="0.000001">
+            </div>
+            <div class="form-row">
+                <input type="number" id="south-lat" placeholder="South Lat" step="0.000001">
+                <input type="number" id="east-lng" placeholder="East Lng" step="0.000001">
+            </div>
+            <button class="btn btn-secondary" id="btn-use-current-view" style="margin-top: 8px; width: 100%;">
+                Use Current Map View
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label>Zoom Levels</label>
+            <div class="form-row">
+                <input type="number" id="min-zoom" value="2" min="1" max="20" placeholder="Min">
+                <input type="number" id="max-zoom" value="16" min="1" max="20" placeholder="Max">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Map Types</label>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="include-osm" checked>
+                    <label for="include-osm">Street Map</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="include-satellite" checked>
+                    <label for="include-satellite">Satellite</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="area-preview" id="area-preview" style="display: none;">
+            <div class="area-preview-item">
+                <span>Estimated tiles:</span>
+                <span id="estimated-tiles">0</span>
+            </div>
+            <div class="area-preview-item">
+                <span>Estimated size:</span>
+                <span id="estimated-size">0 MB</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary" id="btn-download-tiles">
+                Download
+            </button>
+            <button class="btn btn-secondary" id="btn-stop-download" disabled>
+                Stop
+            </button>
+        </div>
+        
+        <div class="progress-section" id="progress-section" style="display: none;">
+            <div class="progress-text" id="progress-text">Downloading tiles...</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-text" id="progress-details">0 / 0 tiles</div>
+        </div>
+        
+        <div class="cache-stats" id="cache-stats">
+            <h4>Cache Statistics</h4>
+            <div class="stat-item">
+                <span class="stat-label">Street tiles:</span>
+                <span class="stat-value" id="osm-count">Loading...</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Satellite tiles:</span>
+                <span class="stat-value" id="satellite-count">Loading...</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total tiles:</span>
+                <span class="stat-value" id="total-count">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 16px;">
+            <button class="btn btn-danger" id="btn-clear-cache">
+                Clear Cache
+            </button>
+        </div>
+        
+        <div class="download-area-hint">
+            💡 Tip: Use "Use Current Map View" to quickly set the download area, or manually enter coordinates. Higher zoom levels download more detailed tiles but require more storage.
+        </div>
+    </div>
+    
+    <a href="/mavlink_dump" id="dump-link-button" target="_blank" title="Open MAVLink Message Dump">Dump</a>
+
+    <script src="/static/lib/leaflet.js"></script>
+    <script src="/static/lib/socket.io.min.js"></script>
+    <script src="/static/offline-maps.js"></script>
+    <script>
+        // --- Global Variables & DOM Elements ---
+        const map = L.map('map', {
+            maxZoom: 22,  // Increased from default (18)
+            minZoom: 2,   // Minimum zoom level
+            zoomControl: true,  // Show zoom controls
+            zoomDelta: 1,  // Zoom level increment
+            zoomSnap: 0.5  // Allow half-step zoom levels
+        }).setView([0, 0], 2);
+        
+        // Create offline-capable tile layers
+        const osmLayer = offlineMapManager.createOfflineTileLayer('osm', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 22,
+            maxNativeZoom: 19
+        });
+
+        const satelliteLayer = offlineMapManager.createOfflineTileLayer('satellite', {
+            attribution: '© Esri',
+            maxZoom: 22,
+            maxNativeZoom: 18
+        });
+
+        // Define base maps for layer control
+        const baseMaps = {
+            "Street": osmLayer,
+            "Satellite": satelliteLayer
+        };
+
+        // Add default layer and layer control with collapsed: false to always show options
+        osmLayer.addTo(map);
+        L.control.layers(baseMaps, {}, {
+            position: 'topright',
+            collapsed: false  // Always show the control expanded
+        }).addTo(map);
+        
+        // Initialize offline maps UI
+        initializeOfflineMapsUI();
+        
+        function initializeOfflineMapsUI() {
+            // Check internet connection status
+            function updateConnectionStatus() {
+                const indicator = document.getElementById('connection-indicator');
+                const text = document.getElementById('connection-text');
+                
+                if (navigator.onLine) {
+                    indicator.className = 'status-indicator status-online';
+                    text.textContent = 'Online - can download tiles';
+                } else {
+                    indicator.className = 'status-indicator status-offline';
+                    text.textContent = 'Offline - using cached tiles';
+                }
+            }
+            
+            // Update connection status on load and when online status changes
+            updateConnectionStatus();
+            window.addEventListener('online', updateConnectionStatus);
+            window.addEventListener('offline', updateConnectionStatus);
+            
+            // Update cache statistics
+            async function updateCacheStats() {
+                try {
+                    const stats = await offlineMapManager.getCacheStats();
+                    document.getElementById('osm-count').textContent = stats.osmTiles.toLocaleString();
+                    document.getElementById('satellite-count').textContent = stats.satelliteTiles.toLocaleString();
+                    document.getElementById('total-count').textContent = (stats.osmTiles + stats.satelliteTiles).toLocaleString();
+                } catch (error) {
+                    console.error('Error updating cache stats:', error);
+                    document.getElementById('osm-count').textContent = 'Error';
+                    document.getElementById('satellite-count').textContent = 'Error';
+                    document.getElementById('total-count').textContent = 'Error';
+                }
+            }
+            
+            // Update cache stats initially and every 5 seconds
+            updateCacheStats();
+            setInterval(updateCacheStats, 5000);
+            
+            // Toggle panel visibility
+            document.getElementById('offline-maps-toggle').addEventListener('click', function() {
+                const panel = document.getElementById('offline-maps-panel');
+                panel.classList.toggle('visible');
+            });
+            
+            // Close panel
+            document.getElementById('close-offline-panel').addEventListener('click', function() {
+                document.getElementById('offline-maps-panel').classList.remove('visible');
+            });
+            
+            // Use current map view button
+            document.getElementById('btn-use-current-view').addEventListener('click', function() {
+                const bounds = map.getBounds();
+                
+                document.getElementById('north-lat').value = bounds.getNorth().toFixed(6);
+                document.getElementById('south-lat').value = bounds.getSouth().toFixed(6);
+                document.getElementById('west-lng').value = bounds.getWest().toFixed(6);
+                document.getElementById('east-lng').value = bounds.getEast().toFixed(6);
+                
+                updateAreaPreview();
+            });
+            
+            // Update area preview when inputs change
+            function updateAreaPreview() {
+                const northLat = parseFloat(document.getElementById('north-lat').value);
+                const southLat = parseFloat(document.getElementById('south-lat').value);
+                const westLng = parseFloat(document.getElementById('west-lng').value);
+                const eastLng = parseFloat(document.getElementById('east-lng').value);
+                const minZoom = parseInt(document.getElementById('min-zoom').value);
+                const maxZoom = parseInt(document.getElementById('max-zoom').value);
+                const includeOsm = document.getElementById('include-osm').checked;
+                const includeSatellite = document.getElementById('include-satellite').checked;
+                
+                // Validate inputs
+                if (isNaN(northLat) || isNaN(southLat) || isNaN(westLng) || isNaN(eastLng) || 
+                    isNaN(minZoom) || isNaN(maxZoom) || minZoom > maxZoom) {
+                    document.getElementById('area-preview').style.display = 'none';
+                    return;
+                }
+                
+                // Calculate estimated tiles
+                const bounds = L.latLngBounds([southLat, westLng], [northLat, eastLng]);
+                const tiles = offlineMapManager.calculateTilesForArea(bounds, minZoom, maxZoom);
+                
+                let sources = [];
+                if (includeOsm) sources.push('osm');
+                if (includeSatellite) sources.push('satellite');
+                
+                const totalTiles = tiles.length * sources.length;
+                const estimatedSizeMB = (totalTiles * 25) / 1024; // Rough estimate: 25KB per tile
+                
+                document.getElementById('estimated-tiles').textContent = totalTiles.toLocaleString();
+                document.getElementById('estimated-size').textContent = estimatedSizeMB.toFixed(1) + ' MB';
+                document.getElementById('area-preview').style.display = 'block';
+            }
+            
+            // Add event listeners for area preview updates
+            ['north-lat', 'south-lat', 'west-lng', 'east-lng', 'min-zoom', 'max-zoom', 'include-osm', 'include-satellite'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateAreaPreview);
+                document.getElementById(id).addEventListener('change', updateAreaPreview);
+            });
+            
+            // Download tiles button
+            document.getElementById('btn-download-tiles').addEventListener('click', function() {
+                const northLat = parseFloat(document.getElementById('north-lat').value);
+                const southLat = parseFloat(document.getElementById('south-lat').value);
+                const westLng = parseFloat(document.getElementById('west-lng').value);
+                const eastLng = parseFloat(document.getElementById('east-lng').value);
+                const minZoom = parseInt(document.getElementById('min-zoom').value);
+                const maxZoom = parseInt(document.getElementById('max-zoom').value);
+                const includeOsm = document.getElementById('include-osm').checked;
+                const includeSatellite = document.getElementById('include-satellite').checked;
+                
+                // Validate inputs
+                if (isNaN(northLat) || isNaN(southLat) || isNaN(westLng) || isNaN(eastLng) || 
+                    isNaN(minZoom) || isNaN(maxZoom) || minZoom > maxZoom) {
+                    alert('Please fill in all fields with valid values');
+                    return;
+                }
+                
+                if (!includeOsm && !includeSatellite) {
+                    alert('Please select at least one map type to download');
+                    return;
+                }
+                
+                // Check if area is too large
+                const bounds = L.latLngBounds([southLat, westLng], [northLat, eastLng]);
+                const tiles = offlineMapManager.calculateTilesForArea(bounds, minZoom, maxZoom);
+                
+                let sources = [];
+                if (includeOsm) sources.push('osm');
+                if (includeSatellite) sources.push('satellite');
+                
+                const totalTiles = tiles.length * sources.length;
+                
+                if (totalTiles > 10000) {
+                    if (!confirm(`This will download ${totalTiles.toLocaleString()} tiles. This might take a long time and use significant bandwidth. Continue?`)) {
+                        return;
+                    }
+                }
+                
+                // Start download
+                document.getElementById('btn-download-tiles').disabled = true;
+                document.getElementById('btn-stop-download').disabled = false;
+                document.getElementById('progress-section').style.display = 'block';
+                
+                offlineMapManager.downloadTilesForArea(bounds, {
+                    minZoom: minZoom,
+                    maxZoom: maxZoom,
+                    sources: sources,
+                    onProgress: function(progress) {
+                        const percentage = (progress.completed / progress.total) * 100;
+                        document.getElementById('progress-bar').style.width = percentage + '%';
+                        document.getElementById('progress-details').textContent = 
+                            `${progress.completed} / ${progress.total} tiles (${progress.failed} failed)`;
+                    },
+                    onComplete: function(progress) {
+                        document.getElementById('btn-download-tiles').disabled = false;
+                        document.getElementById('btn-stop-download').disabled = true;
+                        document.getElementById('progress-section').style.display = 'none';
+                        
+                        if (progress.failed > 0) {
+                            alert(`Download completed with ${progress.failed} failures out of ${progress.total} tiles`);
+                        } else {
+                            alert(`Successfully downloaded ${progress.completed} tiles`);
+                        }
+                        
+                        updateCacheStats();
+                    },
+                    onError: function(error) {
+                        console.error('Download error:', error);
+                        alert('Download failed: ' + error.message);
+                        
+                        document.getElementById('btn-download-tiles').disabled = false;
+                        document.getElementById('btn-stop-download').disabled = true;
+                        document.getElementById('progress-section').style.display = 'none';
+                    }
+                });
+            });
+            
+            // Stop download button
+            document.getElementById('btn-stop-download').addEventListener('click', function() {
+                offlineMapManager.stopDownload();
+                document.getElementById('btn-download-tiles').disabled = false;
+                document.getElementById('btn-stop-download').disabled = true;
+                document.getElementById('progress-section').style.display = 'none';
+            });
+            
+            // Clear cache button
+            document.getElementById('btn-clear-cache').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all cached map tiles? This cannot be undone.')) {
+                    offlineMapManager.clearCache().then(() => {
+                        alert('Cache cleared successfully');
+                        updateCacheStats();
+                    }).catch(error => {
+                        console.error('Error clearing cache:', error);
+                        alert('Failed to clear cache: ' + error.message);
+                    });
+                }
+            });
+        }
+        
+        let droneMarker = null, homeMarker = null, firstLocationUpdate = true;
+        let flyToTargetMarker = null;
+        let currentClickMarker = null; // Track the current green dot
+        const droneIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#007bff"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 12] });
+        const homeIcon = L.icon({ iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#28a745"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/></svg>'), iconSize: [24, 24], iconAnchor: [12, 24] });
+        const targetIcon = L.icon({ 
+            iconUrl: 'data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ff3b30"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="5"/></svg>'), 
+            iconSize: [28, 28], 
+            iconAnchor: [14, 14],
+            className: 'target-marker' // Add class for easier styling/debugging
+        });
+        const socket = io();
+
+        // MAVLink constants
+        const MAV_MODE_FLAG_SAFETY_ARMED = 128;
+
+        // ArduPilot Custom Flight Modes (from config.py)
+        const AP_CUSTOM_MODES_JS = {
+            0: 'STABILIZE',
+            1: 'ACRO',
+            2: 'ALT_HOLD',
+            3: 'AUTO',
+            4: 'GUIDED',
+            5: 'LOITER',
+            6: 'RTL',
+            9: 'LAND',
+            16: 'POS_HOLD',
+            17: 'BRAKE',
+            18: 'THROW',
+            19: 'AVOID_ADSB',
+            20: 'GUIDED_NOGPS',
+            21: 'SMART_RTL',
+            22: 'FLOWHOLD',
+            23: 'FOLLOW',
+            24: 'ZIGZAG',
+            25: 'SYSTEMID',
+            26: 'AUTOROTATE',
+            27: 'AUTO_RTL'
+        };
+
+        // MAVLink Autopilot types (subset, add more if needed)
+        const MAV_AUTOPILOT_GENERIC = 0;
+        const MAV_AUTOPILOT_ARDUPILOTMEGA = 3; // Value for ArduPilot
+
+
+        function getModeString(autopilot, type, custom_mode) {
+            // console.log('[getModeString] Inputs - Autopilot:', autopilot, 'Type:', type, 'Custom mode:', custom_mode);
+            // For ArduPilot, use AP_CUSTOM_MODES_JS
+            if (autopilot === MAV_AUTOPILOT_ARDUPILOTMEGA) {
+                if (AP_CUSTOM_MODES_JS.hasOwnProperty(custom_mode)) {
+                    const mode = AP_CUSTOM_MODES_JS[custom_mode];
+                    // console.log('[getModeString] Output (ArduPilot Found):', mode);
+                    return mode;
+                }
+                const fallbackCustom = `CUSTOM(${custom_mode})`;
+                // console.log('[getModeString] Output (ArduPilot CUSTOM Fallback):', fallbackCustom);
+                return fallbackCustom;
+            }
+            // Generic or other autopilots might not use custom_mode the same way
+            const fallbackUnknown = `MODE_UNKNOWN (A:${autopilot} T:${type} CM:${custom_mode})`;
+            // console.log('[getModeString] Output (Generic Fallback):', fallbackUnknown);
+            return fallbackUnknown;
+        }
+
+        const messagesDiv = document.getElementById('messages');
+        const ahCanvas = document.getElementById('attitude-canvas'), ahCtx = ahCanvas.getContext('2d');
+        const asiCanvas = document.getElementById('asi-canvas'), asiCtx = asiCanvas.getContext('2d');
+        const altCanvas = document.getElementById('alt-canvas'), altCtx = altCanvas.getContext('2d');
+        const armingStatusOverlay = document.getElementById('arming-status-overlay');
+        const batteryOverlay = document.getElementById('battery-overlay');
+        const modeOverlay = document.getElementById('mode-overlay');
+        const currentOverlay = document.getElementById('current-overlay');
+        const gpsOverlay = document.getElementById('gps-overlay');
+        const latlonOverlay = document.getElementById('latlon-overlay');
+        const batteryValueSpan = document.getElementById('battery-value');
+        const modeValueSpan = document.getElementById('mode-value');
+        const currentValueSpan = document.getElementById('current-value');
+        const gpsFixValueSpan = document.getElementById('gps-fix-value');
+        const gpsSatsValueSpan = document.getElementById('gps-sats-value');
+        const gpsHdopValueSpan = document.getElementById('gps-hdop-value');
+        const latValueSpan = document.getElementById('lat-value');
+        const lonValueSpan = document.getElementById('lon-value');
+        const pitchValueSpan = document.getElementById('pitch-value');
+        const rollValueSpan = document.getElementById('roll-value');
+        
+        // Offscreen canvas for altitude tape strip
+        let offscreenAltitudeStripCanvas = null;
+        let offscreenAltitudeStripCtx = null;
+        const ALT_STRIP_MIN_ALT_RENDER = -1000; // Min altitude to pre-render on the strip
+        const ALT_STRIP_MAX_ALT_RENDER = 10000; // Max altitude to pre-render on the strip
+        let ALT_STRIP_CONTENT_HEIGHT = 0;     // Actual height of the pre-rendered strip content
+        
+        const commandControls={ARM:document.getElementById("btn-arm"),DISARM:document.getElementById("btn-disarm"),TAKEOFF:document.getElementById("btn-takeoff"),LAND:document.getElementById("btn-land"),RTL:document.getElementById("btn-rtl"),SET_MODE:document.getElementById("btn-set-mode"),GOTO:document.getElementById("btn-goto"),"clear-goto":document.getElementById("btn-clear-goto"),"center-map":document.getElementById("btn-center-map")};
+        const modeSelect=document.getElementById("mode-select");
+        const DEG_TO_RAD = Math.PI / 180;
+        const RAD_TO_DEG = 180 / Math.PI;
+        const M_S_TO_KNOTS = 1.94384;
+        const ahWidth = ahCanvas.width, ahHeight = ahCanvas.height;
+        const ahCenterX = ahWidth / 2, ahCenterY = ahHeight / 2;
+        const PITCH_SCALE_FACTOR = 4;
+        const TAPE_WIDTH = asiCanvas.width;
+        const TAPE_ALT_WIDTH = altCanvas.width;
+        const TAPE_HEIGHT = ahHeight;
+        const TAPE_CENTER_Y = TAPE_HEIGHT / 2;
+        const ASI_PIXELS_PER_UNIT = 5;
+        const ALT_PIXELS_PER_UNIT = 5;
+        const HEADING_PIXELS_PER_DEG = 2.5;
+        const HEADING_TAPE_HEIGHT = 25;
+        const PFD_SKY_COLOR = "#87CEEB";
+        const PFD_GROUND_COLOR = "#A0522D";
+        const PFD_HORIZON_LINE_COLOR = "#FFFFFF";
+        const PFD_AIRCRAFT_SYMBOL_COLOR = "#FFFF00";
+        const PFD_TAPE_TICK_COLOR = "#FFFFFF";
+        const PFD_TAPE_POINTER_COLOR = "#FFFF00";
+        const PFD_OVERLAY_BOX_COLOR = "rgba(50, 50, 50, 0.7)";
+        const PFD_OVERLAY_TEXT_COLOR = "#FFFFFF";
+
+        // --- PFD Drawing Functions (drawRoundedRect, drawAttitudeIndicator, drawAirspeedTape, drawAltitudeTape) ---
+        function drawRoundedRect(ctx, x, y, width, height, radius) { ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.arcTo(x + width, y, x + width, y + radius, radius); ctx.lineTo(x + width, y + height - radius); ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius); ctx.lineTo(x + radius, y + height); ctx.arcTo(x, y + height, x, y + height - radius, radius); ctx.lineTo(x, y + radius); ctx.arcTo(x, y, x + radius, y, radius); ctx.closePath(); }
+        function drawAttitudeIndicator(pitch = 0, roll = 0, heading = 0) {
+            // ADD THIS LOG AT THE VERY BEGINNING:
+            // console.log(`[DRAW_ATTITUDE] Received: pitch=${pitch.toFixed(2)}, roll=${roll.toFixed(2)}, heading=${heading.toFixed(2)}`);
+            // Add guards for non-finite inputs
+            if (pitchValueSpan) pitchValueSpan.textContent = (isFinite(pitch) ? pitch : 0).toFixed(1);
+            if (rollValueSpan) rollValueSpan.textContent = (isFinite(roll) ? roll : 0).toFixed(1);
+
+            if (!isFinite(pitch) || !isFinite(roll) || !isFinite(heading)) {
+                console.error(`drawAttitudeIndicator called with non-finite values: pitch=${pitch}, roll=${roll}, heading=${heading}`);
+                pitch = isFinite(pitch) ? pitch : 0;
+                roll = isFinite(roll) ? roll : 0;
+                heading = isFinite(heading) ? heading : 0;
+            }
+ const rollRad = -roll * DEG_TO_RAD; const pitchPx = pitch * PITCH_SCALE_FACTOR; const ctx = ahCtx; ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, ahWidth, ahHeight); ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.save(); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.beginPath(); ctx.rect(0, 0, ahWidth, HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX - heading * HEADING_PIXELS_PER_DEG, HEADING_TAPE_HEIGHT / 2); const headingRange = Math.ceil(ahWidth / (2 * HEADING_PIXELS_PER_DEG)); const startHdg = Math.floor(heading - headingRange - 10); const endHdg = Math.ceil(heading + headingRange + 10); const headingLabels = { 0: "N", 30: "3", 60: "6", 90: "E", 120: "12", 150: "15", 180: "S", 210: "21", 240: "24", 270: "W", 300: "30", 330: "33", 360: "N" }; for (let h = startHdg; h <= endHdg; h += 5) { const normalizedHdg = (h % 360 + 360) % 360; const xPos = h * HEADING_PIXELS_PER_DEG; let tickHeight = 5; let isLabelTick = false; let label = null; ctx.lineWidth = 1; if (h % 10 === 0) tickHeight = 10; if (h % 30 === 0) { tickHeight = 15; isLabelTick = true; label = (normalizedHdg / 10).toString(); } if (headingLabels[normalizedHdg]) { tickHeight = 15; isLabelTick = true; label = headingLabels[normalizedHdg]; ctx.lineWidth = 1.5; } ctx.beginPath(); ctx.moveTo(xPos, -tickHeight / 2); ctx.lineTo(xPos, tickHeight / 2); ctx.stroke(); if (isLabelTick && label) { ctx.fillText(label, xPos, tickHeight / 2 + 10); } } ctx.restore(); ctx.save(); ctx.beginPath(); ctx.rect(0, HEADING_TAPE_HEIGHT, ahWidth, ahHeight - HEADING_TAPE_HEIGHT); ctx.clip(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.rotate(rollRad); ctx.translate(0, pitchPx); ctx.fillStyle = PFD_SKY_COLOR; ctx.fillRect(-ahWidth * 1.5, -ahHeight * 2, ahWidth * 3, ahHeight * 2); ctx.fillStyle = PFD_GROUND_COLOR; ctx.fillRect(-ahWidth * 1.5, 0, ahWidth * 3, ahHeight * 2); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-ahWidth * 1.5, 0); ctx.lineTo(ahWidth * 1.5, 0); ctx.stroke(); ctx.strokeStyle = PFD_HORIZON_LINE_COLOR; ctx.lineWidth = 1; ctx.font = "12px monospace"; ctx.fillStyle = PFD_HORIZON_LINE_COLOR; ctx.textAlign = "center"; const tickLengthShort = 25; const tickLengthLong = 50; for (let p = -90; p <= 90; p += 5) { if (p === 0) continue; const yPos = -p * PITCH_SCALE_FACTOR; if (Math.abs(yPos) > ahHeight * 1.5) continue; const isMajorTick = (p % 10 === 0); const tickLength = isMajorTick ? tickLengthLong : tickLengthShort; ctx.beginPath(); ctx.moveTo(-tickLength / 2, yPos); ctx.lineTo(tickLength / 2, yPos); ctx.stroke(); if (isMajorTick) { ctx.fillText(Math.abs(p).toString(), -tickLength / 2 - 20, yPos + 4); ctx.fillText(Math.abs(p).toString(), tickLength / 2 + 20, yPos + 4); } } ctx.restore(); ctx.save(); ctx.translate(ahCenterX, ahCenterY + HEADING_TAPE_HEIGHT / 2); ctx.strokeStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.fillStyle = PFD_AIRCRAFT_SYMBOL_COLOR; ctx.lineWidth = 2; const notchSize = 4; ctx.beginPath(); ctx.moveTo(0, -notchSize / 2); ctx.lineTo(-notchSize, notchSize / 2); ctx.lineTo(notchSize, notchSize / 2); ctx.closePath(); ctx.fillRect(-1,-1,2,2); const wingLength = 40; ctx.beginPath(); ctx.moveTo(-wingLength, 0); ctx.lineTo(-notchSize*1.5, 0); ctx.moveTo(notchSize*1.5, 0); ctx.lineTo(wingLength, 0); ctx.stroke(); ctx.restore(); ctx.save(); const hdgBoxWidth = 80; const hdgBoxHeight = 20; const hdgBoxX = ahCenterX - hdgBoxWidth / 2; const hdgBoxY = 5; const hdgBoxRadius = 5; ctx.fillStyle = PFD_OVERLAY_BOX_COLOR; drawRoundedRect(ctx, hdgBoxX, hdgBoxY, hdgBoxWidth, hdgBoxHeight, hdgBoxRadius); ctx.fill(); ctx.fillStyle = PFD_OVERLAY_TEXT_COLOR; ctx.font = "bold 11px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`HDG: ${heading.toFixed(0)}°`, ahCenterX, hdgBoxY + hdgBoxHeight / 2); ctx.restore(); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(ahCenterX, HEADING_TAPE_HEIGHT); ctx.lineTo(ahCenterX - 6, HEADING_TAPE_HEIGHT + 6); ctx.lineTo(ahCenterX + 6, HEADING_TAPE_HEIGHT + 6); ctx.closePath(); ctx.fill(); ctx.restore(); }
+        function drawAirspeedTape(speed = 0) { const ctx = asiCtx; const tapeWidth = TAPE_WIDTH; const tapeHeight = TAPE_HEIGHT; const centerY = TAPE_CENTER_Y; const pixelsPerUnit = ASI_PIXELS_PER_UNIT; const pointerWidth = 15; ctx.save(); ctx.clearRect(0, 0, tapeWidth, tapeHeight); const pointerBoxHeight = 20; const pointerBoxY = centerY - pointerBoxHeight / 2; const textBoxX = 5; const textBoxWidth = tapeWidth - pointerWidth - 10; ctx.strokeStyle = PFD_TAPE_POINTER_COLOR; ctx.lineWidth = 1.5; ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.font = "bold 14px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(speed.toFixed(0), textBoxX + textBoxWidth / 2, centerY); ctx.fillStyle = PFD_TAPE_POINTER_COLOR; ctx.beginPath(); ctx.moveTo(tapeWidth - pointerWidth, pointerBoxY); ctx.lineTo(tapeWidth, centerY); ctx.lineTo(tapeWidth - pointerWidth, pointerBoxY + pointerBoxHeight); ctx.closePath(); ctx.fill(); ctx.translate(0, centerY + speed * pixelsPerUnit); ctx.strokeStyle = PFD_TAPE_TICK_COLOR; ctx.fillStyle = PFD_TAPE_TICK_COLOR; ctx.font = "12px monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle"; const range = Math.ceil(tapeHeight / (2 * pixelsPerUnit * 5)) * 5; const startValue = Math.max(0, Math.floor(speed - range) - 5); const endValue = Math.ceil(speed + range) + 10; for (let val = startValue; val <= endValue; val += 1) { const yPos = -val * pixelsPerUnit; if (yPos < -centerY - 20 || yPos > tapeHeight - centerY + 20) continue; let tickLength = 0; let isLabelTick = false; ctx.lineWidth = 1; if (val % 10 === 0) { tickLength = 15; isLabelTick = true; ctx.lineWidth = 1.5; } else if (val % 5 === 0) { tickLength = 10; } else { tickLength = 5; } if (tickLength > 0) { ctx.beginPath(); ctx.moveTo(0, yPos); ctx.lineTo(tickLength, yPos); ctx.stroke(); if (isLabelTick && val >= 0) { ctx.fillText(val.toString(), -5, yPos); } } } ctx.restore(); }
+        function initAltitudeStrip() {
+            offscreenAltitudeStripCanvas = document.createElement('canvas');
+            ALT_STRIP_CONTENT_HEIGHT = (ALT_STRIP_MAX_ALT_RENDER - ALT_STRIP_MIN_ALT_RENDER) * ALT_PIXELS_PER_UNIT;
+            
+            offscreenAltitudeStripCanvas.width = TAPE_ALT_WIDTH;
+            offscreenAltitudeStripCanvas.height = ALT_STRIP_CONTENT_HEIGHT;
+            offscreenAltitudeStripCtx = offscreenAltitudeStripCanvas.getContext('2d');
+            offscreenAltitudeStripCtx.imageSmoothingEnabled = false;
+
+            const ctx = offscreenAltitudeStripCtx;
+            const tapeWidth = TAPE_ALT_WIDTH;
+            const pixelsPerUnit = ALT_PIXELS_PER_UNIT;
+
+            ctx.strokeStyle = PFD_TAPE_TICK_COLOR;
+            ctx.fillStyle = PFD_TAPE_TICK_COLOR;
+            ctx.font = "12px monospace";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+
+            for (let val = ALT_STRIP_MIN_ALT_RENDER; val <= ALT_STRIP_MAX_ALT_RENDER; val += 2) {
+                const yDrawCoordinate = Math.round((ALT_STRIP_MAX_ALT_RENDER - val) * pixelsPerUnit);
+
+                let tickLength = 0;
+                let isLabelTick = false;
+                ctx.lineWidth = 1;
+
+                if (val % 100 === 0) {
+                    tickLength = 20; isLabelTick = true; ctx.lineWidth = 2;
+                } else if (val % 20 === 0) {
+                    tickLength = 15; isLabelTick = true; ctx.lineWidth = 2;
+                } else if (val % 10 === 0) {
+                    tickLength = 10;
+                } else if (val % 2 === 0) {
+                    tickLength = 5;
+                }
+
+                if (tickLength > 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(tapeWidth, yDrawCoordinate);
+                    ctx.lineTo(tapeWidth - tickLength, yDrawCoordinate);
+                    ctx.stroke();
+                    if (isLabelTick) {
+                        ctx.fillText(val.toString(), tapeWidth - tickLength - 25, yDrawCoordinate);
+                    }
+                }
+            }
+            console.log("Altitude strip pre-rendered with new coordinate system.");
+        }
+
+        function drawAltitudeTape(alt = 0) {
+            const ctx = altCtx;
+            ctx.imageSmoothingEnabled = false; 
+            const tapeWidth = TAPE_ALT_WIDTH;
+            const tapeHeight = TAPE_HEIGHT;
+            const centerY = TAPE_CENTER_Y; 
+            const pixelsPerUnit = ALT_PIXELS_PER_UNIT;
+            const pointerWidth = 15;
+
+            ctx.save();
+            ctx.clearRect(0, 0, tapeWidth, tapeHeight);
+
+            const pointerBoxHeight = 20;
+            const pointerBoxY = centerY - pointerBoxHeight / 2;
+            const textBoxX = pointerWidth + 5;
+            const textBoxWidth = tapeWidth - pointerWidth - 10;
+            ctx.strokeStyle = PFD_TAPE_POINTER_COLOR;
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(textBoxX, pointerBoxY, textBoxWidth, pointerBoxHeight);
+            ctx.fillStyle = PFD_TAPE_POINTER_COLOR;
+            ctx.font = "bold 14px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(alt.toFixed(0), textBoxX + textBoxWidth / 2, centerY);
+            ctx.beginPath();
+            ctx.moveTo(pointerWidth, pointerBoxY);
+            ctx.lineTo(0, centerY);
+            ctx.lineTo(pointerWidth, pointerBoxY + pointerBoxHeight);
+            ctx.closePath();
+            ctx.fill();
+
+            if (offscreenAltitudeStripCanvas && offscreenAltitudeStripCtx) {
+                const yStripCurrentAlt = (ALT_STRIP_MAX_ALT_RENDER - alt) * pixelsPerUnit;
+                const sourceYUnrounded = yStripCurrentAlt - centerY;
+                const sourceY = Math.round(sourceYUnrounded); 
+
+                ctx.drawImage(offscreenAltitudeStripCanvas,
+                              0, sourceY,           
+                              tapeWidth, tapeHeight, 
+                              0, 0,                 
+                              tapeWidth, tapeHeight); 
+            }
+            ctx.restore();
+        }
+
+        // --- Utility Functions ---
+        function addMessage(text, type = "info") { const p = document.createElement("p"); const timestamp = new Date().toLocaleTimeString(); p.textContent = `[${timestamp}] ${text}`; p.className = `msg-${type}`; messagesDiv.appendChild(p); messagesDiv.scrollTop = messagesDiv.scrollHeight; while (messagesDiv.children.length > 150) { messagesDiv.removeChild(messagesDiv.children[1]); } }
+        function setControlsDisabled(disabled) { Object.values(commandControls).forEach(control => { if (control) control.disabled = disabled; }); if (modeSelect) modeSelect.disabled = disabled; const inputs = document.querySelectorAll('.controls input, .controls select'); inputs.forEach(input => input.disabled = disabled); if (modeSelect && !disabled) modeSelect.disabled = false; }
+        
+        // --- Audio Alert Function ---
+        function playAudioAlert(message) {
+            try {
+                if ('speechSynthesis' in window) {
+                    // Cancel any ongoing speech
+                    window.speechSynthesis.cancel();
+                    
+                    const utterance = new SpeechSynthesisUtterance(message);
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 0.8;
+                    
+                    // Use a clear, neutral voice if available
+                    const voices = window.speechSynthesis.getVoices();
+                    if (voices.length > 0) {
+                        // Try to find a good English voice
+                        const englishVoice = voices.find(voice => voice.lang.startsWith('en'));
+                        if (englishVoice) {
+                            utterance.voice = englishVoice;
+                        }
+                    }
+                    
+                    window.speechSynthesis.speak(utterance);
+                    console.log(`[AUDIO] Playing audio alert: "${message}"`);
+                } else {
+                    console.warn('[AUDIO] Speech synthesis not supported in this browser');
+                }
+            } catch (error) {
+                console.error('[AUDIO] Error playing audio alert:', error);
+            }
+        }
+
+        // --- SocketIO Event Handlers ---
+        socket.on("connect", () => { 
+            console.log("Socket Connected"); 
+            addMessage("Connected to backend.", "info"); 
+            document.getElementById("status-connection").textContent = "Backend Connected"; 
+            document.getElementById("status-connection").className = "connected"; 
+        });
+        
+        socket.on("disconnect", () => { 
+            console.log("Socket Disconnected"); 
+            addMessage("Disconnected from backend.", "error"); 
+            document.getElementById("status-connection").textContent = "Disconnected"; 
+            document.getElementById("status-connection").className = "disconnected"; 
+        });
+        
+        socket.on("connect_error", (err) => { 
+            console.error("Socket Connection Error:", err); 
+            addMessage(`Backend connection error: ${err.message}`, "error"); 
+            document.getElementById("status-connection").textContent = "Connect Error"; 
+            document.getElementById("status-connection").className = "disconnected"; 
+            const heartIconErr = document.getElementById('heartbeat-indicator'); 
+            if(heartIconErr) heartIconErr.classList.remove('connected-state'); 
+            setControlsDisabled(true);
+        });
+        
+        socket.on("status_message", (data) => { 
+            console.log("Status Msg:", data.text, "Type:", data.type); 
+            addMessage(data.text, data.type); 
+        });
+
+        // Add debug logging for ALL WebSocket events
+        let heartbeatCount = 0;
+        let lastHeartbeatModeUpdate = 0; // Track when we last updated mode from heartbeat
+        let currentHeartbeatMode = null; // Track the actual mode from heartbeat
+        const originalOn = socket.on;
+        socket.on = function(event, handler) {
+            return originalOn.call(this, event, function(...args) {
+                if (event === 'mavlink_message') {
+                    // console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args[0]);
+                    if (args[0] && args[0].mavpackettype === 'HEARTBEAT') {
+                        // console.log(`[WEBSOCKET DEBUG] *** HEARTBEAT MESSAGE RECEIVED #${heartbeatCount} ***`, args[0]);
+                    }
+                } else if (event !== 'telemetry_update') {
+                    // Log all events except telemetry_update to avoid spam
+                    // console.log(`[WEBSOCKET DEBUG] Received '${event}' event:`, args);
+                }
+                return handler.apply(this, args);
+            });
+        };
+
+        // Test message handlers - comment out for clean HEARTBEAT tracing
+        socket.on('websocket_test', function(data) {
+            // console.log('[WEBSOCKET TEST] Received test message:', data);
+        });
+
+        socket.on('debug_message', function(data) {
+            // console.log('[DEBUG MESSAGE] Received debug message:', data);
+        });
+
+        socket.on("telemetry_update", (data) => {
+            // console.log("Telemetry update received:", data);
+            // console.log("Detailed telemetry data:", JSON.stringify(data, null, 2));
+            
+            const isConnected = data.connected;
+            const currentStatus = document.getElementById("status-connection").className;
+            
+            // Update connection status based on actual connection state
+            // Don't override if we're actively connecting/disconnecting OR if explicitly disconnected
+            if (currentStatus !== 'connecting' && currentStatus !== 'disconnected') {
+                if (isConnected) {
+                    // If connected and we don't have detailed connection info, show generic connected
+                    const currentText = document.getElementById("status-connection").textContent;
+                    if (!currentText.includes('@')) {
+                        document.getElementById("status-connection").textContent = "Drone Connected";
+                        document.getElementById("status-connection").className = "connected";
+                    }
+                }
+                // Remove the else case - don't let telemetry set disconnected status
+                // Only the connection_status handler should set disconnected status
+            }
+            
+            setControlsDisabled(!isConnected);
+            
+            // Add debug message to the UI
+            addMessage(`Telemetry update: Connected=${isConnected}, Mode=${data.mode}, Lat=${data.lat}, Lon=${data.lon}`, "info");
+
+            const heartIconElement = document.getElementById('heartbeat-indicator');
+            if (heartIconElement) { heartIconElement.classList.toggle('connected-state', isConnected); }
+
+            // Update text overlays
+            const mode = (data.mode || "UNKNOWN").toUpperCase(); 
+            const voltage = data.battery_voltage || 0; 
+            const current = data.battery_current ?? -1; 
+            const armed = data.armed || false; 
+            const lat = data.lat ?? 0; 
+            const lon = data.lon ?? 0; 
+            const fix = data.gps_fix_type ?? 0; 
+            const sats = data.satellites_visible ?? 0; 
+            const hdop = data.hdop ?? 99.9; 
+            
+            // console.log("Updating display values:", {
+            //     mode: mode, voltage: voltage, current: current, armed: armed, 
+            //     lat: lat, lon: lon, fix: fix, sats: sats, hdop: hdop
+            // });
+
+            if (pitchValueSpan) pitchValueSpan.textContent = (data.pitch != null && isFinite(data.pitch) ? data.pitch : 0).toFixed(1);
+            if (rollValueSpan) rollValueSpan.textContent = (data.roll != null && isFinite(data.roll) ? data.roll : 0).toFixed(1);
+            
+            batteryValueSpan.textContent = voltage.toFixed(2); 
+            
+            // DISABLE telemetry mode updates - only use heartbeat for mode
+            // if (currentHeartbeatMode === null || mode.toUpperCase() === currentHeartbeatMode.toUpperCase()) {
+            //     modeValueSpan.textContent = mode; 
+            // } else {
+            //     console.log(`[MODE-CONFLICT] Ignoring telemetry mode '${mode}' because heartbeat mode is '${currentHeartbeatMode}'`);
+            // }
+            // console.log(`[TELEMETRY-MODE] Ignoring telemetry mode '${mode}' - using heartbeat only`);
+            
+            // Only update arming status when actually connected
+            // Check the actual UI connection status, not the stale telemetry data
+            const actualConnectionStatus = document.getElementById("status-connection").className;
+            const isActuallyConnected = actualConnectionStatus === 'connected';
+            
+            if (isActuallyConnected) {
+                // console.log('[TELEMETRY] Updating arming status - UI Connected:', isActuallyConnected, 'Armed:', armed);
+                armingStatusOverlay.textContent = armed ? "ARMED" : "DISARMED";
+                armingStatusOverlay.classList.toggle("pfd-armed", armed);
+            } else {
+                // console.log('[TELEMETRY] Skipping arming update - UI shows not connected (status:', actualConnectionStatus, ')');
+            }
+            
+            currentValueSpan.textContent = current >= 0 ? current.toFixed(1) : "--.-"; 
+            let fixStr = "---"; 
+            switch (fix) { 
+                case 0: case 1: fixStr = "NO"; break; 
+                case 2: fixStr = "2D"; break; 
+                case 3: fixStr = "3D"; break; 
+                case 4: fixStr = "DGPS"; break; 
+                case 5: fixStr = "RTKf"; break; 
+                case 6: fixStr = "RTKx"; break; 
+                default: fixStr = `?${fix}`; 
+            } 
+            gpsFixValueSpan.textContent = fixStr; 
+            gpsSatsValueSpan.textContent = sats >= 0 ? sats : "?"; 
+            gpsHdopValueSpan.textContent = hdop < 99 ? hdop.toFixed(1) : "--.-"; 
+            latValueSpan.textContent = lat.toFixed(7); 
+            lonValueSpan.textContent = lon.toFixed(7);
+
+            // Update PFD canvas drawings
+            const airspeed = data.airspeed || 0; 
+            const altRel = data.alt_rel || 0; 
+            const heading = data.heading ?? data.yaw_attitude ?? 0; // Use data.heading or data.yaw_attitude as fallback
+            const pitch = data.pitch ?? 0;   // Use data.pitch directly (already in degrees)
+            const roll = data.roll ?? 0;     // Use data.roll directly (already in degrees)
+
+            // Log values before drawing
+            // console.log(`[TELEMETRY_UPDATE] PFD Values: pitch=${pitch.toFixed(2)}, roll=${roll.toFixed(2)}, heading=${heading.toFixed(2)}, airspeed=${airspeed.toFixed(1)}, altRel=${altRel.toFixed(1)}`);
+
+            drawAttitudeIndicator(pitch, roll, heading); 
+            drawAirspeedTape(airspeed); 
+            drawAltitudeTape(altRel);
+
+            // Update Map with Drone Marker
+            if (isConnected && lat != null && lon != null && lat !== 0 && lon !== 0) {
+                const latLng = [lat, lon];
+                if (!droneMarker) {
+                    droneMarker = L.marker(latLng, { icon: droneIcon }).addTo(map).bindPopup("Drone Position");
+                } else {
+                    droneMarker.setLatLng(latLng);
+                }
+                if (firstLocationUpdate) {
+                    map.setView(latLng, 16);
+                    firstLocationUpdate = false;
+                }
+            } else {
+                if (droneMarker) {
+                    map.removeLayer(droneMarker);
+                    droneMarker = null;
+                    firstLocationUpdate = true;
+                }
+            }
+            
+            const homeLat = data.home_lat; 
+            const homeLon = data.home_lon; 
+            
+            if (isConnected && homeLat != null && homeLon != null && homeLat !== 0 && homeLon !== 0) { 
+                const homeLatLng = [homeLat, homeLon]; 
+                if (!homeMarker) { 
+                    homeMarker = L.marker(homeLatLng, { icon: homeIcon }).addTo(map).bindPopup("Home Position"); 
+                } else { 
+                    homeMarker.setLatLng(homeLatLng); 
+                } 
+            } else { 
+                if (homeMarker) { 
+                    map.removeLayer(homeMarker); 
+                    homeMarker = null; 
+                } 
+            } 
+            
+            try{ 
+                map.invalidateSize(); 
+            } catch(e) {/*ignore*/}
+        });
+
+        // --- Command Button Event Listeners ---
+        commandControls.ARM.addEventListener("click",function(){/*if(confirm("ARM drone?")){*/this.disabled=!0;socket.emit("send_command",{command:"ARM"})/*}*/});
+        commandControls.DISARM.addEventListener("click",function(){/*if(confirm("DISARM drone?")){*/this.disabled=!0;socket.emit("send_command",{command:"DISARM"})/*}*/});
+        commandControls.TAKEOFF.addEventListener("click",function(){const e=document.getElementById("takeoff-alt"),t=parseFloat(e.value);if(isNaN(t)||t<=0||t>1e3)return addMessage("Invalid takeoff altitude (must be > 0 and <= 1000).","warning"),void e.focus();/*if(confirm(`Takeoff to ${t}m?`)){*/this.disabled=!0;socket.emit("send_command",{command:"TAKEOFF",altitude:t})/*}*/});
+        commandControls.LAND.addEventListener("click",function(){/*if(confirm("LAND drone?")){*/this.disabled=!0;socket.emit("send_command",{command:"LAND"})/*}*/});
+        commandControls.RTL.addEventListener("click",function(){/*if(confirm("Return-To-Launch (RTL)?")){*/this.disabled=!0;socket.emit("send_command",{command:"RTL"})/*}*/});
+        commandControls.SET_MODE.addEventListener("click",function(){const e=modeSelect.value;if(!e)return void addMessage("Please select a flight mode.","warning");/*if(confirm(`Set mode to ${e}?`)){*/this.disabled=!0;modeSelect.disabled=!0;socket.emit("send_command",{command:"SET_MODE",mode_name:e})/*}*/});
+        commandControls.GOTO.addEventListener("click",function(){const e=document.getElementById("goto-lat"),t=document.getElementById("goto-lon"),o=document.getElementById("goto-alt"),a=parseFloat(e.value),n=parseFloat(t.value),i=parseFloat(o.value);let s=!0,l="Invalid GoTo parameters: ";if(isNaN(a)||a<-90||a>90){s=!1;l+=" Latitude invalid.";e.focus()}else if(isNaN(n)||n<-180||n>180){s=!1;l+=" Longitude invalid.";t.focus()}else if(isNaN(i)||i<-100||i>5e3){s=!1;l+=" Altitude invalid.";o.focus()}if(!s)return void addMessage(l,"warning");/*if(confirm(`Go to Lat: ${a.toFixed(6)}, Lon: ${n.toFixed(6)}, Alt: ${i.toFixed(1)}m?`)){*/this.disabled=!0;socket.emit("send_command",{command:"GOTO",lat:a,lon:n,alt:i})/*}*/});
+        commandControls["clear-goto"].addEventListener("click",function(){document.getElementById("goto-lat").value="";document.getElementById("goto-lon").value="";document.getElementById("goto-alt").value="10";addMessage("GoTo fields cleared.","info")});
+        commandControls["center-map"].addEventListener("click",function(){if(droneMarker){map.setView(droneMarker.getLatLng(),map.getZoom()<14?16:map.getZoom());addMessage("Map centered on drone.","info")}else{addMessage("Drone location not available to center map.","warning")}});
+        
+        // Voice toggle event listener
+        document.getElementById('voice-toggle').addEventListener('change', function() {
+            voiceAnnouncementsEnabled = this.checked;
+            addMessage(`Voice announcements ${this.checked ? 'enabled' : 'disabled'}`, 'info');
+            
+            // Test voice when enabled
+            if (this.checked) {
+                speakText('Voice announcements enabled');
+            }
+        });
+        
+        // Add Fly To Mode Functionality
+        let flyToModeActive = false;
+        const flyToButton = document.getElementById('btn-fly-to-mode');
+        
+        flyToButton.addEventListener('click', function() {
+            flyToModeActive = !flyToModeActive;
+            this.textContent = flyToModeActive ? 'Fly To: ON' : 'Fly To: OFF';
+            this.classList.toggle('active', flyToModeActive);
+            
+            if (flyToModeActive) {
+                addMessage("Fly To mode activated. Click on map to send drone to that position.", "info");
+                // Change cursor to indicate clickable map
+                map._container.style.cursor = 'crosshair';
+            } else {
+                addMessage("Fly To mode deactivated.", "info");
+                // Restore default cursor
+                map._container.style.cursor = '';
+                
+                // Remove any existing target marker when deactivating
+                if (flyToTargetMarker) {
+                    map.removeLayer(flyToTargetMarker);
+                }
+            }
+        });
+        
+        // Update map click handler to use a red target icon instead of a green dot
+        map.on('click', function(e) {
+            const lat = e.latlng.lat;
+            const lon = e.latlng.lng;
+            
+            // console.log("Map clicked at:", lat, lon, "Fly To active:", flyToModeActive);
+            
+            // Always update the GoTo input fields
+            document.getElementById("goto-lat").value = lat.toFixed(7);
+            document.getElementById("goto-lon").value = lon.toFixed(7);
+            addMessage(`Selected map point: Lat ${lat.toFixed(7)}, Lon ${lon.toFixed(7)}`, "info");
+            
+            try {
+                // Remove previous click marker if it exists
+                if (currentClickMarker) {
+                    map.removeLayer(currentClickMarker);
+                }
+                
+                // Create a single red target icon at the clicked location
+                currentClickMarker = L.marker([lat, lon], {
+                    icon: L.divIcon({
+                        className: 'click-marker-target',
+                        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                                <circle cx="12" cy="12" r="10" fill="#FF0000" fill-opacity="0.7" stroke="#FFFFFF" stroke-width="1"/>
+                                <circle cx="12" cy="12" r="5" fill="#FF0000" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="1"/>
+                                <circle cx="12" cy="12" r="2" fill="#FFFFFF"/>
+                                <line x1="12" y1="2" x2="12" y2="6" stroke="#FFFFFF" stroke-width="1.5"/>
+                                <line x1="12" y1="18" x2="12" y2="22" stroke="#FFFFFF" stroke-width="1.5"/>
+                                <line x1="2" y1="12" x2="6" y2="12" stroke="#FFFFFF" stroke-width="1.5"/>
+                                <line x1="18" y1="12" x2="22" y2="12" stroke="#FFFFFF" stroke-width="1.5"/>
+                              </svg>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    })
+                }).addTo(map);
+                
+                // console.log("Created new target icon at:", lat, lon);
+            } catch (err) {
+                console.error("Error creating click marker:", err);
+            }
+            
+            // If Fly To mode is active, handle the marker and command
+            if (flyToModeActive) {
+                const alt = parseFloat(document.getElementById('goto-alt').value) || 10;
+                
+                // Remove existing target marker if present
+                if (flyToTargetMarker) {
+                    map.removeLayer(flyToTargetMarker);
+                }
+                
+                // Create a new marker using the same approach as our working test markers
+                flyToTargetMarker = L.circleMarker([lat, lon], {
+                    color: '#FF0000',         // Red border
+                    fillColor: '#FF0000',     // Red fill
+                    fillOpacity: 0.7,         // Semi-transparent
+                    radius: 12,               // Size of the circle
+                    weight: 3                 // Border thickness
+                }).addTo(map);
+                
+                flyToTargetMarker.bindTooltip(`Target Alt: ${alt.toFixed(1)}m`, {
+                    permanent: false,
+                    direction: 'top'
+                }).openTooltip();
+                
+                // console.log("Created fly-to target marker");
+                
+                // Confirm before sending command
+                /*if (confirm(`Send drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m?`)) {*/
+                    // Send the command
+                    socket.emit('send_command', {
+                        command: 'GOTO',
+                        lat: lat,
+                        lon: lon,
+                        alt: alt
+                    });
+                    
+                    addMessage(`Sent drone to Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}, Alt: ${alt.toFixed(1)}m`, "info");
+                /*}*/
+            }
+        });
+
+        // --- Initialisation ---
+        function initializeUI() {
+            addMessage("Connecting to backend...", "info");
+            initAltitudeStrip(); // Initialize the offscreen altitude strip first
+            drawAttitudeIndicator(); drawAirspeedTape(); drawAltitudeTape();
+            armingStatusOverlay.textContent = "DISARMED"; armingStatusOverlay.classList.remove("pfd-armed");
+            batteryValueSpan.textContent = "--.-"; modeValueSpan.textContent = "------"; currentValueSpan.textContent = "--.-";
+            gpsFixValueSpan.textContent = "---"; gpsSatsValueSpan.textContent = "0"; gpsHdopValueSpan.textContent = "--.-";
+            latValueSpan.textContent = "--.------"; lonValueSpan.textContent = "--.------";
+            
+            // Initialize connection status with default drone info
+            const defaultIp = document.getElementById('drone-ip').value;
+            const defaultPort = document.getElementById('drone-port').value;
+            document.getElementById("status-connection").textContent = `Attempting to connect to ${defaultIp}:${defaultPort}...`;
+            document.getElementById("status-connection").className = "connecting";
+            
+            // *** ADDED: Initialize heart and EKF status ***
+            const heartIconInit = document.getElementById('heartbeat-indicator'); if(heartIconInit) heartIconInit.classList.remove('connected-state');
+            setControlsDisabled(true);
+            setTimeout(() => { 
+                try { 
+                    map.invalidateSize(); 
+                    
+                    // Remove test markers from here - they'll be added in the telemetry update
+                    // when we have home position coordinates
+                } catch(e) { 
+                    console.error("Error on initial invalidateSize:", e); 
+                } 
+            }, 500);
+        }
+        initializeUI();
+
+        // *** ADDED: Handle COMMAND_ACK feedback ***
+        socket.on("command_ack_received", (data) => {
+            console.log("ACK Received (full data):", JSON.parse(JSON.stringify(data)));
+            console.log("ACK Received:", data);
+            let message = `CMD ${data.command_name}: ${data.result_text}`;
+            let type = 'ack'; // Default style for generic/in-progress ACKs
+            if (data.result === 0) { // MAV_RESULT_ACCEPTED
+                type = 'ack'; // Keep blue/default for success
+            } else if (data.result === -1) { // Custom: Timeout
+                message = `CMD ${data.command_name}: Timeout (No ACK received)`;
+                type = 'ack-timeout'; // Yellow/orange for timeout
+            } else { // Failed, unsupported, temporarily rejected, etc.
+                type = 'ack-fail'; // Red for failure
+            }
+            addMessage(message, type);
+
+            // Re-enable the corresponding control based on ui_command_key
+            if (data.ui_command_key) {
+                const controlToEnable = commandControls[data.ui_command_key];
+                if (controlToEnable) {
+                    controlToEnable.disabled = false;
+                }
+                // Specifically re-enable modeSelect if the command was SET_MODE
+                if (data.ui_command_key === 'SET_MODE' && modeSelect) {
+                    modeSelect.disabled = false;
+                }
+            }
+            // Note: Re-enabling buttons on ACK is tricky if multiple commands of the same type are sent quickly.
+            // The simple 'command_result' handler might still be needed for basic send failures.
+        });
+
+
+        // Voice synthesis functionality for mode change announcements
+        function speakText(text) {
+            // Check if speech synthesis is available
+            if ('speechSynthesis' in window) {
+                // Aggressively cancel any ongoing speech from any source
+                window.speechSynthesis.cancel();
+                
+                // Wait to ensure cancellation completes
+                setTimeout(() => {
+                    window.speechSynthesis.cancel(); // Second cancel to be absolutely sure
+                    
+                    // Create a new speech synthesis utterance
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Configure voice settings
+                    utterance.rate = 0.9;      // Slightly slower speech
+                    utterance.pitch = 1.0;     // Normal pitch
+                    utterance.volume = 0.8;    // Slightly quieter
+                    
+                    // Use Google US English voice (index 48) or find by name
+                    const voices = window.speechSynthesis.getVoices();
+                    let preferredVoice = null;
+                    
+                    // First try to find Google US English by name
+                    preferredVoice = voices.find(voice => 
+                        voice.name.toLowerCase().includes('google') && 
+                        voice.name.toLowerCase().includes('us') &&
+                        voice.name.toLowerCase().includes('english')
+                    );
+                    
+                    // If not found by name, try index 48
+                    if (!preferredVoice && voices.length > 48) {
+                        preferredVoice = voices[48];
+                    }
+                    
+                    // Fallback to any available voice if Google US English not found
+                    if (!preferredVoice && voices.length > 0) {
+                        preferredVoice = voices[0];
+                    }
+                    
+                    if (preferredVoice) {
+                        utterance.voice = preferredVoice;
+                        console.log(`[VOICE] Using voice: "${preferredVoice.name}" (index: ${voices.indexOf(preferredVoice)})`);
+                    } else {
+                        console.log('[VOICE] No specific voice found, using default');
+                    }
+                    
+                    // Speak the text - this is the GOOD voice we want to keep
+                    window.speechSynthesis.speak(utterance);
+                    
+                    console.log(`[VOICE] Speaking: "${text}"`);
+                }, 50); // Small delay to ensure cancellation takes effect
+            } else {
+                console.warn('[VOICE] Speech synthesis not available in this browser');
+                addMessage('Voice announcements not available in this browser', 'warning');
+            }
+        }
+
+        // Voice settings and controls
+        let voiceAnnouncementsEnabled = true;
+        let lastVoiceAnnouncement = '';
+        let lastVoiceTime = 0;
+        let speechBlocked = false; // Global speech blocking flag
+        let blockModeUpdates = false; // Flag to prevent mode updates during voice announcement
+
+        // COMPREHENSIVE SPEECH DEBUGGING - Override ALL speech synthesis
+        if ('speechSynthesis' in window) {
+            const originalSpeak = window.speechSynthesis.speak;
+            const originalCancel = window.speechSynthesis.cancel;
+            
+            window.speechSynthesis.speak = function(utterance) {
+                const text = utterance.text;
+                const timestamp = Date.now();
+                
+                console.log('=== SPEECH SYNTHESIS CALL ===');
+                console.log('Text:', text);
+                console.log('Voice:', utterance.voice ? utterance.voice.name : 'default');
+                console.log('Time:', timestamp);
+                console.log('Stack trace:', new Error().stack);
+                console.log('===============================');
+                
+                // If this contains unwanted automatic browser speech, block it
+                // But allow our intentional "Mode change to ..." announcements
+                if ((text.toLowerCase().includes('flight mode') || 
+                     text.toLowerCase().includes('guided flight') ||
+                     text.toLowerCase().includes('stabilize flight')) &&
+                    !text.toLowerCase().includes('mode change to')) {
+                    console.log('🚫 BLOCKING unwanted flight mode speech:', text);
+                    return;
+                }
+                
+                // Allow everything else
+                console.log('✅ ALLOWING speech:', text);
+                return originalSpeak.call(this, utterance);
+            };
+            
+            window.speechSynthesis.cancel = function() {
+                console.log('🛑 Speech synthesis cancel called');
+                return originalCancel.call(this);
+            };
+        }
+
+        // Handle mode change voice announcements - FIXED APPROACH
+        socket.on("mode_change_voice", (data) => {
+            console.log("Mode change voice event received:", data);
+            addMessage(`Voice: ${data.message}`, "info");
+            
+            // Prevent duplicate voice announcements within 2 seconds
+            const now = Date.now();
+            const timeSinceLastVoice = now - lastVoiceTime;
+            const isDuplicate = data.message === lastVoiceAnnouncement && timeSinceLastVoice < 2000;
+            
+            if (voiceAnnouncementsEnabled && !isDuplicate) {
+                console.log('[VOICE] Using speakText function for mode change announcement');
+                
+                // Use the proper speakText function instead of DOM manipulation
+                const cleanMode = data.new_mode || data.message.replace(/.*mode change to /i, '');
+                speakText(`Mode change to ${cleanMode}`);
+                
+                lastVoiceAnnouncement = data.message;
+                lastVoiceTime = now;
+            } else if (isDuplicate) {
+                console.log(`[VOICE] Skipped duplicate voice announcement: "${data.message}"`);
+            }
+        });
+
+        // Handle arming status voice announcements
+        socket.on("arming_status_voice", (data) => {
+            console.log("Arming status voice event received:", data);
+            addMessage(`Voice: ${data.message}`, "info");
+            
+            // Prevent duplicate voice announcements within 2 seconds
+            const now = Date.now();
+            const timeSinceLastVoice = now - lastVoiceTime;
+            const isDuplicate = data.message === lastVoiceAnnouncement && timeSinceLastVoice < 2000;
+            
+            if (voiceAnnouncementsEnabled && !isDuplicate) {
+                console.log('[VOICE] Using speakText function for arming status announcement');
+                
+                // Speak the arming status
+                speakText(data.message); // "armed" or "disarmed"
+                
+                lastVoiceAnnouncement = data.message;
+                lastVoiceTime = now;
+            } else if (isDuplicate) {
+                console.log(`[VOICE] Skipped duplicate voice announcement: "${data.message}"`);
+            }
+        });
+
+        // EKG monitor heartbeat sound function
+        function playHeartbeatSound() {
+            // Check if heartbeat sound is enabled
+            const soundToggle = document.getElementById('heartbeat-sound-enabled');
+            if (!soundToggle || !soundToggle.checked) {
+                return; // Sound is disabled, don't play
+            }
+            
+            try {
+                // Create audio context for generating EKG beep sound
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create oscillator for the beep
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                // Connect oscillator to gain to speakers
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Configure the beep sound (like EKG monitor)
+                oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz beep
+                oscillator.type = 'sine';
+                
+                // Configure volume envelope (quick attack, quick decay)
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01); // Quick attack
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1); // Quick decay
+                
+                // Play the beep for 100ms
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+                
+                // Clean up
+                oscillator.onended = () => {
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                };
+                
+            } catch (error) {
+                console.log('[HEARTBEAT SOUND] Audio not supported or failed:', error);
+            }
+        }
+
+        // Heartbeat trigger function
+        function triggerHeartbeat() {
+            const heartIcon = document.getElementById('heartbeat-indicator');
+            if (heartIcon) {
+                // Remove existing animation class to reset
+                heartIcon.classList.remove('beating');
+                
+                // Force browser reflow to ensure class removal takes effect
+                heartIcon.offsetHeight;
+                
+                // Add the beating class to start animation
+                heartIcon.classList.add('beating');
+                
+                // Play EKG monitor heartbeat sound
+                playHeartbeatSound();
+                
+                console.log(`[HB-BEAT] Heart animation triggered #${heartbeatCount}`);
+                
+                // Remove the class after animation completes (0.8s)
+                setTimeout(() => {
+                    heartIcon.classList.remove('beating');
+                    // console.log('[HEARTBEAT TRIGGER] Heart animation ended');
+                }, 800);
+            }
+        }
+
+        // HEARTBEAT message handler - updates connection status and UI
+        socket.on("mavlink_message", (msg) => {
+            if (msg && msg.mavpackettype === 'HEARTBEAT') {
+                // Clean HEARTBEAT tracing - count each received message
+                heartbeatCount++;
+                const now = Date.now();
+                console.log(`[HB-RECV] Frontend received HEARTBEAT #${heartbeatCount} at ${now}`);
+                
+                // Trigger heart animation on every HEARTBEAT message
+                triggerHeartbeat();
+                
+                // Update heartbeat counter
+                const counterElement = document.getElementById('heartbeat-counter');
+                if (counterElement) {
+                    counterElement.textContent = `(${heartbeatCount})`;
+                }
+
+                // Update Arm Status (no logging)
+                const isArmed = (msg.base_mode & MAV_MODE_FLAG_SAFETY_ARMED) !== 0;
+                const armString = isArmed ? 'ARMED' : 'DISARMED';
+
+                // Only update PFD overlay for arming status when connected
+                const connectionStatus = document.getElementById("status-connection").className;
+                const pfdArmEl = document.getElementById('arming-status-overlay'); 
+                
+                console.log(`[HB-ARM] Connection status: '${connectionStatus}', Armed: ${isArmed}, Will update: ${connectionStatus === 'connected'}`);
+                
+                if (pfdArmEl && connectionStatus === 'connected') {
+                    console.log(`[HB-ARM] Updating arming status to: ${armString}`);
+                    pfdArmEl.textContent = armString;
+                    pfdArmEl.classList.toggle('pfd-armed', isArmed);
+                } else {
+                    console.log(`[HB-ARM] Skipping arming update - not connected`);
+                }
+
+                // Update Mode (no logging)
+                const modeString = getModeString(msg.autopilot, msg.type, msg.custom_mode);
+
+                // Track when we update mode from heartbeat to prevent telemetry conflicts
+                lastHeartbeatModeUpdate = Date.now();
+                currentHeartbeatMode = modeString.toUpperCase();
+                console.log(`[HB-MODE] Updated mode to '${modeString}' from heartbeat`);
+
+                // Always update PFD overlay for mode when heartbeat is received
+                // If we're receiving heartbeats, we should definitely show the mode
+                const pfdModeEl = document.getElementById('mode-overlay');
+                const modeValueSpan = document.getElementById('mode-value');
+                
+                console.log(`[HB-MODE-DEBUG] Elements found - mode-overlay: ${!!pfdModeEl}, mode-value: ${!!modeValueSpan}`);
+                
+                if (pfdModeEl && modeValueSpan) {
+                    // Update the span element without the "Mode:" prefix
+                    const oldText = modeValueSpan.textContent;
+                    modeValueSpan.textContent = modeString;
+                    console.log(`[HB-MODE] Updated mode display from '${oldText}' to '${modeString}' (connection status: ${connectionStatus})`);
+                    
+                    // Verify the update took effect
+                    setTimeout(() => {
+                        const currentText = modeValueSpan.textContent;
+                        if (currentText !== modeString) {
+                            console.log(`[HB-MODE] ERROR: Mode display reverted from '${modeString}' to '${currentText}'`);
+                        }
+                    }, 100);
+                } else {
+                    console.log(`[HB-MODE] WARNING: Required elements not found - mode-overlay: ${!!pfdModeEl}, mode-value: ${!!modeValueSpan}`);
+                    
+                    // Try alternative approach - update the entire mode-overlay text
+                    if (pfdModeEl) {
+                        const oldText = pfdModeEl.textContent;
+                        pfdModeEl.innerHTML = `Mode: <span id="mode-value">${modeString}</span>`;
+                        console.log(`[HB-MODE] FALLBACK: Updated entire mode-overlay from '${oldText}' to include mode: ${modeString}`);
+                    }
+                }
+            }
+        });
+
+        socket.on("command_result", (data) => { 
+            console.log("Command Result:", data); 
+            if (!data.success) { 
+                const control = commandControls[data.command]; 
+                if (control) { 
+                    control.disabled = false; 
+                    if (data.command === 'SET_MODE' && modeSelect) { 
+                        modeSelect.disabled = false; 
+                    } 
+                } 
+            } 
+        });
+
+        // Add variable to track the geofence polygon
+        let geofencePolygon = null;
+        let geofenceVertexMarkers = []; // Array to track vertex markers
+
+        // Add variables to track mission waypoints
+        let missionPolyline = null;
+        let missionWaypointMarkers = []; // Array to track waypoint markers
+
+        socket.on("geofence_update", (data) => {
+            // Table has been removed from the UI
+            
+            if (data && data.points && data.points.length > 0) {
+                // Clear existing geofence and markers
+                if (geofencePolygon) {
+                    map.removeLayer(geofencePolygon);
+                }
+                
+                // Remove existing vertex markers
+                geofenceVertexMarkers.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                geofenceVertexMarkers = [];
+                
+                // Create a polygon from the fence points
+                geofencePolygon = L.polygon(data.points, {
+                    color: '#0066FF',  // Blue
+                    weight: 3,
+                    opacity: 0.9,
+                    fillOpacity: 0,    // No fill
+                    dashArray: null
+                }).addTo(map);
+                
+                // Add blue circles at the vertices
+                data.points.forEach((point, index) => {
+                    const marker = L.circleMarker(point, {
+                        color: '#0066FF',         // Blue border
+                        fillColor: '#0066FF',     // Blue fill
+                        fillOpacity: 0.7,         // Semi-transparent
+                        radius: 5,                // Size of the circle
+                        weight: 2                 // Border thickness
+                    }).addTo(map)
+                    .bindTooltip(`Point ${index + 1}`, {
+                        permanent: false,
+                        direction: 'top'
+                    });
+                    
+                    // Store marker for later removal
+                    geofenceVertexMarkers.push(marker);
+                });
+                
+                // Don't automatically center on the geofence
+                // Removed map.fitBounds() call to keep current map view
+                
+                addMessage("Geofence plotted on map", "info");
+            } else {
+                // Remove any existing geofence polygon
+                if (geofencePolygon) {
+                    map.removeLayer(geofencePolygon);
+                    geofencePolygon = null;
+                }
+                
+                // Remove existing vertex markers
+                geofenceVertexMarkers.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                geofenceVertexMarkers = [];
+                
+                addMessage("No geofence points available", "warning");
+            }
+        });
+
+        // Add event listener for geofence request button
+        document.getElementById('btn-request-fence').addEventListener('click', function() {
+            this.disabled = true;
+            socket.emit('send_command', {command: 'REQUEST_FENCE'});
+            setTimeout(() => { this.disabled = false; }, 2000);  // Re-enable after 2 seconds
+        });
+
+        // Handle mission waypoint updates
+        socket.on("mission_update", (data) => {
+            if (data && data.waypoints && data.waypoints.length > 0) {
+                // Clear existing mission markers and lines
+                if (missionPolyline) {
+                    map.removeLayer(missionPolyline);
+                }
+                
+                // Remove existing waypoint markers
+                missionWaypointMarkers.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                missionWaypointMarkers = [];
+                
+                // Extract coordinate points for the path 
+                const pathPoints = [];
+                
+                // Create markers for each waypoint
+                data.waypoints.forEach((wp, index) => {
+                    // Skip waypoints without valid coordinates (like RTL commands)
+                    if (wp.lat === 0 && wp.lon === 0) return;
+                    
+                    // Add point to path if it's a navigation point
+                    if (wp.command === 16 || wp.command === 22 || wp.command === 21) { // NAV_WAYPOINT, TAKEOFF, LAND
+                        pathPoints.push([wp.lat, wp.lon]);
+                    }
+                    
+                    // Create waypoint icon based on command type
+                    let iconColor = '#ff7800'; // Default orange
+                    let iconPath = '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>';
+                    let tooltipText = `Waypoint ${index + 1}`;
+                    
+                    // Customize by command type
+                    if (wp.command === 22) { // TAKEOFF
+                        iconColor = '#28a745'; // Green
+                        tooltipText = `Takeoff (${wp.alt.toFixed(1)}m)`;
+                        iconPath = '<path d="M2 22h20V10L12 2 2 10v12zm11-1h-4v-5H6.5v-3.5h3V8l4-4 4 4v4.5h3V16H13v5z"/>';
+                    } else if (wp.command === 20) { // RETURN_TO_LAUNCH
+                        iconColor = '#dc3545'; // Red
+                        tooltipText = 'Return to Launch';
+                        iconPath = '<path d="M19 7v4H5.83l3.58-3.59L8 6l-6 6 6 6 1.41-1.41L5.83 13H21V7z"/>';
+                    } else if (wp.command === 21) { // LAND
+                        iconColor = '#ffc107'; // Yellow/amber
+                        tooltipText = 'Land';
+                        iconPath = '<path d="M12 7.27l4.28 10.43-3.47-1.53-.81-.36-.81.36-3.47 1.53L12 7.27M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/>';
+                    }
+                    
+                    // Create custom icon for this waypoint
+                    const wpIcon = L.divIcon({
+                        className: 'mission-waypoint-icon',
+                        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${iconColor}" width="24px" height="24px">${iconPath}</svg>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    
+                    // Add marker with the custom icon
+                    const marker = L.marker([wp.lat, wp.lon], {
+                        icon: wpIcon
+                    }).addTo(map)
+                    .bindTooltip(tooltipText, {
+                        permanent: false,
+                        direction: 'top'
+                    });
+                    
+                    // Store marker for later removal
+                    missionWaypointMarkers.push(marker);
+                });
+                
+                // Create a polyline connecting the navigation points
+                if (pathPoints.length > 1) {
+                    missionPolyline = L.polyline(pathPoints, {
+                        color: '#ff7800',  // Orange
+                        weight: 3,
+                        opacity: 0.8,
+                        dashArray: '5, 10' // Dashed line
+                    }).addTo(map);
+                }
+                
+                addMessage(`Mission with ${data.waypoints.length} waypoints plotted on map`, "info");
+            } else {
+                // Clear existing mission
+                if (missionPolyline) {
+                    map.removeLayer(missionPolyline);
+                    missionPolyline = null;
+                }
+                
+                // Remove existing waypoint markers
+                missionWaypointMarkers.forEach(marker => {
+                    map.removeLayer(marker);
+                });
+                missionWaypointMarkers = [];
+                
+                addMessage("No mission waypoints available", "warning");
+            }
+        });
+
+        // Add event listener for mission request button
+        document.getElementById('btn-request-mission').addEventListener('click', function() {
+            this.disabled = true;
+            socket.emit('send_command', {command: 'REQUEST_MISSION'});
+            setTimeout(() => { this.disabled = false; }, 2000);  // Re-enable after 2 seconds
+        });
+
+        // Connection control event handlers
+        const droneIpInput = document.getElementById('drone-ip');
+        const dronePortInput = document.getElementById('drone-port');
+        const connectBtn = document.getElementById('btn-connect');
+        const disconnectBtn = document.getElementById('btn-disconnect');
+
+        // Connect button event handler
+        connectBtn.addEventListener('click', function() {
+            const ip = droneIpInput.value.trim();
+            const port = parseInt(dronePortInput.value);
+
+            // Validate inputs
+            if (!ip) {
+                // Update the status connection with error
+                document.getElementById("status-connection").textContent = 'Please enter an IP address';
+                document.getElementById("status-connection").className = 'disconnected';
+                return;
+            }
+
+            if (!port || port < 1 || port > 65535) {
+                // Update the status connection with error
+                document.getElementById("status-connection").textContent = 'Please enter a valid port (1-65535)';
+                document.getElementById("status-connection").className = 'disconnected';
+                return;
+            }
+
+            // Disable connect button and show connecting status
+            connectBtn.disabled = true;
+            connectBtn.textContent = 'Connecting...';
+            document.getElementById("status-connection").textContent = `Connecting to ${ip}:${port}...`;
+            document.getElementById("status-connection").className = 'connecting';
+
+            // Send connection request to server
+            socket.emit('drone_connect', {
+                ip: ip,
+                port: port
+            });
+        });
+
+        // Disconnect button event handler
+        disconnectBtn.addEventListener('click', function() {
+            console.log('[DISCONNECT] Disconnect button clicked');
+            disconnectBtn.disabled = true;
+            disconnectBtn.textContent = 'Disconnecting...';
+            document.getElementById("status-connection").textContent = 'Disconnecting from drone...';
+            document.getElementById("status-connection").className = 'connecting';
+            console.log('[DISCONNECT] Status set to disconnecting');
+
+            // Send disconnect request to server
+            socket.emit('drone_disconnect');
+            console.log('[DISCONNECT] Sent drone_disconnect event');
+        });
+
+        // Socket.IO connection status updates
+        socket.on('connection_status', function(data) {
+            console.log('[CONNECTION_STATUS] Received:', data);
+            const connectBtn = document.getElementById('btn-connect');
+            const disconnectBtn = document.getElementById('btn-disconnect');
+            
+            if (data.status === 'connected') {
+                console.log('[CONNECTION_STATUS] Handling connected status');
+                document.getElementById("status-connection").textContent = `Drone Connected @ ${data.ip}:${data.port}`;
+                document.getElementById("status-connection").className = 'connected';
+                connectBtn.disabled = true;
+                connectBtn.textContent = 'Connect';
+                disconnectBtn.disabled = false;
+                disconnectBtn.textContent = 'Disconnect';
+                
+                // Play audio alert for connection
+                playAudioAlert('connected');
+                
+                // Update the input fields with the connected IP/port
+                droneIpInput.value = data.ip;
+                dronePortInput.value = data.port;
+                
+            } else if (data.status === 'disconnected') {
+                console.log('[CONNECTION_STATUS] Handling disconnected status');
+                const reason = data.reason ? ` (${data.reason})` : '';
+                document.getElementById("status-connection").textContent = `Disconnected${reason}`;
+                document.getElementById("status-connection").className = 'disconnected';
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect';
+                disconnectBtn.disabled = true;
+                disconnectBtn.textContent = 'Disconnect';
+                
+                // Play audio alert for disconnection
+                playAudioAlert('disconnected');
+                
+                // Clear HUD displays when disconnected
+                const armingStatusOverlay = document.getElementById('arming-status-overlay');
+                if (armingStatusOverlay) {
+                    console.log('[DISCONNECT] Before clearing - Text:', armingStatusOverlay.textContent, 'Classes:', armingStatusOverlay.className);
+                    console.log('[DISCONNECT] Clearing arming status to DISARMED');
+                    
+                    // Force complete reset
+                    armingStatusOverlay.textContent = 'DISARMED';
+                    armingStatusOverlay.classList.remove('pfd-armed');
+                    // Remove forced color - let CSS handle it properly
+                    armingStatusOverlay.style.color = '';
+                    
+                    console.log('[DISCONNECT] After clearing - Text:', armingStatusOverlay.textContent, 'Classes:', armingStatusOverlay.className);
+                    
+                    // Double-check after a small delay
+                    setTimeout(() => {
+                        console.log('[DISCONNECT] Final check - Text:', armingStatusOverlay.textContent, 'Classes:', armingStatusOverlay.className, 'Color:', armingStatusOverlay.style.color);
+                        if (armingStatusOverlay.textContent === 'ARMED') {
+                            console.log('[DISCONNECT] ERROR: Something changed it back to ARMED!');
+                        }
+                    }, 100);
+                }
+                
+                // Clear mode display
+                const modeOverlay = document.getElementById('mode-overlay');
+                if (modeOverlay) {
+                    modeOverlay.textContent = 'Mode: ------';
+                }
+                
+            } else if (data.status === 'failed') {
+                console.log('[CONNECTION_STATUS] Handling failed status');
+                document.getElementById("status-connection").textContent = `Connection failed: ${data.message}`;
+                document.getElementById("status-connection").className = 'disconnected';
+                connectBtn.disabled = false;
+                connectBtn.textContent = 'Connect';
+                disconnectBtn.disabled = true;
+                disconnectBtn.textContent = 'Disconnect';
+                
+                // Clear HUD displays when failed to connect
+                const armingStatusOverlay = document.getElementById('arming-status-overlay');
+                if (armingStatusOverlay) {
+                    // Force complete reset
+                    armingStatusOverlay.textContent = 'DISARMED';
+                    armingStatusOverlay.classList.remove('pfd-armed');
+                    // Remove forced color - let CSS handle it properly
+                    armingStatusOverlay.style.color = '';
+                }
+                
+                // Clear mode display
+                const modeOverlay = document.getElementById('mode-overlay');
+                if (modeOverlay) {
+                    modeOverlay.textContent = 'Mode: ------';
+                }
+            }
+        });
+
+        // Override the speakText function to check if voice is enabled
+        const originalSpeakText = speakText;
+        speakText = function(text) {
+            if (voiceAnnouncementsEnabled) {
+                originalSpeakText(text);
+            }
+        };
+
+    </script>
+</body>
+</html>
