@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+"""
+Quick 'done' command to announce task completion via TTS.
+Usage: ./done [optional custom message]
+"""
+import subprocess
+import sys
+from pathlib import Path
+
+def main():
+    if len(sys.argv) > 1:
+        message = " ".join(sys.argv[1:])
+    else:
+        message = "Task complete!"
+    
+    tts_script = Path(__file__).parent / "tts" / "elevenlabs_tts.py"
+    subprocess.run(["uv", "run", str(tts_script), message], timeout=10)
+
+if __name__ == "__main__":
+    main()

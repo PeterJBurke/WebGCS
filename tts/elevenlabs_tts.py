@@ -41,6 +41,9 @@ def main():
         print("ELEVENLABS_API_KEY=your_api_key_here")
         sys.exit(1)
     
+    # Get engineer name from environment
+    engineer_name = os.getenv('ENGINEER_NAME', '')
+    
     try:
         from elevenlabs.client import ElevenLabs
         from elevenlabs import play
@@ -56,6 +59,10 @@ def main():
             text = " ".join(sys.argv[1:])  # Join all arguments as text
         else:
             text = "The first move is what sets everything in motion."
+        
+        # Append engineer name if available
+        if engineer_name:
+            text = f"{text}, {engineer_name}"
         
         print(f"🎯 Text: {text}")
         print("🔊 Generating and playing...")
