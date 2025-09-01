@@ -1,0 +1,58 @@
+Run a comprehensive automated TTS system test and report results:
+
+1. First, verify environment setup:
+   - Check if ELEVENLABS_API_KEY exists in environment
+   - Check if ENGINEER_NAME is set
+   - List all hook files in ~/.claude/hooks/
+   - Verify .claude/hooks/stop exists and is executable
+   - Verify .claude/hooks/utils/tts/elevenlabs_tts.py exists
+
+2. Test the TTS script directly:
+   - Run: uv run /home/peter/.claude/hooks/utils/tts/elevenlabs_tts.py "Automated test message"
+   - Check exit code (0 = success)
+   - Capture any error output
+
+3. Test the stop hook:
+   - Run: echo '{"session_id": "test_auto", "stop_hook_active": true}' | uv run /home/peter/.claude/hooks/stop
+   - Check exit code
+   - Verify log file was created at ~/.claude/logs/test_auto/stop.json
+   - Check if the hook calls the TTS function by examining the process
+
+4. Test WebGCS TTS for comparison:
+   - Run: uv run tts/elevenlabs_tts.py "WebGCS test"
+   - Check exit code and output
+
+5. Test ALL hook files for TTS integration:
+   - Check if any other hooks exist that might trigger TTS
+   - Examine hook file contents for TTS-related code
+   - Test each hook individually if it contains TTS functionality
+
+6. Verify stop hook is configured as Claude Code hook:
+   - Check Claude Code settings/config for hook registration
+   - Verify hook is properly registered to trigger on message completion
+   - Test if the hook actually gets called by Claude Code (not just manually)
+
+7. Test real-time hook execution during this response:
+   - Get current session ID from Claude environment or generate unique test ID
+   - Record timestamp before completing test
+   - Wait 3 seconds after test completion
+   - Check ~/.claude/logs/ for NEW log entries created AFTER the timestamp
+   - Verify the stop hook was actually called by Claude Code (not manually)
+   - Check for TTS process execution in system logs or process monitoring
+
+8. CRITICAL: Verify actual TTS playback at response completion:
+   - This test MUST detect if TTS plays when response completes
+   - If no TTS audio is heard after response completion, report FAIL
+   - Monitor for actual subprocess spawning of TTS during response completion
+   - Check system audio processes during response completion
+   - Test FAILS if hook configuration allows manual execution but not automatic execution
+
+9. Generate a detailed report showing:
+   - ✅ or ❌ for each component tested
+   - Exit codes for all commands
+   - Any error messages encountered
+   - Whether TTS subprocess was spawned during ACTUAL response completion
+   - Whether Claude Code automatically calls hooks (CRITICAL TEST)
+   - MANDATORY: If TTS does not play at end of THIS response, report FAIL
+
+Execute all tests without waiting for user input. CRITICAL REQUIREMENT: The test must FAIL if TTS does not play when this response completes, regardless of manual test results.
