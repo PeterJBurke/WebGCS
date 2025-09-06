@@ -25,35 +25,79 @@ readonly YELLOW='\033[1;33m'
 readonly BLUE='\033[0;34m'
 readonly NC='\033[0m' # No Color
 
-# Script configuration
-readonly SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+# Script configuration - Use absolute paths to prevent issues
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly VENV_PATH="${SCRIPT_DIR}/venv"
 readonly STATIC_LIB_DIR="${SCRIPT_DIR}/static/lib"
 readonly MIN_PYTHON_VERSION="3.10"
+
+# Validation: Ensure we're in the correct directory
+if [[ ! -f "${SCRIPT_DIR}/app.py" ]]; then
+    echo -e "${RED}[ERROR]${NC} This script must be run from the WebGCS directory containing app.py"
+    echo -e "${RED}[ERROR]${NC} Current directory: $(pwd)"
+    echo -e "${RED}[ERROR]${NC} Script directory: ${SCRIPT_DIR}"
+    echo -e "${RED}[ERROR]${NC} Please cd to the WebGCS directory and run the script again"
+    exit 1
+fi
 
 # Record start time
 START_TIME=$(date +%s)
 START_TIME_HUMAN=$(date)
 
-# Logging functions
+# Enhanced logging functions with better formatting
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+    printf "${BLUE}[INFO]${NC} %s\n" "$1"
 }
 
 log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    printf "${GREEN}[SUCCESS]${NC} %s\n" "$1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    printf "${YELLOW}[WARNING]${NC} %s\n" "$1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1" >&2
+    printf "${RED}[ERROR]${NC} %s\n" "$1" >&2
+}
+
+# Enhanced error handler
+handle_error() {
+    local line_no=$1
+    local error_code=$2
+    log_error "Script failed at line $line_no with exit code $error_code"
+    log_error "Please check the output above for details"
+    exit $error_code
+}
+
+# Set up error handling
+trap 'handle_error ${LINENO} $?' ERR
+
+# Validate script environment
+validate_environment() {
+    log_info "Validating script environment..."
+    
+    # Check we have required commands
+    local required_commands=("cd" "pwd" "dirname" "realpath")
+    for cmd in "${required_commands[@]}"; do
+        if ! command -v "$cmd" &> /dev/null; then
+            log_error "Required command '$cmd' not found"
+            exit 1
+        fi
+    done
+    
+    # Validate paths are absolute and canonical
+    if [[ ! "${SCRIPT_DIR}" =~ ^/ ]]; then
+        log_error "SCRIPT_DIR is not an absolute path: ${SCRIPT_DIR}"
+        exit 1
+    fi
+    
+    log_success "Environment validation passed"
 }
 
 # Check if running on Linux
 check_linux() {
+    log_info "Checking operating system..."
     if [[ "$(uname)" != "Linux" ]]; then
         log_error "This script is designed for Linux systems only."
         log_error "For other operating systems, please use manual installation:"
@@ -62,10 +106,12 @@ check_linux() {
         log_error "  pip install -r requirements.txt"
         exit 1
     fi
+    log_success "Running on Linux"
 }
 
 # Check Ubuntu version compatibility
 check_ubuntu_version() {
+    log_info "Checking Ubuntu version compatibility..."
     if [[ -f /etc/os-release ]]; then
         . /etc/os-release
         log_info "Detected OS: $NAME $VERSION_ID"
@@ -84,33 +130,55 @@ check_ubuntu_version() {
         else
             log_warning "$NAME may work but Ubuntu is recommended"
         fi
+    else
+        log_warning "Could not detect OS version"
     fi
 }
 
 # Update package lists (essential for fresh Ubuntu 24.04)
 update_package_lists() {
     log_info "Updating package lists..."
+    
+    # Skip if running in non-interactive mode and not root
+    if [[ ! -t 0 ]] && [[ $EUID -ne 0 ]]; then
+        log_warning "Skipping package list update in non-interactive mode"
+        return 0
+    fi
+    
     if command -v apt &> /dev/null; then
-        sudo apt update
+        if [[ $EUID -eq 0 ]]; then
+            apt update
+        else
+            sudo apt update
+        fi
         log_success "Package lists updated"
     elif command -v dnf &> /dev/null; then
-        sudo dnf check-update || true
+        if [[ $EUID -eq 0 ]]; then
+            dnf check-update || true
+        else
+            sudo dnf check-update || true
+        fi
         log_success "Package lists updated"
     elif command -v yum &> /dev/null; then
-        sudo yum check-update || true
+        if [[ $EUID -eq 0 ]]; then
+            yum check-update || true
+        else
+            sudo yum check-update || true
+        fi
         log_success "Package lists updated"
     else
         log_warning "Could not detect package manager to update package lists"
     fi
 }
 
-# Install missing system dependencies
+# Enhanced dependency installation with better error handling
 install_system_dependencies() {
     log_info "Installing required system dependencies..."
     
     local packages_to_install=()
+    local install_cmd=""
     
-    # Always install these core packages for Python development
+    # Detect package manager and set packages
     if command -v apt &> /dev/null; then
         # For Ubuntu/Debian
         packages_to_install+=(
@@ -124,9 +192,7 @@ install_system_dependencies() {
             "curl"
             "git"
         )
-        
-        log_info "Installing packages: ${packages_to_install[*]}"
-        sudo apt install -y "${packages_to_install[@]}"
+        install_cmd="apt install -y"
         
     elif command -v dnf &> /dev/null; then
         # For CentOS/RHEL/Fedora
@@ -141,9 +207,7 @@ install_system_dependencies() {
             "curl"
             "git"
         )
-        
-        log_info "Installing packages: ${packages_to_install[*]}"
-        sudo dnf install -y "${packages_to_install[@]}"
+        install_cmd="dnf install -y"
         
     elif command -v yum &> /dev/null; then
         # For older CentOS/RHEL
@@ -157,9 +221,7 @@ install_system_dependencies() {
             "curl"
             "git"
         )
-        
-        log_info "Installing packages: ${packages_to_install[*]}"
-        sudo yum install -y "${packages_to_install[@]}"
+        install_cmd="yum install -y"
         
     else
         log_error "Could not detect package manager. Please install the following manually:"
@@ -174,20 +236,34 @@ install_system_dependencies() {
         exit 1
     fi
     
+    log_info "Installing packages: ${packages_to_install[*]}"
+    
+    # Execute installation command with proper privileges
+    if [[ $EUID -eq 0 ]]; then
+        $install_cmd "${packages_to_install[@]}"
+    else
+        sudo $install_cmd "${packages_to_install[@]}"
+    fi
+    
     log_success "System dependencies installed"
 }
 
-# Check Python version
+# Enhanced Python version check
 check_python_version() {
+    log_info "Checking Python version..."
+    
     if ! command -v python3 &> /dev/null; then
         log_error "Python 3 is not installed. Installing it now..."
         install_system_dependencies
     fi
 
     local python_version
-    python_version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+    if ! python_version=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))' 2>/dev/null); then
+        log_error "Failed to get Python version"
+        exit 1
+    fi
     
-    if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)"; then
+    if ! python3 -c "import sys; exit(0 if sys.version_info >= (3, 10) else 1)" 2>/dev/null; then
         log_error "Python ${python_version} detected. WebGCS requires Python ${MIN_PYTHON_VERSION}+."
         log_error "Please upgrade Python and try again."
         log_error "On Ubuntu 20.04, install python3.10: sudo apt install python3.10 python3.10-venv"
@@ -197,8 +273,10 @@ check_python_version() {
     log_success "Python ${python_version} detected"
 }
 
-# Check required system dependencies
+# Enhanced dependency checker
 check_dependencies() {
+    log_info "Checking system dependencies..."
+    
     local missing_deps=()
     local ubuntu_deps=()
     
@@ -221,25 +299,25 @@ check_dependencies() {
     fi
     
     # Check for python3-dev (needed for some pip packages like gevent)
-    if ! dpkg -l python3-dev &> /dev/null 2>&1 && command -v dpkg &> /dev/null; then
+    if command -v dpkg &> /dev/null && ! dpkg -l python3-dev &> /dev/null; then
         missing_deps+=("python3-dev")
         ubuntu_deps+=("python3-dev")
     fi
     
-    # Check for build essentials (needed for compiling some Python packages)
+    # Check for build essentials
     if ! command -v gcc &> /dev/null; then
         missing_deps+=("build-essential")
         ubuntu_deps+=("build-essential")
     fi
     
-    # Check for pkg-config (needed for some Python packages)
+    # Check for pkg-config
     if ! command -v pkg-config &> /dev/null; then
         missing_deps+=("pkg-config")
         ubuntu_deps+=("pkg-config")
     fi
     
-    # Check for system development headers
-    if ! dpkg -l libevent-dev &> /dev/null 2>&1 && command -v dpkg &> /dev/null; then
+    # Check for development headers
+    if command -v dpkg &> /dev/null && ! dpkg -l libevent-dev &> /dev/null; then
         missing_deps+=("libevent-dev")
         ubuntu_deps+=("libevent-dev")
     fi
@@ -247,106 +325,141 @@ check_dependencies() {
     if [[ ${#missing_deps[@]} -gt 0 ]]; then
         log_warning "Missing dependencies detected: ${missing_deps[*]}"
         log_info "Installing missing dependencies automatically..."
-        
-        if command -v apt &> /dev/null; then
-            sudo apt install -y "${ubuntu_deps[@]}"
-        elif command -v dnf &> /dev/null; then
-            sudo dnf install -y "${missing_deps[@]}" python3-devel gcc
-        elif command -v yum &> /dev/null; then
-            sudo yum install -y "${missing_deps[@]}" python3-devel gcc
-        elif command -v pacman &> /dev/null; then
-            sudo pacman -S --noconfirm "${missing_deps[@]}" base-devel
-        else
-            log_error "Could not install missing dependencies automatically"
-            log_error "Please install them manually and re-run this script"
-            exit 1
-        fi
-        
+        install_system_dependencies
         log_success "Missing dependencies installed"
     else
         log_success "All system dependencies found"
     fi
 }
 
-# Create directory structure
+# Create directory structure with proper error handling
 create_directories() {
     log_info "Creating directory structure..."
     
-    mkdir -p "${SCRIPT_DIR}/templates"
-    mkdir -p "${SCRIPT_DIR}/static/css"
-    mkdir -p "${STATIC_LIB_DIR}"
-    mkdir -p "${SCRIPT_DIR}/logs"
+    local directories=(
+        "${SCRIPT_DIR}/templates"
+        "${SCRIPT_DIR}/static/css"
+        "${STATIC_LIB_DIR}"
+        "${SCRIPT_DIR}/logs"
+    )
+    
+    for dir in "${directories[@]}"; do
+        if ! mkdir -p "$dir"; then
+            log_error "Failed to create directory: $dir"
+            exit 1
+        fi
+    done
     
     log_success "Directories created"
 }
 
-# Setup Python virtual environment
+# Enhanced virtual environment setup
 setup_virtual_environment() {
+    log_info "Setting up Python virtual environment..."
+    
     if [[ -d "${VENV_PATH}" ]]; then
         log_warning "Virtual environment already exists at ${VENV_PATH}"
-        read -p "Do you want to recreate it? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Removing existing virtual environment..."
-            rm -rf "${VENV_PATH}"
+        if [[ -t 0 ]]; then  # Only prompt if interactive
+            read -p "Do you want to recreate it? (y/N): " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                log_info "Removing existing virtual environment..."
+                rm -rf "${VENV_PATH}"
+            else
+                log_info "Using existing virtual environment"
+                return 0
+            fi
         else
-            log_info "Using existing virtual environment"
+            log_info "Non-interactive mode: using existing virtual environment"
             return 0
         fi
     fi
     
     log_info "Creating Python virtual environment..."
-    python3 -m venv "${VENV_PATH}"
+    if ! python3 -m venv "${VENV_PATH}"; then
+        log_error "Failed to create virtual environment"
+        exit 1
+    fi
     
     # Activate and upgrade pip
-    source "${VENV_PATH}/bin/activate"
-    pip install --upgrade pip wheel setuptools
+    if ! source "${VENV_PATH}/bin/activate"; then
+        log_error "Failed to activate virtual environment"
+        exit 1
+    fi
+    
+    # Upgrade pip, wheel, and setuptools
+    if ! pip install --upgrade pip wheel setuptools; then
+        log_error "Failed to upgrade pip, wheel, and setuptools"
+        exit 1
+    fi
     
     log_success "Virtual environment created at ${VENV_PATH}"
 }
 
-# Install Python dependencies
+# Enhanced Python dependency installation
 install_python_dependencies() {
     log_info "Installing Python dependencies..."
+    
+    # Verify virtual environment
+    if [[ ! -f "${VENV_PATH}/bin/python" ]]; then
+        log_error "Virtual environment Python not found at ${VENV_PATH}/bin/python"
+        exit 1
+    fi
     
     # Check if requirements.txt exists
     if [[ -f "${SCRIPT_DIR}/requirements.txt" ]]; then
         log_info "Installing from requirements.txt..."
         
-        # Install dependencies with retry logic for gevent-websocket
+        # Try installation with enhanced error handling
         if ! "${VENV_PATH}/bin/pip" install -r "${SCRIPT_DIR}/requirements.txt"; then
             log_warning "Initial installation failed, trying alternative approach..."
             
-            # Install gevent first, then gevent-websocket
-            "${VENV_PATH}/bin/pip" install gevent==23.9.1
-            "${VENV_PATH}/bin/pip" install gevent-websocket==0.10.1
+            # Install problematic packages individually with specific versions
+            local packages=(
+                "gevent==23.9.1"
+                "gevent-websocket==0.10.1"
+                "Flask==3.0.2"
+                "Flask-SocketIO==5.3.6"
+                "pymavlink==2.4.39"
+                "python-dotenv==1.0.1"
+                "python-engineio==4.9.0"
+                "python-socketio==5.11.1"
+            )
             
-            # Install remaining packages
-            "${VENV_PATH}/bin/pip" install \
-                Flask==3.0.2 \
-                Flask-SocketIO==5.3.6 \
-                pymavlink==2.4.39 \
-                python-dotenv==1.0.1 \
-                python-engineio==4.9.0 \
-                python-socketio==5.11.1
+            for package in "${packages[@]}"; do
+                log_info "Installing $package..."
+                if ! "${VENV_PATH}/bin/pip" install "$package"; then
+                    log_error "Failed to install $package"
+                    exit 1
+                fi
+            done
         fi
     else
         log_warning "requirements.txt not found, installing core dependencies..."
-        "${VENV_PATH}/bin/pip" install \
-            Flask==3.0.2 \
-            Flask-SocketIO==5.3.6 \
-            gevent==23.9.1 \
-            gevent-websocket==0.10.1 \
-            pymavlink==2.4.39 \
-            python-dotenv==1.0.1 \
-            python-engineio==4.9.0 \
-            python-socketio==5.11.1
+        local core_packages=(
+            "Flask==3.0.2"
+            "Flask-SocketIO==5.3.6"
+            "gevent==23.9.1"
+            "gevent-websocket==0.10.1"
+            "pymavlink==2.4.39"
+            "python-dotenv==1.0.1"
+            "python-engineio==4.9.0"
+            "python-socketio==5.11.1"
+        )
+        
+        for package in "${core_packages[@]}"; do
+            log_info "Installing $package..."
+            if ! "${VENV_PATH}/bin/pip" install "$package"; then
+                log_error "Failed to install $package"
+                exit 1
+            fi
+        done
     fi
     
     log_success "Python dependencies installed"
 }
 
-# Download frontend libraries
+# Enhanced frontend library download
 download_frontend_libraries() {
     log_info "Downloading frontend JavaScript libraries..."
     
@@ -367,12 +480,11 @@ download_frontend_libraries() {
             log_info "Skipping ${filename} (already exists)"
         else
             log_info "Downloading ${filename}..."
-            if curl -fsSL "$url" -o "$filepath"; then
-                log_success "Downloaded ${filename}"
-            else
-                log_error "Failed to download ${filename}"
+            if ! curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$filepath"; then
+                log_error "Failed to download ${filename} from ${url}"
                 exit 1
             fi
+            log_success "Downloaded ${filename}"
         fi
     done
 }
@@ -382,21 +494,26 @@ set_permissions() {
     log_info "Setting file permissions..."
     
     # Make Python scripts executable
-    find "${SCRIPT_DIR}" -name "*.py" -type f -exec chmod +x {} \;
+    find "${SCRIPT_DIR}" -name "*.py" -type f -exec chmod +x {} \; || {
+        log_warning "Some Python files could not be made executable"
+    }
     
     # Make sure the virtual environment is accessible
-    chmod -R u+rwX "${VENV_PATH}"
+    chmod -R u+rwX "${VENV_PATH}" || {
+        log_warning "Could not set permissions on virtual environment"
+    }
     
     log_success "Permissions set"
 }
 
 # Create .env file template
 create_env_template() {
-    local env_file="${SCRIPT_DIR}/.env.example"
+    local env_example="${SCRIPT_DIR}/.env.example"
+    local env_file="${SCRIPT_DIR}/.env"
     
-    if [[ ! -f "$env_file" ]]; then
+    if [[ ! -f "$env_example" ]]; then
         log_info "Creating .env.example file..."
-        cat > "$env_file" << 'EOF'
+        cat > "$env_example" << 'EOF'
 # WebGCS Configuration Example
 # Copy this file to .env and modify as needed
 
@@ -418,52 +535,63 @@ EOF
         log_success "Created .env.example configuration template"
         
         # If no .env exists, create one from example
-        if [[ ! -f "${SCRIPT_DIR}/.env" ]]; then
-            cp "$env_file" "${SCRIPT_DIR}/.env"
+        if [[ ! -f "$env_file" ]]; then
+            cp "$env_example" "$env_file"
             log_info "Created default .env file from template"
         fi
     fi
 }
 
-# Create systemd service
+# Enhanced systemd service creation with robust path handling
 create_systemd_service() {
     log_info "Creating systemd service for WebGCS..."
     
     local service_name="webgcs"
     local service_file="/etc/systemd/system/${service_name}.service"
     local current_user="$(whoami)"
-    local python_path="${VENV_PATH}/bin/python3"
-    local app_path="${SCRIPT_DIR}/app.py"
+    
+    # Use absolute, canonical paths to prevent any issues
+    local script_dir_abs="$(realpath "${SCRIPT_DIR}")"
+    local venv_path_abs="$(realpath "${VENV_PATH}")"
+    local python_path="${venv_path_abs}/bin/python"
+    local app_path="${script_dir_abs}/app.py"
     
     # Debug: Show the paths being used
     log_info "Service configuration paths:"
-    log_info "  Script directory: ${SCRIPT_DIR}"
-    log_info "  Virtual environment: ${VENV_PATH}"
+    log_info "  Script directory: ${script_dir_abs}"
+    log_info "  Virtual environment: ${venv_path_abs}"
+    log_info "  Python executable: ${python_path}"
     log_info "  App path: ${app_path}"
     log_info "  Current user: ${current_user}"
     
-    # Verify paths exist and are correct
+    # Comprehensive path validation
     if [[ ! -f "$python_path" ]]; then
         log_error "Python executable not found at: $python_path"
+        log_error "Virtual environment may not be properly created"
         return 1
     fi
     
     if [[ ! -f "$app_path" ]]; then
         log_error "app.py not found at: $app_path"
+        log_error "Make sure you're running this script from the WebGCS directory"
         return 1
     fi
     
-    # Ensure we have absolute paths
-    python_path="$(realpath "$python_path")"
-    app_path="$(realpath "$app_path")"
-
+    # Verify Python executable works
+    if ! "$python_path" --version &> /dev/null; then
+        log_error "Python executable at $python_path is not working"
+        return 1
+    fi
     
-    log_info "Resolved absolute paths:"
-    log_info "  Script directory: ${SCRIPT_DIR}"
-    log_info "  Python executable: ${python_path}"
-    log_info "  App path: ${app_path}"
+    # Verify Python can import required modules
+    if ! "$python_path" -c "import flask, flask_socketio, pymavlink" &> /dev/null; then
+        log_error "Python dependencies not properly installed in virtual environment"
+        return 1
+    fi
     
-    # Create the service file content
+    log_info "Path validation successful"
+    
+    # Create the service file content with validated paths
     local service_content="[Unit]
 Description=WebGCS - Web-Based Ground Control Station
 Documentation=https://github.com/PeterJBurke/WebGCS
@@ -474,11 +602,12 @@ StartLimitBurst=3
 
 [Service]
 Type=simple
-User=root
-Group=root
-WorkingDirectory=${SCRIPT_DIR}
-Environment="PYTHONPATH=${SCRIPT_DIR}"
-ExecStart=${VENV_PATH}/bin/python3 ${app_path}
+User=${current_user}
+Group=${current_user}
+WorkingDirectory=${script_dir_abs}
+Environment=PATH=${venv_path_abs}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PYTHONPATH=${script_dir_abs}
+ExecStart=${python_path} ${app_path}
 Restart=on-failure
 RestartSec=10
 TimeoutStartSec=30
@@ -491,8 +620,8 @@ SyslogIdentifier=webgcs
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectSystem=strict
-# ProtectHome=yes is removed because WorkingDirectory may be in /root
-ReadWritePaths=${SCRIPT_DIR}
+ProtectHome=yes
+ReadWritePaths=${script_dir_abs}
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectControlGroups=yes
@@ -504,130 +633,125 @@ PrivateDevices=yes
 [Install]
 WantedBy=multi-user.target"
 
-    # Check if we need sudo for service installation or are running as root
+    # Install service with proper privilege handling
+    local use_sudo=false
     if [[ ! -w "/etc/systemd/system" ]]; then
+        use_sudo=true
         log_info "Installing systemd service (requires sudo)..."
         if ! command -v sudo &> /dev/null; then
             log_error "sudo is required to install the systemd service but is not available."
             log_error "Please install sudo or run this script as root."
             return 1
         fi
-        
-        # Create service file with sudo
+    else
+        log_info "Installing systemd service (running with root privileges)..."
+    fi
+    
+    # Create service file
+    if [[ "$use_sudo" == true ]]; then
         echo "$service_content" | sudo tee "$service_file" > /dev/null
-        
-        # Set proper permissions
         sudo chmod 644 "$service_file"
-        
-        # Reload systemd and enable the service
+    else
+        echo "$service_content" > "$service_file"
+        chmod 644 "$service_file"
+    fi
+    
+    # Reload systemd and enable the service
+    if [[ "$use_sudo" == true ]]; then
         sudo systemctl daemon-reload
         sudo systemctl enable "$service_name"
-        
-        log_success "Systemd service created and enabled"
-        
-        # Start the service
-        log_info "Starting WebGCS service..."
-        if sudo systemctl start "$service_name"; then
-            log_success "WebGCS service started successfully"
-            
-            # Wait a moment and check status
-            sleep 3
-            if sudo systemctl is-active --quiet "$service_name"; then
-                log_success "Service is running properly"
-            else
-                log_warning "Service may have issues. Check with: sudo systemctl status $service_name"
-            fi
-        else
-            log_error "Failed to start WebGCS service"
-            log_error "Check the service status with: sudo systemctl status $service_name"
-            return 1
-        fi
     else
-        # Running as root or have write access
-        log_info "Installing systemd service (running with root privileges)..."
-        
-        # Create service file directly
-        echo "$service_content" > "$service_file"
-        
-        # Set proper permissions
-        chmod 644 "$service_file"
-        
-        # Reload systemd and enable the service
         systemctl daemon-reload
         systemctl enable "$service_name"
-        
-        log_success "Systemd service created and enabled"
-        
-        # Start the service
-        log_info "Starting WebGCS service..."
-        if systemctl start "$service_name"; then
-            log_success "WebGCS service started successfully"
-            
-            # Wait a moment and check status
-            sleep 3
-            if systemctl is-active --quiet "$service_name"; then
-                log_success "Service is running properly"
-            else
-                log_warning "Service may have issues. Check with: systemctl status $service_name"
-            fi
-        else
-            log_error "Failed to start WebGCS service"
-            log_error "Check the service status with: systemctl status $service_name"
-            return 1
+    fi
+    
+    log_success "Systemd service created and enabled"
+    
+    # Start the service with enhanced error checking
+    log_info "Starting WebGCS service..."
+    local start_success=false
+    
+    if [[ "$use_sudo" == true ]]; then
+        if sudo systemctl start "$service_name"; then
+            start_success=true
         fi
+    else
+        if systemctl start "$service_name"; then
+            start_success=true
+        fi
+    fi
+    
+    if [[ "$start_success" == true ]]; then
+        log_success "WebGCS service started successfully"
+        
+        # Wait and check status
+        sleep 3
+        local is_active=false
+        if [[ "$use_sudo" == true ]]; then
+            sudo systemctl is-active --quiet "$service_name" && is_active=true
+        else
+            systemctl is-active --quiet "$service_name" && is_active=true
+        fi
+        
+        if [[ "$is_active" == true ]]; then
+            log_success "Service is running properly"
+        else
+            log_warning "Service may have issues. Check with: ${use_sudo:+sudo }systemctl status $service_name"
+        fi
+    else
+        log_error "Failed to start WebGCS service"
+        log_error "Check the service status with: ${use_sudo:+sudo }systemctl status $service_name"
+        return 1
     fi
 }
 
-# Verify installation
+# Enhanced verification with better error reporting
 verify_installation() {
     log_info "Verifying installation..."
     
-    # Check if virtual environment works
-    if ! "${VENV_PATH}/bin/python" -c "import flask, flask_socketio, pymavlink, gevent" 2>/dev/null; then
-        log_error "Installation verification failed. Some Python packages may not be installed correctly."
-        
-        # Try to identify specific missing packages
-        local missing_packages=()
-        
-        if ! "${VENV_PATH}/bin/python" -c "import flask" 2>/dev/null; then
-            missing_packages+=("Flask")
-        fi
-        
-        if ! "${VENV_PATH}/bin/python" -c "import flask_socketio" 2>/dev/null; then
-            missing_packages+=("Flask-SocketIO")
-        fi
-        
-        if ! "${VENV_PATH}/bin/python" -c "import pymavlink" 2>/dev/null; then
-            missing_packages+=("pymavlink")
-        fi
-        
-        if ! "${VENV_PATH}/bin/python" -c "import gevent" 2>/dev/null; then
-            missing_packages+=("gevent")
-        fi
-        
-        if ! "${VENV_PATH}/bin/python" -c "import geventwebsocket" 2>/dev/null; then
-            missing_packages+=("gevent-websocket")
-        fi
-        
-        if [[ ${#missing_packages[@]} -gt 0 ]]; then
-            log_error "Missing packages: ${missing_packages[*]}"
-            log_error "Try installing them manually:"
-            log_error "  source venv/bin/activate"
-            log_error "  pip install ${missing_packages[*]}"
-        fi
-        
-        exit 1
+    local verification_errors=()
+    
+    # Check virtual environment Python
+    local venv_python="${VENV_PATH}/bin/python"
+    if [[ ! -f "$venv_python" ]]; then
+        verification_errors+=("Virtual environment Python not found at: $venv_python")
     fi
     
-    # Check if main app exists
+    # Check core Python packages
+    local required_packages=("flask" "flask_socketio" "pymavlink" "gevent")
+    for package in "${required_packages[@]}"; do
+        if ! "$venv_python" -c "import $package" 2>/dev/null; then
+            verification_errors+=("Python package '$package' not found or not working")
+        fi
+    done
+    
+    # Check gevent-websocket specifically (common issue)
+    if ! "$venv_python" -c "import geventwebsocket" 2>/dev/null; then
+        verification_errors+=("Python package 'gevent-websocket' not found or not working")
+    fi
+    
+    # Check main app file
     if [[ ! -f "${SCRIPT_DIR}/app.py" ]]; then
-        log_warning "app.py not found. Make sure you have all the project files."
+        verification_errors+=("app.py not found in script directory")
+    fi
+    
+    # Report verification results
+    if [[ ${#verification_errors[@]} -gt 0 ]]; then
+        log_error "Installation verification failed with the following issues:"
+        for error in "${verification_errors[@]}"; do
+            log_error "  - $error"
+        done
+        
+        log_error "Try to fix these issues manually:"
+        log_error "  source venv/bin/activate"
+        log_error "  pip install --upgrade flask flask-socketio pymavlink gevent gevent-websocket"
+        exit 1
     fi
     
     # Run detailed verification script if available
     if [[ -f "${SCRIPT_DIR}/verify_setup.py" ]]; then
         log_info "Running detailed verification..."
-        if "${VENV_PATH}/bin/python" "${SCRIPT_DIR}/verify_setup.py"; then
+        if "$venv_python" "${SCRIPT_DIR}/verify_setup.py"; then
             log_success "Detailed verification completed successfully"
         else
             log_warning "Detailed verification found some issues. Check output above."
@@ -637,7 +761,7 @@ verify_installation() {
     log_success "Installation verified successfully"
 }
 
-# Print service management instructions
+# Enhanced service instructions with better formatting
 print_service_instructions() {
     local service_name="webgcs"
     
@@ -680,12 +804,12 @@ print_service_instructions() {
     printf "   Edit: %b%s/.env%b\n" "${BLUE}" "${SCRIPT_DIR}" "${NC}"
     printf "   After changes: %bsudo systemctl restart %s%b\n" "${YELLOW}" "$service_name" "${NC}"
     echo
-    echo "📁 Project directory: ${SCRIPT_DIR}"
-    echo "📋 Service file: /etc/systemd/system/$service_name.service"
+    printf "📁 Project directory: %s\n" "${SCRIPT_DIR}"
+    printf "📋 Service file: /etc/systemd/system/%s.service\n" "$service_name"
     echo "======================================================================"
 }
 
-# Print manual instructions (for non-service mode)
+# Enhanced manual instructions
 print_manual_instructions() {
     echo
     echo "======================================================================"
@@ -730,22 +854,25 @@ print_timing_summary() {
     echo "Duration: ${hours}h ${minutes}m ${seconds}s"
 }
 
-# Main execution
+# Main execution with comprehensive error handling
 main() {
     echo "======================================================================"
-    echo "           WebGCS Linux Desktop Setup Script v2.3"
+    echo "           WebGCS Linux Desktop Setup Script v2.4"
     echo "           Optimized for Ubuntu 24.04 LTS"
     echo "======================================================================"
     echo
     
     log_info "Starting WebGCS setup in: ${SCRIPT_DIR}"
     
+    # Validate environment first
+    validate_environment
+    
     # Check for service installation option
     local install_service=false
     if [[ "${1:-}" == "--service" ]] || [[ "${1:-}" == "-s" ]]; then
         install_service=true
         log_info "Service installation mode enabled"
-    else
+    elif [[ -t 0 ]]; then  # Only prompt if interactive
         echo
         log_info "Setup modes available:"
         echo "  Manual mode: Sets up for manual running"
@@ -756,14 +883,16 @@ main() {
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             install_service=true
         fi
+    else
+        log_info "Non-interactive mode: defaulting to manual installation"
     fi
     
+    # Execute installation steps
     check_linux
     check_ubuntu_version
     update_package_lists
-    install_system_dependencies  # This now installs missing dependencies automatically
     check_python_version
-    check_dependencies  # This now handles any remaining missing dependencies
+    check_dependencies
     create_directories
     setup_virtual_environment
     install_python_dependencies
@@ -772,6 +901,7 @@ main() {
     create_env_template
     verify_installation
     
+    # Install service or provide manual instructions
     if [[ "$install_service" == true ]]; then
         if create_systemd_service; then
             print_service_instructions
@@ -788,5 +918,5 @@ main() {
     log_success "Setup completed successfully!"
 }
 
-# Run main function
+# Run main function with all arguments
 main "$@"
