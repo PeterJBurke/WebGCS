@@ -37,14 +37,6 @@ sudo systemctl status mavlink-router webgcs check_wifi
 sudo journalctl -u mavlink-router -f
 ```
 
-### TTS Notifications
-```bash
-# Test TTS manually
-uv run tts/elevenlabs_tts.py "Test message"
-
-# Quick completion notification
-python tts/tts_notify.py "Task complete"
-```
 
 ## Architecture Overview
 
@@ -107,13 +99,9 @@ WebGCS is a Flask-SocketIO web application that provides real-time ground contro
 - `process_command_ack()` provides detailed feedback for ARM/DISARM, mode changes, etc.
 - UI receives both technical MAVLink responses and user-friendly messages
 
-### Voice Notifications (TTS)
-- Hooks system in `.claude/hooks/` provides TTS notifications
-- `stop.py` hook triggers when Claude responses complete
-- ElevenLabs TTS integration with fallback to other providers
 
 ### Error Handling Patterns
-- Silent failure for non-critical operations (TTS, logging)
+- Silent failure for non-critical operations (logging)
 - Structured error reporting for MAVLink operations
 - Connection recovery mechanisms for network interruptions
 
