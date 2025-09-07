@@ -82,12 +82,186 @@ To create the most reliable, responsive, and user-friendly web-based ground cont
 - **FR-6.4**: Cache management with storage optimization
 - **FR-6.5**: Fallback to cached tiles when network unavailable
 
-#### FR-7: System Monitoring
-- **FR-7.1**: Connection status display with health indicators
-- **FR-7.2**: Performance metrics monitoring (latency, message rates)
-- **FR-7.3**: Error logging and diagnostic information
-- **FR-7.4**: System resource utilization tracking
-- **FR-7.5**: Automated health checks and alerts
+#### FR-7: User Interface Components
+- **FR-7.1**: Primary Flight Display (PFD) with real-time flight instruments
+- **FR-7.2**: Interactive map interface with drone positioning and navigation
+- **FR-7.3**: Connection management interface with IP/Port configuration
+- **FR-7.4**: Flight control buttons and mode selection interface
+- **FR-7.5**: Navigation input interface for coordinate-based flight commands
+- **FR-7.6**: Offline map management panel with tile download capabilities
+- **FR-7.7**: Real-time status displays and message logging interface
+- **FR-7.8**: Voice announcement controls and audio feedback system
+
+#### FR-8: System Monitoring
+- **FR-8.1**: Connection status display with health indicators
+- **FR-8.2**: Performance metrics monitoring (latency, message rates)
+- **FR-8.3**: Error logging and diagnostic information
+- **FR-8.4**: System resource utilization tracking
+- **FR-8.5**: Automated health checks and alerts
+
+### Detailed Interface Requirements
+
+#### UI-1: Primary Flight Display (PFD) Interface
+- **UI-1.1**: Attitude indicator with pitch and roll visualization (280x250px canvas)
+- **UI-1.2**: Airspeed indicator tape (60x250px vertical tape display)
+- **UI-1.3**: Altitude indicator tape (70x250px vertical tape display)
+- **UI-1.4**: Arming status overlay displaying "ARMED" or "DISARMED"
+- **UI-1.5**: Battery voltage display with real-time updates (format: "Bat: XX.X V")
+- **UI-1.6**: Current flight mode display (format: "Mode: XXXX")
+- **UI-1.7**: Current draw display (format: "Cur: XX.X A")
+- **UI-1.8**: GPS status with fix type, satellite count, and HDOP (format: "GPS: XXX (X) HDOP:XX.X")
+- **UI-1.9**: Latitude/Longitude display with 6 decimal precision
+
+#### UI-2: Connection Management Interface
+- **UI-2.1**: Connection status indicator with colored text (green=connected, red=disconnected, blue=connecting)
+- **UI-2.2**: Heartbeat indicator (❤️ icon) with beat counter display
+- **UI-2.3**: Heartbeat visual animation - icon pulses/scales with each received heartbeat
+- **UI-2.4**: Heartbeat audio beep - audible tone generated for each received heartbeat
+- **UI-2.5**: Heartbeat sound toggle with custom slider control and speaker icon to enable/disable audio
+- **UI-2.6**: IP Address text input field with placeholder "192.168.193.235" (default: 192.168.193.235)
+- **UI-2.7**: Port number input field with validation (1-65535, default: 5678)
+- **UI-2.8**: Connect button (green styling, disabled when connected)
+- **UI-2.9**: Disconnect button (red styling, disabled when disconnected)
+
+#### UI-3: Flight Control Interface
+- **UI-3.1**: Arm button for vehicle arming with confirmation dialog
+- **UI-3.2**: Disarm button for vehicle disarming with confirmation dialog
+- **UI-3.3**: Takeoff button with altitude input field (default: 5m, range: 1-1000m)
+- **UI-3.4**: Land button for immediate landing command
+- **UI-3.5**: RTL (Return to Launch) button for autonomous return
+- **UI-3.6**: Flight mode dropdown selector with options:
+  - STABILIZE, ALT_HOLD, POS_HOLD, LOITER, GUIDED, RTL, LAND, AUTO, BRAKE
+- **UI-3.7**: Set Mode button to apply selected flight mode
+
+#### UI-4: Navigation Control Interface
+- **UI-4.1**: Latitude input field with step precision and range validation ([-90,90])
+- **UI-4.2**: Longitude input field with step precision and range validation ([-180,180])
+- **UI-4.3**: Altitude input field (AGL) with default 10m and range (-100 to 5000m)
+- **UI-4.4**: Go To button to execute navigation command to specified coordinates
+- **UI-4.5**: Clear button to reset all navigation input fields
+
+#### UI-5: Request Control Interface
+- **UI-5.1**: Request Fence button to download geofence from vehicle
+- **UI-5.2**: Request Mission button to download mission waypoints from vehicle
+
+#### UI-6: Interactive Map Interface
+- **UI-6.1**: Leaflet-based interactive map with zoom controls (levels 2-22)
+- **UI-6.2**: Layer control with Street/Satellite map type selection (always expanded)
+- **UI-6.3**: Drone position marker with directional arrow icon (blue)
+- **UI-6.4**: Home position marker with house icon (green)
+- **UI-6.5**: Target marker for fly-to destinations with bullseye icon (red, pulsing animation)
+- **UI-6.6**: Center Map button to center view on drone position
+- **UI-6.7**: Fly To mode toggle button with ON/OFF states (green when active)
+- **UI-6.8**: Click-to-fly functionality when Fly To mode is enabled
+- **UI-6.9**: Map controls positioned at top-left with translucent background
+
+#### UI-7: Voice and Audio Interface
+- **UI-7.1**: Voice Announcements checkbox toggle for audio feedback
+- **UI-7.2**: Heartbeat sound effects with toggle control
+- **UI-7.3**: Real-time heartbeat beep generation synchronized with MAVLink heartbeat messages
+- **UI-7.4**: Audio feedback for flight mode changes and system status
+- **UI-7.5**: Heartbeat animation synchronization with visual icon pulsing effect
+
+#### UI-8: Message Logging Interface
+- **UI-8.1**: Real-time message log display area with timestamp
+- **UI-8.2**: Scrollable message history with automatic updates
+- **UI-8.3**: Color-coded message types for different system events
+
+#### UI-9: Offline Maps Management Panel
+- **UI-9.1**: Offline Maps toggle button with radar icon (📡)
+- **UI-9.2**: Collapsible side panel with close button (×)
+- **UI-9.3**: Internet connection status indicator with online/offline states
+- **UI-9.4**: Download area coordinate inputs:
+  - North Latitude (step: 0.000001)
+  - South Latitude (step: 0.000001)
+  - West Longitude (step: 0.000001)
+  - East Longitude (step: 0.000001)
+- **UI-9.5**: Use Current Map View button to auto-populate coordinates
+- **UI-9.6**: Zoom level range inputs (Min: default 2, Max: default 16, range: 1-20)
+- **UI-9.7**: Map type selection checkboxes:
+  - Street Map (OpenStreetMap)
+  - Satellite (Esri imagery)
+- **UI-9.8**: Area preview with estimated tile count and storage size
+- **UI-9.9**: Download tiles button with progress indication
+- **UI-9.10**: Stop download button (enabled during download)
+- **UI-9.11**: Progress bar with percentage and tile count status
+- **UI-9.12**: Cache statistics display:
+  - Street tiles count
+  - Satellite tiles count
+  - Total tiles count
+- **UI-9.13**: Clear cache button with confirmation dialog
+- **UI-9.14**: Usage tip section with download area hints
+
+#### UI-10: Additional Interface Elements
+- **UI-10.1**: Main title header "Drone Control Interface v2.0" with dark background
+- **UI-10.2**: MAVLink Dump link button for debugging/diagnostic page
+- **UI-10.3**: Responsive layout with left column (controls) and right column (map)
+- **UI-10.4**: Button state management (enabled/disabled based on connection status)
+- **UI-10.5**: Input validation with range restrictions and error handling
+- **UI-10.6**: Consistent styling with hover effects and transitions
+- **UI-10.7**: Accessibility features including tooltips and ARIA labels
+
+### Code Organization Requirements
+
+#### CO-1: File Structure and Separation of Concerns
+- **CO-1.1**: HTML structure must be separated from JavaScript code (no inline JavaScript in index.html)
+- **CO-1.2**: CSS styling must be separated into external stylesheet files (no inline CSS in index.html)
+- **CO-1.3**: JavaScript functionality must be modularized into multiple files based on functional areas
+- **CO-1.4**: Each JavaScript module should handle a specific domain (e.g., map controls, flight controls, UI updates)
+- **CO-1.5**: Maintain clear separation between presentation layer (HTML/CSS) and business logic (JavaScript)
+
+#### CO-2: JavaScript Modular Architecture
+- **CO-2.1**: Map management JavaScript module for all map-related functionality
+- **CO-2.2**: Flight control JavaScript module for drone command operations
+- **CO-2.3**: Connection management JavaScript module for MAVLink communication handling
+- **CO-2.4**: UI state management JavaScript module for interface updates and real-time data display
+- **CO-2.5**: Audio/voice JavaScript module for sound effects and voice announcements
+- **CO-2.6**: Offline maps JavaScript module for tile management and caching
+- **CO-2.7**: Main application JavaScript module for initialization and coordination
+- **CO-2.8**: Each module should have clear APIs and minimal dependencies on other modules
+
+#### CO-3: CSS Organization Requirements
+- **CO-3.1**: Main stylesheet for overall layout and component styling
+- **CO-3.2**: Responsive design CSS rules for mobile and desktop compatibility
+- **CO-3.3**: Animation and transition CSS for heartbeat effects and UI feedback
+- **CO-3.4**: Map-specific CSS for Leaflet customizations and overlay styling
+- **CO-3.5**: Offline maps panel CSS for download interface styling
+- **CO-3.6**: CSS variables for consistent theming and easy maintenance
+
+#### CO-4: Modular File Organization Standards
+- **CO-4.1**: Maximum file size limit of 200 lines per file (preferably under 150 lines)
+- **CO-4.2**: Single responsibility principle - each file handles one specific function or related set of functions
+- **CO-4.3**: Modular Python backend structure under `/src/` directory:
+  - `/src/app/` - Flask application factory and configuration (≤50 lines per file)
+  - `/src/mavlink/` - MAVLink protocol handling, split by message type (≤150 lines per file)
+  - `/src/socketio/` - SocketIO event handlers, split by event category (≤120 lines per file)
+  - `/src/web/` - Web routes and endpoints (≤100 lines per file)
+  - `/src/models/` - Data structures and state management (≤150 lines per file)
+  - `/src/services/` - Business logic services (≤150 lines per file)
+  - `/src/utils/` - Utility functions and constants (≤100 lines per file)
+- **CO-4.4**: Modular frontend structure under `/static/`:
+  - `/static/js/` - JavaScript modules by functionality (≤200 lines per file)
+  - `/static/css/` - CSS files by component/section (≤200 lines per file)
+  - `/static/templates/` - HTML templates, minimal and focused (≤100 lines per file)
+- **CO-4.5**: Modular test structure under `/tests/`:
+  - `/tests/unit/` - Unit tests per module (≤150 lines per file)
+  - `/tests/integration/` - Integration tests (≤200 lines per file)
+  - `/tests/performance/` - Performance benchmarks (≤100 lines per file)
+- **CO-4.6**: Clear import/dependency management with minimal coupling between modules
+- **CO-4.7**: Descriptive file naming that reflects exact functionality
+- **CO-4.8**: Each file must be self-contained and easily understood by LLM without external context
+
+#### CO-5: Token Usage Management Requirements
+- **CO-5.1**: Implement comprehensive token tracking system for all agents (main + 6 subagents)
+- **CO-5.2**: Track input tokens, output tokens, and cumulative usage per agent per session
+- **CO-5.3**: Automatic warning system at 80% of Claude context limit (~160K tokens)
+- **CO-5.4**: Critical alerts at 90% of context limit with restart recommendations
+- **CO-5.5**: Session logging with timestamps, agent breakdown, and usage statistics
+- **CO-5.6**: Periodic status reports every 10-15 subagent tasks during development
+- **CO-5.7**: Token usage optimization recommendations when approaching limits
+- **CO-5.8**: Session persistence and recovery procedures for context limit scenarios
+- **CO-5.9**: Individual agent monitoring with high-usage alerts (>20K tokens per agent)
+- **CO-5.10**: Export functionality for token usage logs and performance analysis
 
 ### Non-Functional Requirements
 

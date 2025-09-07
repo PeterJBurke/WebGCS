@@ -81,7 +81,7 @@ The agent will:
 ### Step 2: Configure Drone Connection
 
 #### 2.1 Enter Connection Parameters
-1. Locate the drone IP input field (should have placeholder "192.168.1.100")
+1. Locate the drone IP input field (should have placeholder "192.168.193.235")
 2. Clear any existing value in the IP field
 3. Enter the MAVLINK_HOST value provided by the agent (from .env file)
 4. Verify the Port field shows `5678` (default MAVLink port)
