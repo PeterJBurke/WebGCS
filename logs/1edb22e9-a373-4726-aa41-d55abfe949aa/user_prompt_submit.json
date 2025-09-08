@@ -1,0 +1,106 @@
+[
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": " there is still black behind the text fields. also the vfr hud center is not in the middle of the drawing field"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "this work should be done by the vfr subagent"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "take a screenshot"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "i still see black behind text, do you?"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "take a screeen shot"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "look at the screenshot you jsut took . do you see any  black behind the text?"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the top compass heading lines are too dense."
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "take a screenshot assuming the user has a 1920x1080 monitor"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "look at the screenshot. the yellow triangle. is it in the middle?"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "is the entire canvas drawn, or is the right side cut off?"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": " what do you suggest"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the scale did not work, see the yellow triangle not in the middle in the screenshot"
+  },
+  {
+    "session_id": "1edb22e9-a373-4726-aa41-d55abfe949aa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/1edb22e9-a373-4726-aa41-d55abfe949aa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "save to md the status of the project and any unfinished business"
+  }
+]

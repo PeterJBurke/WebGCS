@@ -1,0 +1,50 @@
+[
+  {
+    "session_id": "970dcac4-f548-4331-8210-a8ad266809ba",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/970dcac4-f548-4331-8210-a8ad266809ba.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  },
+  {
+    "session_id": "970dcac4-f548-4331-8210-a8ad266809ba",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/970dcac4-f548-4331-8210-a8ad266809ba.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  },
+  {
+    "session_id": "970dcac4-f548-4331-8210-a8ad266809ba",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/970dcac4-f548-4331-8210-a8ad266809ba.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  },
+  {
+    "session_id": "970dcac4-f548-4331-8210-a8ad266809ba",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/970dcac4-f548-4331-8210-a8ad266809ba.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  },
+  {
+    "session_id": "970dcac4-f548-4331-8210-a8ad266809ba",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/970dcac4-f548-4331-8210-a8ad266809ba.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  },
+  {
+    "session_id": "970dcac4-f548-4331-8210-a8ad266809ba",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/970dcac4-f548-4331-8210-a8ad266809ba.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  }
+]

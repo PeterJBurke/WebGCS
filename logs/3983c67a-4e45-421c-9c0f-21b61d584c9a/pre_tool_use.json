@@ -1145,5 +1145,53 @@
       "command": "git add .",
       "description": "Add all project files to git"
     }
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git status",
+      "description": "Verify files are staged"
+    }
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git commit -m \"$(cat <<'EOF'\nInitial commit: WebGCS5 - Comprehensive Drone Control Interface\n\nThis commit introduces WebGCS5, a professional web-based Ground Control Station for drone/UAV operations featuring:\n\n## Core Features\n- Real-time MAVLink telemetry communication\n- Professional VFR Primary Flight Display (PFD) with Garmin-style glass cockpit\n- Interactive web-based flight controls (Arm/Disarm, Takeoff/Land, RTL)\n- Dynamic map interface with offline tile caching\n- Voice announcements and audio feedback system\n- Comprehensive flight safety validations\n\n## Technical Implementation\n- Flask-SocketIO backend with high-performance logging\n- Modern JavaScript frontend with real-time updates\n- MAVLink protocol integration for drone communication\n- Professional aviation-grade UI components and styling\n- Comprehensive testing suite with automated validation\n\n## Project Organization\n- **docs/** - Complete documentation and test reports (42 files)\n- **tests/** - Test suite with results and screenshots (65 files)\n- **tools/** - Utilities organized by category (MAVLink, validation, UI)\n- **scripts/** - Automation and testing shell scripts\n- **static/js/** - Frontend JavaScript modules\n- **templates/** - Flask HTML templates\n\n## Key Capabilities\n- Professional glass cockpit HUD with altitude/airspeed tickers\n- Real-time compass rose and attitude indicators\n- Battery monitoring and GPS status displays\n- Mission planning and geofence management\n- Comprehensive button testing and validation framework\n- Professional aviation color schemes and layouts\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\"",
+      "description": "Create comprehensive initial commit"
+    }
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git status",
+      "description": "Check git status after commit"
+    }
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "git log --oneline -1",
+      "description": "Show the latest commit"
+    }
   }
 ]
