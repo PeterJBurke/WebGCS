@@ -1,0 +1,9 @@
+[
+  {
+    "session_id": "60f416c8-3f50-482a-b3fa-86d1f5321235",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/60f416c8-3f50-482a-b3fa-86d1f5321235.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "startup"
+  }
+]

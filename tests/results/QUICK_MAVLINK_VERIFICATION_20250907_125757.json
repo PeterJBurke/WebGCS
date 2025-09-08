@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-09-07T12:57:57.176631",
+  "runtime_seconds": 232.5333456993103,
+  "success_rate": 20.0,
+  "tests_passed": "1/5",
+  "results": {
+    "tcp_connection": false,
+    "mavlink_protocol": false,
+    "heartbeat_received": false,
+    "target_system_id": 0,
+    "telemetry_messages": 0,
+    "webgcs_integration": true,
+    "command_ack_test": false
+  }
+}

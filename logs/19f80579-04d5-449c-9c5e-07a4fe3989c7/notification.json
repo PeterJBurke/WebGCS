@@ -1,0 +1,30 @@
+[
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Write"
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  }
+]

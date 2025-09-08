@@ -1,0 +1,60 @@
+{
+  "success": true,
+  "console_logs": [
+    {
+      "timestamp": 1757280730702,
+      "level": "INFO",
+      "message": "http://localhost:5001/static/js/connection-manager.js 162:16 \"Disconnect button clicked!\"",
+      "source": "console-api"
+    },
+    {
+      "timestamp": 1757280730702,
+      "level": "INFO",
+      "message": "http://localhost:5001/static/js/connection-manager.js 163:16 \"Disconnecting from drone...\"",
+      "source": "console-api"
+    },
+    {
+      "timestamp": 1757280730703,
+      "level": "INFO",
+      "message": "http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Disconnecting...\"",
+      "source": "console-api"
+    },
+    {
+      "timestamp": 1757280730703,
+      "level": "WARNING",
+      "message": "http://localhost:5001/static/js/audio-manager.js 135 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "source": "other"
+    },
+    {
+      "timestamp": 1757280733710,
+      "level": "WARNING",
+      "message": "http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "source": "other"
+    },
+    {
+      "timestamp": 1757280733710,
+      "level": "WARNING",
+      "message": "http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "source": "other"
+    },
+    {
+      "timestamp": 1757280733710,
+      "level": "WARNING",
+      "message": "http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "source": "other"
+    }
+  ],
+  "errors": [],
+  "button_found": true,
+  "button_clicked": true,
+  "disconnect_message_found": true,
+  "javascript_errors": [],
+  "page_state": {
+    "connection_manager_found": true,
+    "debug_info": {
+      "drone_connected": true,
+      "socket_exists": true
+    },
+    "websocket_ready": true
+  }
+}

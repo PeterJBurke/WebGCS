@@ -1,0 +1,170 @@
+{
+  "test_session": {
+    "timestamp": "2025-09-07T11:55:00.702216",
+    "webgcs_url": "http://localhost:5001",
+    "browser": "Chrome"
+  },
+  "test_results": [
+    {
+      "test_name": "Coordinate Precision Test",
+      "results": [
+        {
+          "input_lat": "37.123456",
+          "input_lon": "-122.654321",
+          "formatted_lat": "37.123456",
+          "formatted_lon": "-122.654321",
+          "lat_precision": 6,
+          "lon_precision": 6,
+          "meets_precision_requirement": true
+        },
+        {
+          "input_lat": "45.987654",
+          "input_lon": "123.456789",
+          "formatted_lat": "45.987654",
+          "formatted_lon": "123.456789",
+          "lat_precision": 6,
+          "lon_precision": 6,
+          "meets_precision_requirement": true
+        },
+        {
+          "input_lat": "-23.456789",
+          "input_lon": "67.123456",
+          "formatted_lat": "-23.456789",
+          "formatted_lon": "67.123456",
+          "lat_precision": 6,
+          "lon_precision": 6,
+          "meets_precision_requirement": true
+        }
+      ],
+      "timestamp": "2025-09-07T11:54:50.424087"
+    },
+    {
+      "test_name": "TEST-NC-002: Input Field Boundary Testing",
+      "results": [
+        {
+          "test": "Latitude below minimum (-90.000001)",
+          "status": "PASSED",
+          "expected_valid": false,
+          "actual_valid": false,
+          "validation_message": "Latitude must be between -90 and 90 degrees",
+          "value": "-90.000001"
+        },
+        {
+          "test": "Latitude above maximum (90.000001)",
+          "status": "PASSED",
+          "expected_valid": false,
+          "actual_valid": false,
+          "validation_message": "Latitude must be between -90 and 90 degrees",
+          "value": "90.000001"
+        },
+        {
+          "test": "Latitude at minimum (-90.000000)",
+          "status": "PASSED",
+          "expected_valid": true,
+          "actual_valid": true,
+          "validation_message": "",
+          "value": "-90.000000"
+        },
+        {
+          "test": "Latitude at maximum (90.000000)",
+          "status": "PASSED",
+          "expected_valid": true,
+          "actual_valid": true,
+          "validation_message": "",
+          "value": "90.000000"
+        },
+        {
+          "test": "Longitude below minimum (-180.000001)",
+          "status": "PASSED",
+          "expected_valid": false,
+          "actual_valid": false,
+          "validation_message": "Longitude must be between -180 and 180 degrees",
+          "value": "-180.000001"
+        },
+        {
+          "test": "Longitude above maximum (180.000001)",
+          "status": "PASSED",
+          "expected_valid": false,
+          "actual_valid": false,
+          "validation_message": "Longitude must be between -180 and 180 degrees",
+          "value": "180.000001"
+        },
+        {
+          "test": "Longitude at minimum (-180.000000)",
+          "status": "PASSED",
+          "expected_valid": true,
+          "actual_valid": true,
+          "validation_message": "",
+          "value": "-180.000000"
+        },
+        {
+          "test": "Longitude at maximum (180.000000)",
+          "status": "PASSED",
+          "expected_valid": true,
+          "actual_valid": true,
+          "validation_message": "",
+          "value": "180.000000"
+        },
+        {
+          "test": "Altitude below minimum (-101)",
+          "status": "PASSED",
+          "expected_valid": false,
+          "actual_valid": false,
+          "validation_message": "Altitude must be between -100 and 5000 meters",
+          "value": "-101"
+        },
+        {
+          "test": "Altitude above maximum (5001)",
+          "status": "PASSED",
+          "expected_valid": false,
+          "actual_valid": false,
+          "validation_message": "Altitude must be between -100 and 5000 meters",
+          "value": "5001"
+        },
+        {
+          "test": "Altitude at minimum (-100)",
+          "status": "PASSED",
+          "expected_valid": true,
+          "actual_valid": true,
+          "validation_message": "",
+          "value": "-100"
+        },
+        {
+          "test": "Altitude at maximum (5000)",
+          "status": "PASSED",
+          "expected_valid": true,
+          "actual_valid": true,
+          "validation_message": "",
+          "value": "5000"
+        }
+      ],
+      "timestamp": "2025-09-07T11:54:56.943292"
+    },
+    {
+      "test_name": "TEST-NC-003: Clear Navigation Function",
+      "status": "PASSED",
+      "lat_cleared": true,
+      "lon_cleared": true,
+      "alt_reset_to_default": true,
+      "final_values": {
+        "nav_lat": "",
+        "nav_lon": "",
+        "nav_alt": "10"
+      },
+      "timestamp": "2025-09-07T11:54:59.082163"
+    },
+    {
+      "test_name": "TEST-NC-001: Go To Navigation Command",
+      "status": "FAILED",
+      "reason": "Go To button is disabled (drone not connected?)",
+      "connection_required": true,
+      "timestamp": "2025-09-07T11:55:00.702197"
+    }
+  ],
+  "summary": {
+    "total_tests": 4,
+    "passed": 1,
+    "failed": 1,
+    "errors": 0
+  }
+}

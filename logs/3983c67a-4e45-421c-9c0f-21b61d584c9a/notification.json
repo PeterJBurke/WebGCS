@@ -1,0 +1,30 @@
+[
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Write"
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use playwright - Navigate to a URL (MCP)"
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use playwright - Take a screenshot (MCP)"
+  },
+  {
+    "session_id": "3983c67a-4e45-421c-9c0f-21b61d584c9a",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/3983c67a-4e45-421c-9c0f-21b61d584c9a.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  }
+]

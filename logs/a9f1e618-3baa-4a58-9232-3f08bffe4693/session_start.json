@@ -1,0 +1,37 @@
+[
+  {
+    "session_id": "a9f1e618-3baa-4a58-9232-3f08bffe4693",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a9f1e618-3baa-4a58-9232-3f08bffe4693.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "startup"
+  },
+  {
+    "session_id": "a9f1e618-3baa-4a58-9232-3f08bffe4693",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a9f1e618-3baa-4a58-9232-3f08bffe4693.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "compact"
+  },
+  {
+    "session_id": "a9f1e618-3baa-4a58-9232-3f08bffe4693",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a9f1e618-3baa-4a58-9232-3f08bffe4693.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "compact"
+  },
+  {
+    "session_id": "a9f1e618-3baa-4a58-9232-3f08bffe4693",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a9f1e618-3baa-4a58-9232-3f08bffe4693.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "compact"
+  },
+  {
+    "session_id": "a9f1e618-3baa-4a58-9232-3f08bffe4693",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a9f1e618-3baa-4a58-9232-3f08bffe4693.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "compact"
+  }
+]

@@ -1,0 +1,34 @@
+"""
+WebGCS Configuration Management
+Centralizes all configuration settings for the WebGCS application
+"""
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Drone Connection Settings
+DRONE_TCP_ADDRESS = os.getenv('DRONE_TCP_ADDRESS', '192.168.193.235')
+DRONE_TCP_PORT = os.getenv('DRONE_TCP_PORT', '5678')
+MAVLINK_CONNECTION_STRING = f'tcp:{DRONE_TCP_ADDRESS}:{DRONE_TCP_PORT}'
+
+# Web Server Settings
+WEB_SERVER_HOST = os.getenv('WEB_SERVER_HOST', 'localhost')
+WEB_SERVER_PORT = int(os.getenv('WEB_SERVER_PORT', '5001'))
+SECRET_KEY = os.getenv('SECRET_KEY', 'webgcs_development_secret')
+
+# MAVLink Settings
+HEARTBEAT_TIMEOUT = int(os.getenv('HEARTBEAT_TIMEOUT', '30'))
+REQUEST_STREAM_RATE_HZ = int(os.getenv('REQUEST_STREAM_RATE_HZ', '4'))
+COMMAND_ACK_TIMEOUT = int(os.getenv('COMMAND_ACK_TIMEOUT', '10'))
+TELEMETRY_UPDATE_INTERVAL = float(os.getenv('TELEMETRY_UPDATE_INTERVAL', '0.1'))
+
+# ArduPilot Custom Flight Modes
+AP_CUSTOM_MODES = {
+    'STABILIZE': 0, 'ACRO': 1, 'ALT_HOLD': 2, 'AUTO': 3, 'GUIDED': 4,
+    'LOITER': 5, 'RTL': 6, 'LAND': 9, 'POS_HOLD': 16, 'BRAKE': 17,
+    'THROW': 18, 'AVOID_ADSB': 19, 'GUIDED_NOGPS': 20, 'SMART_RTL': 21,
+    'FLOWHOLD': 22, 'FOLLOW': 23, 'ZIGZAG': 24, 'SYSTEMID': 25,
+    'AUTOROTATE': 26, 'AUTO_RTL': 27
+}

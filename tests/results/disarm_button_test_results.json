@@ -1,0 +1,523 @@
+{
+  "success": true,
+  "steps": [
+    {
+      "step": "Server health check",
+      "success": true,
+      "details": "Health data: {'drone_connected': True, 'status': 'healthy', 'timestamp': 1757293105.5432699}",
+      "timestamp": 1757293105.544618
+    },
+    {
+      "step": "Browser setup",
+      "success": true,
+      "details": "Chrome driver initialized",
+      "timestamp": 1757293106.55088
+    },
+    {
+      "step": "Website loaded",
+      "success": true,
+      "details": "Page loaded successfully",
+      "timestamp": 1757293107.473141
+    },
+    {
+      "step": "WebGCS initialized",
+      "success": true,
+      "details": "WebGCS and socket ready",
+      "timestamp": 1757293109.484201
+    },
+    {
+      "step": "Initial state captured",
+      "success": true,
+      "details": "State: {'connection_status_text': 'Connected to drone (System 1)', 'drone_connected': True, 'disarm_button_enabled': False}",
+      "timestamp": 1757293109.513388
+    },
+    {
+      "step": "Drone already connected",
+      "success": true,
+      "details": "Skipping connection step",
+      "timestamp": 1757293109.530261
+    },
+    {
+      "step": "ARM button clicked first",
+      "success": true,
+      "details": "Arming drone before testing DISARM",
+      "timestamp": 1757293109.592167
+    },
+    {
+      "step": "ARM confirmation accepted",
+      "success": true,
+      "details": "Clicked Yes on ARM confirmation dialog",
+      "timestamp": 1757293109.6560168
+    },
+    {
+      "step": "ARM command completed",
+      "success": true,
+      "details": "DISARM button now enabled",
+      "timestamp": 1757293110.20261
+    },
+    {
+      "step": "DISARM button clicked",
+      "success": true,
+      "details": "Button click executed",
+      "timestamp": 1757293110.258393
+    },
+    {
+      "step": "DISARM confirmation accepted",
+      "success": true,
+      "details": "Clicked Yes on DISARM confirmation dialog",
+      "timestamp": 1757293110.295609
+    },
+    {
+      "step": "DISARM command detected",
+      "success": true,
+      "details": "DISARM command found in console logs",
+      "timestamp": 1757293112.299377
+    },
+    {
+      "step": "Final state captured",
+      "success": true,
+      "details": "State: {'connection_status_text': 'Connected to drone (System 1)', 'drone_connected': True, 'disarm_button_enabled': False}",
+      "timestamp": 1757293112.315061
+    },
+    {
+      "step": "Server health check",
+      "success": true,
+      "details": "Health data: {'drone_connected': True, 'status': 'healthy', 'timestamp': 1757293112.317659}",
+      "timestamp": 1757293112.318275
+    },
+    {
+      "step": "Overall test evaluation",
+      "success": true,
+      "details": "Success criteria met: 3/3",
+      "timestamp": 1757293112.318308
+    }
+  ],
+  "button_clicked": true,
+  "disarm_command_sent": true,
+  "drone_connected_before": true,
+  "server_health_before": {
+    "drone_connected": true,
+    "status": "healthy",
+    "timestamp": 1757293105.5432699
+  },
+  "server_health_after": {
+    "drone_connected": true,
+    "status": "healthy",
+    "timestamp": 1757293112.317659
+  },
+  "connection_state_before": {
+    "connection_status_text": "Connected to drone (System 1)",
+    "drone_connected": true,
+    "disarm_button_enabled": false
+  },
+  "connection_state_after": {
+    "connection_status_text": "Connected to drone (System 1)",
+    "drone_connected": true,
+    "disarm_button_enabled": false
+  },
+  "console_events": [
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 55:12 \"Initializing WebGCS v2.0...\"",
+      "timestamp": 1757293106816
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 86:16 \"SocketIO initialized\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 22:16 \"Initializing Connection Manager...\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 40:16 \"Caching DOM elements...\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'connectionStatus' found\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'backendStatus' found\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'heartbeatIndicator' found\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'heartbeatCounter' found\"",
+      "timestamp": 1757293106819
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'heartbeatSound' found\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'ipAddress' found\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'portNumber' found\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'connectBtn' found\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'disconnectBtn' found\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 69:20 \"Adding click listener to connect button\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 77:20 \"Adding click listener to disconnect button\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 33:16 \"Connection Manager initialized successfully\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"ConnectionManager initialized\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/telemetry-display.js 22:16 \"Initializing Telemetry Display...\"",
+      "timestamp": 1757293106820
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/telemetry-display.js 36:16 \"Telemetry Display initialized\"",
+      "timestamp": 1757293106822
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"TelemetryDisplay initialized\"",
+      "timestamp": 1757293106822
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 23:16 \"Initializing Flight Controls...\"",
+      "timestamp": 1757293106822
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 34:16 \"Flight Controls initialized\"",
+      "timestamp": 1757293106823
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"FlightControls initialized\"",
+      "timestamp": 1757293106823
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/navigation-controls.js 19:16 \"Initializing Navigation Controls...\"",
+      "timestamp": 1757293106823
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/navigation-controls.js 30:16 \"Navigation Controls initialized\"",
+      "timestamp": 1757293106823
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"NavigationControls initialized\"",
+      "timestamp": 1757293106823
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 32:16 \"Initializing Map Controller...\"",
+      "timestamp": 1757293106823
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 99:20 \"Leaflet map initialized\"",
+      "timestamp": 1757293106840
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 46:16 \"Map Controller initialized\"",
+      "timestamp": 1757293106840
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"MapController initialized\"",
+      "timestamp": 1757293106840
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/offline-maps.js 31:16 \"Initializing Offline Maps...\"",
+      "timestamp": 1757293106840
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/offline-maps.js 48:16 \"Offline Maps initialized\"",
+      "timestamp": 1757293106854
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"OfflineMaps initialized\"",
+      "timestamp": 1757293106854
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 34:16 \"Initializing Audio Manager...\"",
+      "timestamp": 1757293106854
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 75:20 \"Web Audio Context initialized\"",
+      "timestamp": 1757293107075
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 49:16 \"Audio Manager initialized\"",
+      "timestamp": 1757293107253
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"AudioManager initialized\"",
+      "timestamp": 1757293107253
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 30:16 \"Initializing Message Logger...\"",
+      "timestamp": 1757293107254
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] WebGCS Message Logger initialized\"",
+      "timestamp": 1757293107254
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 44:16 \"Message Logger initialized\"",
+      "timestamp": 1757293107254
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"MessageLogger initialized\"",
+      "timestamp": 1757293107254
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 69:12 \"WebGCS initialization complete\"",
+      "timestamp": 1757293107254
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 193:12 \"Connected to WebGCS server\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] WebSocket connected to server\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Connected to WebGCS server\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Connection connected\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Connection connected\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode: GUIDED\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 372:20 \"Auto-centering map on drone position: 33.645861, -117.842751\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Drone connected (System 1)\"",
+      "timestamp": 1757293107257
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode changed to GUIDED\"",
+      "timestamp": 1757293107258
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757293107258
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 94:28 \"Speech synthesis initialized with voice:\" \"Samantha\"",
+      "timestamp": 1757293107258
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 94:28 \"Speech synthesis initialized with voice:\" \"Samantha\"",
+      "timestamp": 1757293107278
+    },
+    {
+      "source": "browser_console",
+      "message": "network http://localhost:5001/favicon.ico - Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "timestamp": 1757293109478
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757293109478
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 136:24 \"Audio context resumed\"",
+      "timestamp": 1757293109605
+    },
+    {
+      "source": "browser_console",
+      "message": "network http://localhost:5001/favicon.ico - Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "timestamp": 1757293109613
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 200:16 \"Executing flight command: arm\" Object",
+      "timestamp": 1757293109654
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 403:12 \"Sending command:\" \"arm\" Object",
+      "timestamp": 1757293109654
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 272:12 \"Command result:\" Object",
+      "timestamp": 1757293110182
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Command ARM succeeded\"",
+      "timestamp": 1757293110182
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Command ARM succeeded\"",
+      "timestamp": 1757293110182
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[WARNING] Vehicle ARMED\"",
+      "timestamp": 1757293110182
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[WARNING] Vehicle ARMED\"",
+      "timestamp": 1757293110182
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 200:16 \"Executing flight command: disarm\" Object",
+      "timestamp": 1757293110294
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 403:12 \"Sending command:\" \"disarm\" Object",
+      "timestamp": 1757293110294
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 272:12 \"Command result:\" Object",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Command DISARM succeeded\"",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Command DISARM succeeded\"",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757293112298
+    }
+  ],
+  "flight_command_events": [
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757293107258
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 200:16 \"Executing flight command: disarm\" Object",
+      "timestamp": 1757293110294
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 403:12 \"Sending command:\" \"disarm\" Object",
+      "timestamp": 1757293110294
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Command DISARM succeeded\"",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Command DISARM succeeded\"",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757293112298
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757293112298
+    }
+  ],
+  "errors": []
+}

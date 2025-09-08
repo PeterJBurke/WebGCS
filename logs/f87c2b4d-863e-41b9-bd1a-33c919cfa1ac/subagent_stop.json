@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "SubagentStop",
+    "stop_hook_active": false
+  }
+]

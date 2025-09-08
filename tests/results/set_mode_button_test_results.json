@@ -1,0 +1,530 @@
+{
+  "success": true,
+  "steps": [
+    {
+      "step": "Server health check",
+      "success": true,
+      "details": "Health data: {'drone_connected': True, 'status': 'healthy', 'timestamp': 1757292952.884851}",
+      "timestamp": 1757292952.8856452
+    },
+    {
+      "step": "Browser setup",
+      "success": true,
+      "details": "Chrome driver initialized",
+      "timestamp": 1757292953.705002
+    },
+    {
+      "step": "Website loaded",
+      "success": true,
+      "details": "Page loaded successfully",
+      "timestamp": 1757292954.628862
+    },
+    {
+      "step": "WebGCS initialized",
+      "success": true,
+      "details": "WebGCS and socket ready",
+      "timestamp": 1757292956.639931
+    },
+    {
+      "step": "Initial state captured",
+      "success": true,
+      "details": "State: {'connection_status_text': 'Connected to drone (System 1)', 'drone_connected': True, 'set_mode_button_enabled': True, 'current_flight_mode': 'RTL'}",
+      "timestamp": 1757292956.7210612
+    },
+    {
+      "step": "Drone already connected",
+      "success": true,
+      "details": "Skipping connection step",
+      "timestamp": 1757292956.784277
+    },
+    {
+      "step": "Available flight modes",
+      "success": true,
+      "details": "Modes: ['STABILIZE', 'ALT_HOLD', 'POS_HOLD', 'LOITER', 'GUIDED', 'RTL', 'LAND', 'AUTO', 'BRAKE']",
+      "timestamp": 1757292956.8744252
+    },
+    {
+      "step": "Flight mode selected",
+      "success": true,
+      "details": "Selected: GUIDED (was: RTL)",
+      "timestamp": 1757292956.9304872
+    },
+    {
+      "step": "Set Mode button clicked",
+      "success": true,
+      "details": "Button click executed",
+      "timestamp": 1757292956.993304
+    },
+    {
+      "step": "Mode change command detected",
+      "success": true,
+      "details": "Mode command found in console logs",
+      "timestamp": 1757292958.9990551
+    },
+    {
+      "step": "Final state captured",
+      "success": true,
+      "details": "State: {'connection_status_text': 'Connected to drone (System 1)', 'drone_connected': True, 'set_mode_button_enabled': True, 'current_flight_mode': 'GUIDED'}",
+      "timestamp": 1757292959.082962
+    },
+    {
+      "step": "Server health check",
+      "success": true,
+      "details": "Health data: {'drone_connected': True, 'status': 'healthy', 'timestamp': 1757292959.0855858}",
+      "timestamp": 1757292959.086143
+    },
+    {
+      "step": "Overall test evaluation",
+      "success": true,
+      "details": "Success criteria met: 3/3",
+      "timestamp": 1757292959.0861812
+    }
+  ],
+  "button_clicked": true,
+  "mode_change_command_sent": true,
+  "drone_connected_before": true,
+  "server_health_before": {
+    "drone_connected": true,
+    "status": "healthy",
+    "timestamp": 1757292952.884851
+  },
+  "server_health_after": {
+    "drone_connected": true,
+    "status": "healthy",
+    "timestamp": 1757292959.0855858
+  },
+  "connection_state_before": {
+    "connection_status_text": "Connected to drone (System 1)",
+    "drone_connected": true,
+    "set_mode_button_enabled": true,
+    "current_flight_mode": "RTL"
+  },
+  "connection_state_after": {
+    "connection_status_text": "Connected to drone (System 1)",
+    "drone_connected": true,
+    "set_mode_button_enabled": true,
+    "current_flight_mode": "GUIDED"
+  },
+  "mode_before": "RTL",
+  "mode_after": "GUIDED",
+  "console_events": [
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 55:12 \"Initializing WebGCS v2.0...\"",
+      "timestamp": 1757292953970
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 86:16 \"SocketIO initialized\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 22:16 \"Initializing Connection Manager...\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 40:16 \"Caching DOM elements...\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'connectionStatus' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'backendStatus' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'heartbeatIndicator' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'heartbeatCounter' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'heartbeatSound' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'ipAddress' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'portNumber' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'connectBtn' found\"",
+      "timestamp": 1757292953973
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 58:24 \"Connection Manager: Element 'disconnectBtn' found\"",
+      "timestamp": 1757292953974
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 69:20 \"Adding click listener to connect button\"",
+      "timestamp": 1757292953974
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 77:20 \"Adding click listener to disconnect button\"",
+      "timestamp": 1757292953974
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/connection-manager.js 33:16 \"Connection Manager initialized successfully\"",
+      "timestamp": 1757292953974
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"ConnectionManager initialized\"",
+      "timestamp": 1757292953974
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/telemetry-display.js 22:16 \"Initializing Telemetry Display...\"",
+      "timestamp": 1757292953974
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/telemetry-display.js 36:16 \"Telemetry Display initialized\"",
+      "timestamp": 1757292953976
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"TelemetryDisplay initialized\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 23:16 \"Initializing Flight Controls...\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 34:16 \"Flight Controls initialized\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"FlightControls initialized\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/navigation-controls.js 19:16 \"Initializing Navigation Controls...\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/navigation-controls.js 30:16 \"Navigation Controls initialized\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"NavigationControls initialized\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 32:16 \"Initializing Map Controller...\"",
+      "timestamp": 1757292953977
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 99:20 \"Leaflet map initialized\"",
+      "timestamp": 1757292953992
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 46:16 \"Map Controller initialized\"",
+      "timestamp": 1757292953992
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"MapController initialized\"",
+      "timestamp": 1757292953992
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/offline-maps.js 31:16 \"Initializing Offline Maps...\"",
+      "timestamp": 1757292953992
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/offline-maps.js 48:16 \"Offline Maps initialized\"",
+      "timestamp": 1757292954003
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"OfflineMaps initialized\"",
+      "timestamp": 1757292954003
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 34:16 \"Initializing Audio Manager...\"",
+      "timestamp": 1757292954003
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 75:20 \"Web Audio Context initialized\"",
+      "timestamp": 1757292954246
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 49:16 \"Audio Manager initialized\"",
+      "timestamp": 1757292954422
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"AudioManager initialized\"",
+      "timestamp": 1757292954422
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 30:16 \"Initializing Message Logger...\"",
+      "timestamp": 1757292954422
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] WebGCS Message Logger initialized\"",
+      "timestamp": 1757292954423
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 44:16 \"Message Logger initialized\"",
+      "timestamp": 1757292954423
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 113:24 \"MessageLogger initialized\"",
+      "timestamp": 1757292954423
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 69:12 \"WebGCS initialization complete\"",
+      "timestamp": 1757292954423
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 193:12 \"Connected to WebGCS server\"",
+      "timestamp": 1757292954427
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] WebSocket connected to server\"",
+      "timestamp": 1757292954427
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Connected to WebGCS server\"",
+      "timestamp": 1757292954428
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Connection connected\"",
+      "timestamp": 1757292954428
+    },
+    {
+      "source": "browser_console",
+      "message": "javascript http://localhost:5001/static/js/message-logger.js 385:36 Uncaught TypeError: Cannot read properties of undefined (reading 'connected')",
+      "timestamp": 1757292954428
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292954428
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode: RTL\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 372:20 \"Auto-centering map on drone position: 33.645861, -117.842751\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Drone connected (System 1)\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode changed to RTL\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Vehicle DISARMED\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 94:28 \"Speech synthesis initialized with voice:\" \"Samantha\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 94:28 \"Speech synthesis initialized with voice:\" \"Samantha\"",
+      "timestamp": 1757292954448
+    },
+    {
+      "source": "browser_console",
+      "message": "network http://localhost:5001/favicon.ico - Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "timestamp": 1757292956633
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292956633
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292956633
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 135 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292956928
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 192:16 \"Setting flight mode to: GUIDED\"",
+      "timestamp": 1757292956991
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 200:16 \"Executing flight command: set_mode\" Object",
+      "timestamp": 1757292956991
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 403:12 \"Sending command:\" \"set_mode\" Object",
+      "timestamp": 1757292956992
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 272:12 \"Command result:\" Object",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Command SET_MODE succeeded\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Command SET_MODE succeeded\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode: GUIDED\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode changed to GUIDED\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/audio-manager.js 136:24 \"Audio context resumed\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "network http://localhost:5001/favicon.ico - Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "timestamp": 1757292958997
+    }
+  ],
+  "flight_command_events": [
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292954428
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode: RTL\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/map-controller.js 372:20 \"Auto-centering map on drone position: 33.645861, -117.842751\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode changed to RTL\"",
+      "timestamp": 1757292954429
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292956633
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 183 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292956633
+    },
+    {
+      "source": "browser_console",
+      "message": "other http://localhost:5001/static/js/audio-manager.js 135 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+      "timestamp": 1757292956928
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 192:16 \"Setting flight mode to: GUIDED\"",
+      "timestamp": 1757292956991
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/flight-controls.js 200:16 \"Executing flight command: set_mode\" Object",
+      "timestamp": 1757292956991
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/app.js 403:12 \"Sending command:\" \"set_mode\" Object",
+      "timestamp": 1757292956992
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Command SET_MODE succeeded\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[SUCCESS] Command SET_MODE succeeded\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode: GUIDED\"",
+      "timestamp": 1757292958997
+    },
+    {
+      "source": "browser_console",
+      "message": "console-api http://localhost:5001/static/js/message-logger.js 132:16 \"[INFO] Flight mode changed to GUIDED\"",
+      "timestamp": 1757292958997
+    }
+  ],
+  "errors": []
+}

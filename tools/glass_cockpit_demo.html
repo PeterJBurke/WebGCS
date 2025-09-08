@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Glass Cockpit PFD Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #87ceeb;
+            margin-bottom: 30px;
+        }
+        
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .old-design, .new-design {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 12px;
+        }
+        
+        .old-design h2 {
+            color: #ff6b6b;
+        }
+        
+        .new-design h2 {
+            color: #4ecdc4;
+        }
+        
+        /* Modern Glass Cockpit Styling */
+        .glass-pfd-panel {
+            background: #0a0a0a;
+            border: 2px solid #1e1e2e;
+            border-radius: 12px;
+            padding: 0.75rem;
+            margin: 20px auto;
+            width: 450px;
+        }
+
+        .glass-pfd-panel h3 {
+            color: #87ceeb;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .glass-pfd-container {
+            position: relative;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            border: 2px solid #2d3748;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(135, 206, 235, 0.1);
+        }
+
+        #glass-pfd-display {
+            display: block;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+        }
+
+        .pfd-overlays {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .top-status-bar {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .flight-mode-indicator {
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ff88;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 1px solid #00aa66;
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+        }
+
+        .armed-indicator {
+            background: rgba(0, 0, 0, 0.85);
+            color: #ff4444;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 1px solid #ff4444;
+            box-shadow: 0 0 12px rgba(255, 68, 68, 0.5);
+            animation: pulse-armed 2s infinite;
+        }
+
+        .bottom-info-bar {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .system-status {
+            display: flex;
+            gap: 12px;
+        }
+
+        .status-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-label {
+            font-family: 'Arial', sans-serif;
+            font-size: 9px;
+            font-weight: 500;
+            color: #87ceeb;
+            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .status-value {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+
+        .position-info {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+
+        .coordinates {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            color: #ffcc00;
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes pulse-armed {
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: scale(1.02);
+            }
+        }
+        
+        .features {
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .features h3 {
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .features li {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .features li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Modern Glass Cockpit PFD - Design Transformation</h1>
+        
+        <div class="comparison">
+            <div class="old-design">
+                <h2>❌ OLD: Traditional "Steam Gauge" Style</h2>
+                <ul style="text-align: left; color: #ff9999;">
+                    <li>Circular attitude indicator</li>
+                    <li>Separate canvas elements</li>
+                    <li>Traditional gauge aesthetics</li>
+                    <li>Old-fashioned round instruments</li>
+                    <li>Not integrated design</li>
+                </ul>
+            </div>
+            
+            <div class="new-design">
+                <h2>✅ NEW: Modern Glass Cockpit Style</h2>
+                <ul style="text-align: left; color: #99ff99;">
+                    <li>Rectangular attitude display</li>
+                    <li>Single integrated canvas</li>
+                    <li>Modern flat design</li>
+                    <li>G1000/G3X Touch inspired</li>
+                    <li>Cohesive integrated layout</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Modern Glass Cockpit Display -->
+        <div class="glass-pfd-panel">
+            <h3>Primary Flight Display</h3>
+            <div class="glass-pfd-container">
+                <canvas id="glass-pfd-display" width="420" height="320"></canvas>
+                
+                <div class="pfd-overlays">
+                    <div class="top-status-bar">
+                        <div class="flight-mode-indicator">STAB</div>
+                        <div class="armed-indicator armed">ARMED</div>
+                    </div>
+                    
+                    <div class="bottom-info-bar">
+                        <div class="system-status">
+                            <div class="status-group">
+                                <span class="status-label">BAT</span>
+                                <span class="status-value">14.8V</span>
+                            </div>
+                            <div class="status-group">
+                                <span class="status-label">AMP</span>
+                                <span class="status-value">12.3A</span>
+                            </div>
+                            <div class="status-group">
+                                <span class="status-label">GPS</span>
+                                <span class="status-value">3D 12S</span>
+                            </div>
+                        </div>
+                        <div class="position-info">
+                            <span class="coordinates">37.774929N 122.419418W</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>Modern Glass Cockpit Features Implemented:</h3>
+            <ul>
+                <li><strong>Rectangular Attitude Display:</strong> Modern rectangular attitude indicator instead of traditional circular gauge</li>
+                <li><strong>Integrated Layout:</strong> All components work together as one cohesive display</li>
+                <li><strong>Flat Design Aesthetics:</strong> Clean, modern styling like actual glass cockpits</li>
+                <li><strong>Aviation Color Scheme:</strong> Blue sky, brown ground, proper contrast</li>
+                <li><strong>Digital-First Design:</strong> Modern typography and readouts</li>
+                <li><strong>Status Overlays:</strong> Information positioned like real glass cockpits</li>
+                <li><strong>Integrated Tapes:</strong> Airspeed and altitude seamlessly integrated</li>
+                <li><strong>Flight Director Ready:</strong> Framework for command bar integration</li>
+                <li><strong>Modern Scaling:</strong> Proper pixel-per-degree scaling for accuracy</li>
+                <li><strong>Professional Appearance:</strong> Looks like Garmin G1000/G3X Touch</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Demo data for glass cockpit display
+        const demoTelemetry = {
+            pitch: -5,     // degrees
+            roll: 12,      // degrees  
+            hdg: 247,      // degrees
+            vx: 15,        // m/s
+            vy: 8,         // m/s
+            vz: -2,        // m/s
+            alt_rel: 152,  // meters
+            lat: 37.774929,
+            lon: -122.419418,
+            mode: 'STABILIZE',
+            armed: true,
+            battery_voltage: 14.8,
+            current: 12.3,
+            gps_fix_type: 3,
+            satellites_visible: 12
+        };
+
+        // Glass cockpit colors
+        const COLORS = {
+            SKY_BLUE: '#4169E1',
+            SKY_LIGHT: '#87CEEB', 
+            EARTH_BROWN: '#8B4513',
+            EARTH_DARK: '#2F1B14',
+            HORIZON_WHITE: '#FFFFFF',
+            GREEN_NORMAL: '#00FF88',
+            YELLOW_CAUTION: '#FFFF00',
+            RED_WARNING: '#FF4444',
+            CYAN_INFO: '#00FFFF',
+            MAGENTA_NAV: '#FF00FF',
+            DISPLAY_BG: '#0a0a0a',
+            TEXT_WHITE: '#FFFFFF',
+            TAPE_BG: 'rgba(10, 10, 20, 0.8)'
+        };
+
+        function drawGlassCockpitDemo() {
+            const canvas = document.getElementById('glass-pfd-display');
+            const ctx = canvas.getContext('2d');
+            
+            const WIDTH = 420;
+            const HEIGHT = 320;
+            const ATTITUDE_CENTER_X = 210;
+            const ATTITUDE_CENTER_Y = 160;
+            const ATTITUDE_WIDTH = 220;
+            const ATTITUDE_HEIGHT = 160;
+            
+            // Clear display
+            ctx.fillStyle = COLORS.DISPLAY_BG;
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            
+            // Draw rectangular attitude display
+            const pitch = demoTelemetry.pitch;
+            const roll = demoTelemetry.roll;
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(ATTITUDE_CENTER_X - ATTITUDE_WIDTH/2, ATTITUDE_CENTER_Y - ATTITUDE_HEIGHT/2, 
+                    ATTITUDE_WIDTH, ATTITUDE_HEIGHT);
+            ctx.clip();
+            
+            ctx.translate(ATTITUDE_CENTER_X, ATTITUDE_CENTER_Y);
+            ctx.rotate(roll * Math.PI / 180);
+            
+            const pitchPixels = pitch * 3;
+            
+            // Sky gradient
+            const skyGradient = ctx.createLinearGradient(0, -ATTITUDE_HEIGHT, 0, pitchPixels);
+            skyGradient.addColorStop(0, COLORS.SKY_BLUE);
+            skyGradient.addColorStop(1, COLORS.SKY_LIGHT);
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(-ATTITUDE_WIDTH, -ATTITUDE_HEIGHT, ATTITUDE_WIDTH * 2, ATTITUDE_HEIGHT + pitchPixels);
+            
+            // Ground gradient  
+            const groundGradient = ctx.createLinearGradient(0, pitchPixels, 0, ATTITUDE_HEIGHT);
+            groundGradient.addColorStop(0, COLORS.EARTH_BROWN);
+            groundGradient.addColorStop(1, COLORS.EARTH_DARK);
+            ctx.fillStyle = groundGradient;
+            ctx.fillRect(-ATTITUDE_WIDTH, pitchPixels, ATTITUDE_WIDTH * 2, ATTITUDE_HEIGHT * 2);
+            
+            // Horizon line
+            ctx.strokeStyle = COLORS.HORIZON_WHITE;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(-ATTITUDE_WIDTH, pitchPixels);
+            ctx.lineTo(ATTITUDE_WIDTH, pitchPixels);
+            ctx.stroke();
+            
+            // Pitch ladder
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = COLORS.HORIZON_WHITE;
+            const pitchAngles = [-20, -10, 10, 20];
+            pitchAngles.forEach(angle => {
+                const y = pitchPixels - (angle * 3);
+                if (Math.abs(y) < 150) {
+                    ctx.beginPath();
+                    ctx.moveTo(-30, y);
+                    ctx.lineTo(30, y);
+                    ctx.stroke();
+                    ctx.fillText(Math.abs(angle).toString(), -40, y + 3);
+                    ctx.fillText(Math.abs(angle).toString(), 40, y + 3);
+                }
+            });
+            
+            ctx.restore();
+            
+            // Aircraft symbol
+            ctx.strokeStyle = COLORS.HORIZON_WHITE;
+            ctx.fillStyle = COLORS.HORIZON_WHITE;
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath();
+            ctx.arc(ATTITUDE_CENTER_X, ATTITUDE_CENTER_Y, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.moveTo(ATTITUDE_CENTER_X - 30, ATTITUDE_CENTER_Y);
+            ctx.lineTo(ATTITUDE_CENTER_X - 8, ATTITUDE_CENTER_Y);
+            ctx.moveTo(ATTITUDE_CENTER_X + 30, ATTITUDE_CENTER_Y);
+            ctx.lineTo(ATTITUDE_CENTER_X + 8, ATTITUDE_CENTER_Y);
+            ctx.stroke();
+            
+            // Attitude display border
+            ctx.strokeStyle = COLORS.TEXT_WHITE;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(ATTITUDE_CENTER_X - ATTITUDE_WIDTH/2, ATTITUDE_CENTER_Y - ATTITUDE_HEIGHT/2, 
+                          ATTITUDE_WIDTH, ATTITUDE_HEIGHT);
+            
+            // Airspeed tape
+            const airspeedX = 20;
+            const airspeedWidth = 80;
+            ctx.fillStyle = COLORS.TAPE_BG;
+            ctx.fillRect(airspeedX, ATTITUDE_CENTER_Y - ATTITUDE_HEIGHT/2, airspeedWidth, ATTITUDE_HEIGHT);
+            
+            ctx.strokeStyle = COLORS.GREEN_NORMAL;
+            ctx.fillStyle = COLORS.GREEN_NORMAL;
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            
+            const airspeedKnots = Math.sqrt(demoTelemetry.vx**2 + demoTelemetry.vy**2) * 1.94384;
+            for (let speed = 20; speed <= 60; speed += 10) {
+                const y = ATTITUDE_CENTER_Y - (speed - airspeedKnots) * 2;
+                ctx.beginPath();
+                ctx.moveTo(airspeedX + airspeedWidth - 15, y);
+                ctx.lineTo(airspeedX + airspeedWidth, y);
+                ctx.stroke();
+                ctx.fillText(speed.toString(), airspeedX + airspeedWidth - 20, y + 4);
+            }
+            
+            // Airspeed readout
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.fillRect(airspeedX + 5, ATTITUDE_CENTER_Y - 12, 45, 24);
+            ctx.strokeRect(airspeedX + 5, ATTITUDE_CENTER_Y - 12, 45, 24);
+            ctx.fillStyle = COLORS.GREEN_NORMAL;
+            ctx.textAlign = 'center';
+            ctx.font = '14px Arial';
+            ctx.fillText(Math.round(airspeedKnots).toString(), airspeedX + 27, ATTITUDE_CENTER_Y + 4);
+            
+            // Altitude tape
+            const altitudeX = 320;
+            const altitudeWidth = 80;
+            ctx.fillStyle = COLORS.TAPE_BG;
+            ctx.fillRect(altitudeX, ATTITUDE_CENTER_Y - ATTITUDE_HEIGHT/2, altitudeWidth, ATTITUDE_HEIGHT);
+            
+            ctx.strokeStyle = COLORS.CYAN_INFO;
+            ctx.fillStyle = COLORS.CYAN_INFO;
+            ctx.textAlign = 'left';
+            
+            const altitudeFeet = demoTelemetry.alt_rel * 3.28084;
+            for (let alt = 400; alt <= 600; alt += 50) {
+                const y = ATTITUDE_CENTER_Y - (alt - altitudeFeet) * 0.15;
+                ctx.beginPath();
+                ctx.moveTo(altitudeX, y);
+                ctx.lineTo(altitudeX + 15, y);
+                ctx.stroke();
+                if (alt % 100 === 0) {
+                    ctx.fillText(alt.toString(), altitudeX + 18, y + 4);
+                }
+            }
+            
+            // Altitude readout
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.fillRect(altitudeX + altitudeWidth - 50, ATTITUDE_CENTER_Y - 12, 45, 24);
+            ctx.strokeRect(altitudeX + altitudeWidth - 50, ATTITUDE_CENTER_Y - 12, 45, 24);
+            ctx.fillStyle = COLORS.CYAN_INFO;
+            ctx.textAlign = 'center';
+            ctx.font = '14px Arial';
+            ctx.fillText(Math.round(altitudeFeet).toString(), altitudeX + altitudeWidth - 27, ATTITUDE_CENTER_Y + 4);
+            
+            // Heading indicator
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.fillRect(ATTITUDE_CENTER_X - 20, 20, 40, 20);
+            ctx.strokeStyle = COLORS.MAGENTA_NAV;
+            ctx.strokeRect(ATTITUDE_CENTER_X - 20, 20, 40, 20);
+            ctx.fillStyle = COLORS.MAGENTA_NAV;
+            ctx.textAlign = 'center';
+            ctx.font = '12px Arial';
+            ctx.fillText(demoTelemetry.hdg.toString().padStart(3, '0') + '°', ATTITUDE_CENTER_X, 33);
+            
+            // Tape borders
+            ctx.strokeStyle = COLORS.TEXT_WHITE;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(airspeedX, ATTITUDE_CENTER_Y - ATTITUDE_HEIGHT/2, airspeedWidth, ATTITUDE_HEIGHT);
+            ctx.strokeRect(altitudeX, ATTITUDE_CENTER_Y - ATTITUDE_HEIGHT/2, altitudeWidth, ATTITUDE_HEIGHT);
+        }
+        
+        // Draw the demo when page loads
+        window.addEventListener('load', function() {
+            drawGlassCockpitDemo();
+        });
+    </script>
+</body>
+</html>

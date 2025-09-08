@@ -1,0 +1,114 @@
+[
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": " test deploy the website locally"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "check the prd document, it seems you did not implement the ui features in it"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when i click connect to drone, it does not connect"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "run the webserver"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the connect button does nothing."
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the connect button does nothing. create a series of tests for all the buttons on the website. run those tests one by one and do not stop until you have fixed the code to pass the tests. think harder"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "all tests should include connection to the virtual drone, not just internal wiring"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "a7a4b83b-50a1-423f-b737-2959f7890772",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/a7a4b83b-50a1-423f-b737-2959f7890772.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "you should create subagents to run all these tests"
+  }
+]

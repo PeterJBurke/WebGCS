@@ -1,0 +1,21 @@
+[project]
+name = "webgcs5"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "flask>=3.1.2",
+    "flask-socketio>=5.5.1",
+    "gevent>=25.8.2",
+    "psutil>=7.0.0",
+    "pymavlink>=2.4.49",
+    "pytest>=8.4.2",
+    "pytest-cov>=6.3.0",
+    "python-dotenv>=1.1.1",
+    "python-socketio[client]>=5.13.0",
+    "requests>=2.32.5",
+    "selenium>=4.35.0",
+    "websocket-client>=1.8.0",
+    "websockets>=15.0.1",
+]

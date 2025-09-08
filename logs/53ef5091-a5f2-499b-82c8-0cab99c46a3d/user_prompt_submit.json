@@ -1,0 +1,90 @@
+[
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "how many subagents should there be baseed on your plan in the md files?"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when i type /agents i see 16 project agents. what do you see when you type /agents?"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "this is what i see when i type agents. why do you see something different?"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": " Agents                                                                                                                       \u2502\n\u2502 16 agents                                                                                                                    \u2502\n\u2502                                                                                                                              \u2502\n\u2502 \u276f Create new agent                                                                                                           \u2502\n\u2502                                                                                                                              \u2502\n\u2502   Project agents (/Users/peterburke/Documents/Code/WebGCS5/.claude/agents)                                                   \u2502\n\u2502   map-interface-testing-agent \u00b7 sonnet                                                                                       \u2502\n\u2502   navigation-testing-agent \u00b7 sonnet                                                                                          \u2502\n\u2502   flight-controls-testing-agent \u00b7 sonnet                                                                                     \u2502\n\u2502   ui-validation-testing-agent \u00b7 sonnet                                                                                       \u2502\n\u2502   virtual-drone-communication-agent \u00b7 sonnet                                                                                 \u2502\n\u2502   telemetry-display-testing-agent \u00b7 sonnet                                                                                   \u2502\n\u2502   mavlink-protocol-agent \u00b7 sonnet                                                                                            \u2502\n\u2502   request-handlers-agent \u00b7 sonnet                                                                                            \u2502\n\u2502   testing-agent \u00b7 sonnet                                                                                                     \u2502\n\u2502   web-interface-agent \u00b7 sonnet                                                                                               \u2502\n\u2502   infrastructure-agent \u00b7 sonnet                                                                                              \u2502\n\u2502   coordinator-agent \u00b7 sonnet                                                                                                 \u2502\n\u2502   connection-testing-agent \u00b7 sonnet                                                                                          \u2502\n\u2502                                                                                                                              \u2502\n\u2502   Built-in agents (always available)                                                                                         \u2502\n\u2502   general-purpose \u00b7 sonnet                                                                                                   \u2502\n\u2502   statusline-setup \u00b7 sonnet                                                                                                  \u2502\n\u2502   output-style-setup \u00b7 sonnet  "
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "just fyi i am getting this from mac os [Image #1]"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "summarize the state of this project in an md file, including all completed tests"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what is the name of the file with the project status"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "where is the claude.md file"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "I do not want any project specific information in the files in the global ~/.claude files. Please move that information into the local directory files ~/Documents/Code/WebGCS5"
+  },
+  {
+    "session_id": "53ef5091-a5f2-499b-82c8-0cab99c46a3d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/53ef5091-a5f2-499b-82c8-0cab99c46a3d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "where is the file describing the status of this project"
+  }
+]

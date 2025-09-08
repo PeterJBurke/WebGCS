@@ -1,0 +1,50 @@
+[
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the connect button does nothing. create a series of tests for all the buttons on the website. run those tests one by one and do not stop until you have fixed the code to pass the tests. think harder"
+  },
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "The PRD file is not complete, especially the UI.\nThe connect button does nothing.\nCreate a series of tests for all the buttons on the website.\nCreate an md file plan to make sure the PRD file is completed.\nThe plan should including running specific tests to see if the button is pressed on the website that the virtual drone actually gets the message and responds.\nThe tests should include ALL of the buttons, a dropdown for flight mode. Display of the mode, current, voltage, and attitude on the VFR HUD.\nThank Harder.\nCreate subagents , one for each test.\nThe plan should not just test internal wiring, \nFirst create an md file plan."
+  },
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "do not use python anymore. instead use uv. put that in claud.md"
+  },
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what is the name of the md file with the plan"
+  },
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "f87c2b4d-863e-41b9-bd1a-33c919cfa1ac",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/f87c2b4d-863e-41b9-bd1a-33c919cfa1ac.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the comprehensive testing plan should include creating new subagents. for example, mavlink-protocol-agent should not be the web testing agent. add more subagents and create them and test that they are activated with the \\agents commmand in claude code. you shoudl specifiy specific agents based on the tests you are planning. think harder"
+  }
+]

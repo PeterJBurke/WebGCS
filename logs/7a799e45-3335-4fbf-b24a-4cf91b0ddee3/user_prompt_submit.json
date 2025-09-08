@@ -1,0 +1,26 @@
+[
+  {
+    "session_id": "7a799e45-3335-4fbf-b24a-4cf91b0ddee3",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/7a799e45-3335-4fbf-b24a-4cf91b0ddee3.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "7a799e45-3335-4fbf-b24a-4cf91b0ddee3",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/7a799e45-3335-4fbf-b24a-4cf91b0ddee3.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "have the vfr subagent add tickers like the garmin."
+  },
+  {
+    "session_id": "7a799e45-3335-4fbf-b24a-4cf91b0ddee3",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/7a799e45-3335-4fbf-b24a-4cf91b0ddee3.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "call the vfr subagent. remove the black flight update box below the hud. Add altitude tickers on one side and airspeed tikcers on the other side. add the lat/lon on the top right. add curr/voltage on the top left. add a compass rose on the top. use @\"Screenshot 2025-09-06 at 17.48.02.png\" as an example. make the hud as close to that screenshot as possible"
+  }
+]

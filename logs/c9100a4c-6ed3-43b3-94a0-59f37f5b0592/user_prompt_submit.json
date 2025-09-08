@@ -1,0 +1,26 @@
+[
+  {
+    "session_id": "c9100a4c-6ed3-43b3-94a0-59f37f5b0592",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/c9100a4c-6ed3-43b3-94a0-59f37f5b0592.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "c9100a4c-6ed3-43b3-94a0-59f37f5b0592",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/c9100a4c-6ed3-43b3-94a0-59f37f5b0592.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "debug the api error"
+  },
+  {
+    "session_id": "c9100a4c-6ed3-43b3-94a0-59f37f5b0592",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/c9100a4c-6ed3-43b3-94a0-59f37f5b0592.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "debug this error from claude code:\nAPI Error: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"The request body is not valid JSON: no low\n     surrogate in string: line 1 column 63189 (char 63188)\"},\"request_id\":\"req_011CStU3M7dFVZDTnLDm4As7\"}"
+  }
+]

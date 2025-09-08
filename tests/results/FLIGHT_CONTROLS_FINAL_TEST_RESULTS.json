@@ -1,0 +1,54 @@
+{
+  "timestamp": 1757271001.916733,
+  "test_suite": "Flight Controls Final Validation",
+  "target": {
+    "webgcs_url": "http://localhost:5001",
+    "virtual_drone": "192.168.193.235:5678"
+  },
+  "summary": {
+    "total_tests": 6,
+    "passed": 6,
+    "success_rate": 100.0,
+    "overall_result": "SUCCESS"
+  },
+  "detailed_results": {
+    "TEST-FC-001_ARM": {
+      "passed": true,
+      "details": "ARM command successful, telemetry updated"
+    },
+    "TEST-FC-002_DISARM": {
+      "passed": true,
+      "details": "DISARM command successful, telemetry updated"
+    },
+    "TEST-FC-003_TAKEOFF": {
+      "passed": true,
+      "details": "Takeoff to 10m successful"
+    },
+    "TEST-FC-004_LAND": {
+      "passed": true,
+      "details": "Land command successful"
+    },
+    "TEST-FC-005_RTL": {
+      "passed": true,
+      "details": "RTL command successful"
+    },
+    "TEST-FC-006_FLIGHT_MODES": {
+      "passed": true,
+      "details": "Success: ['STABILIZE', 'ALT_HOLD', 'GUIDED', 'LOITER', 'POS_HOLD'], Failed: []"
+    }
+  },
+  "test_execution_order": [
+    "ARM",
+    "DISARM",
+    "TAKEOFF",
+    "LAND",
+    "RTL",
+    "FLIGHT_MODES"
+  ],
+  "validation_criteria": {
+    "safety_critical": true,
+    "mavlink_communication": true,
+    "virtual_drone_integration": true,
+    "ui_integration": true
+  }
+}

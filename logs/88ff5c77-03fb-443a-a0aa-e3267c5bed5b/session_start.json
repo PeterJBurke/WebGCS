@@ -1,0 +1,16 @@
+[
+  {
+    "session_id": "88ff5c77-03fb-443a-a0aa-e3267c5bed5b",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/88ff5c77-03fb-443a-a0aa-e3267c5bed5b.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "startup"
+  },
+  {
+    "session_id": "88ff5c77-03fb-443a-a0aa-e3267c5bed5b",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/88ff5c77-03fb-443a-a0aa-e3267c5bed5b.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "hook_event_name": "SessionStart",
+    "source": "resume"
+  }
+]

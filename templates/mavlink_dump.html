@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ version }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #00ff00;
+        }
+        .header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #00ff00;
+        }
+        .header a {
+            color: #00aaff;
+            text-decoration: none;
+            float: right;
+        }
+        .header a:hover {
+            text-decoration: underline;
+        }
+        .messages {
+            height: 80vh;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            background-color: #000;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .message {
+            margin-bottom: 5px;
+            word-break: break-all;
+        }
+        .timestamp {
+            color: #666;
+        }
+        .message-type {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        .controls {
+            margin: 10px 0;
+        }
+        button {
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #555;
+            padding: 5px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #555;
+        }
+        .status {
+            color: #ff6600;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ version }}</h1>
+        <a href="/">← Back to Main Interface</a>
+    </div>
+    
+    <div class="controls">
+        <button onclick="clearMessages()">Clear</button>
+        <button onclick="pauseResume()" id="pauseBtn">Pause</button>
+        <button onclick="exportMessages()">Export</button>
+        <span class="status" id="status">Disconnected</span>
+        <span style="float: right;">Messages: <span id="messageCount">0</span></span>
+    </div>
+    
+    <div class="messages" id="messages"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let messages = [];
+        let paused = false;
+        let messageCount = 0;
+        
+        const messagesDiv = document.getElementById('messages');
+        const statusSpan = document.getElementById('status');
+        const messageCountSpan = document.getElementById('messageCount');
+        const pauseBtn = document.getElementById('pauseBtn');
+        
+        // Socket event handlers
+        socket.on('connect', () => {
+            statusSpan.textContent = 'Connected';
+            statusSpan.style.color = '#00ff00';
+            addSystemMessage('Connected to WebGCS server');
+        });
+        
+        socket.on('disconnect', () => {
+            statusSpan.textContent = 'Disconnected';
+            statusSpan.style.color = '#ff6600';
+            addSystemMessage('Disconnected from WebGCS server');
+        });
+        
+        socket.on('telemetry_update', (data) => {
+            if (!paused) {
+                addMessage('TELEMETRY', JSON.stringify(data, null, 2));
+            }
+        });
+        
+        socket.on('command_result', (result) => {
+            if (!paused) {
+                addMessage('COMMAND_RESULT', JSON.stringify(result, null, 2));
+            }
+        });
+        
+        // Add raw MAVLink message event if available
+        socket.on('mavlink_message', (message) => {
+            if (!paused) {
+                addMessage('MAVLINK', JSON.stringify(message, null, 2));
+            }
+        });
+        
+        function addMessage(type, content) {
+            const timestamp = new Date().toISOString();
+            const message = {
+                timestamp,
+                type,
+                content
+            };
+            
+            messages.push(message);
+            messageCount++;
+            
+            // Limit message buffer
+            if (messages.length > 10000) {
+                messages = messages.slice(-5000);
+            }
+            
+            updateDisplay(message);
+            updateMessageCount();
+        }
+        
+        function addSystemMessage(content) {
+            addMessage('SYSTEM', content);
+        }
+        
+        function updateDisplay(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            
+            messageDiv.innerHTML = 
+                `<span class="timestamp">${message.timestamp}</span> ` +
+                `<span class="message-type">[${message.type}]</span> ` +
+                `${escapeHtml(message.content)}`;
+            
+            messagesDiv.appendChild(messageDiv);
+            
+            // Auto-scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // Remove old messages from DOM
+            const messageElements = messagesDiv.children;
+            if (messageElements.length > 1000) {
+                for (let i = 0; i < 100; i++) {
+                    messagesDiv.removeChild(messageElements[0]);
+                }
+            }
+        }
+        
+        function updateMessageCount() {
+            messageCountSpan.textContent = messageCount;
+        }
+        
+        function clearMessages() {
+            messages = [];
+            messageCount = 0;
+            messagesDiv.innerHTML = '';
+            updateMessageCount();
+            addSystemMessage('Messages cleared');
+        }
+        
+        function pauseResume() {
+            paused = !paused;
+            pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+            pauseBtn.style.backgroundColor = paused ? '#ff6600' : '#333';
+            
+            const status = paused ? 'paused' : 'resumed';
+            addSystemMessage(`Message capture ${status}`);
+        }
+        
+        function exportMessages() {
+            if (messages.length === 0) {
+                alert('No messages to export');
+                return;
+            }
+            
+            let exportText = 'WebGCS MAVLink Message Dump\n';
+            exportText += '============================\n';
+            exportText += `Generated: ${new Date().toISOString()}\n`;
+            exportText += `Message Count: ${messages.length}\n\n`;
+            
+            messages.forEach(msg => {
+                exportText += `[${msg.timestamp}] [${msg.type}]\n`;
+                exportText += `${msg.content}\n`;
+                exportText += '---\n\n';
+            });
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `webgcs-mavlink-dump-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            addSystemMessage(`Exported ${messages.length} messages`);
+        }
+        
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Initialize
+        addSystemMessage('MAVLink dump interface loaded');
+    </script>
+</body>
+</html>

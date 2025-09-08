@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "write a test to see of the drone location displays on the map. the test should include loading the webserver, connecting to the drone, getting the lat/lon, taking a screenshot of the map, making sure the drone is in the right place on the map. the test should be pass/fail."
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "run the test again. where is the drone. where is the map centered. compare the two"
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "i see northern california on the map but the virtual drone is located in southern california so it does not seem to be working. "
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the website still shows northern californai as the location ont he map. change the test to look at a screenshot of the map, after connecting to the drone, and determining from the screenshot the location of the map, and compare that to the actual location of the virtual drone."
+  },
+  {
+    "session_id": "19f80579-04d5-449c-9c5e-07a4fe3989c7",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS5/19f80579-04d5-449c-9c5e-07a4fe3989c7.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS5",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "debug the code"
+  }
+]

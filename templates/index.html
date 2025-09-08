@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Control Interface v2.0</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Main Header -->
+    <header class="main-header">
+        <h1>Drone Control Interface v2.0</h1>
+        <div class="header-controls">
+            <a href="/mavlink_dump" class="dump-link" target="_blank">MAVLink Dump</a>
+            <span id="websocket-status" class="websocket-status ws-disconnected">WebSocket: Disconnected</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Left Column: Controls -->
+        <div class="left-column">
+            <!-- Modern Glass Cockpit Primary Flight Display -->
+            <section class="panel glass-pfd-panel">
+                <h3>Primary Flight Display</h3>
+                <div class="glass-pfd-container">
+                    <!-- Main Integrated Glass Display -->
+                    <canvas id="glass-pfd-display" width="640" height="480"></canvas>
+                    
+                    <!-- Status Overlays -->
+                    <div class="pfd-overlays">
+                        <div class="top-status-bar">
+                            <div id="flight-mode-display" class="flight-mode-indicator">UNKNOWN</div>
+                            <div id="armed-status-indicator" class="armed-indicator">DISARMED</div>
+                        </div>
+                        
+                        <div class="bottom-info-bar">
+                            <div class="system-status">
+                                <div class="status-group">
+                                    <span class="status-label">BAT</span>
+                                    <span id="battery-voltage" class="status-value">0.0V</span>
+                                </div>
+                                <div class="status-group">
+                                    <span class="status-label">AMP</span>
+                                    <span id="current-draw" class="status-value">0.0A</span>
+                                </div>
+                                <div class="status-group">
+                                    <span class="status-label">GPS</span>
+                                    <span id="gps-status" class="status-value">NO FIX</span>
+                                </div>
+                                <div class="status-group">
+                                    <span class="status-label">GS</span>
+                                    <span id="ground-speed" class="status-value">0.0</span>
+                                </div>
+                                <div class="status-group">
+                                    <span class="status-label">VS</span>
+                                    <span id="vertical-speed" class="status-value">0</span>
+                                </div>
+                            </div>
+                            <div class="position-info">
+                                <span id="position-display" class="coordinates">LAT -- LON --</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- G1000-Style Flight Data Display -->
+            <section class="panel g1000-flight-data-panel">
+                <h3>Flight Data</h3>
+                <div class="g1000-data-grid">
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="data-label">HDG</span>
+                            <span id="heading-display" class="data-value">---°</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">TRK</span>
+                            <span id="track-display" class="data-value">---°</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">WPT</span>
+                            <span id="waypoint-display" class="data-value">--</span>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="data-label">DIS</span>
+                            <span id="waypoint-distance" class="data-value">-.--nm</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">ETE</span>
+                            <span id="time-enroute" class="data-value">--:--</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">BRG</span>
+                            <span id="bearing-display" class="data-value">---°</span>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-item">
+                            <span class="data-label">WIND</span>
+                            <span id="wind-display" class="data-value">---/--</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">OAT</span>
+                            <span id="temperature-display" class="data-value">--°C</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-label">TIME</span>
+                            <span id="flight-time" class="data-value">--:--</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Connection & Status -->
+            <section class="panel connection-panel">
+                <h3>Connection & Status</h3>
+                <div class="connection-status">
+                    <div id="connection-status" class="status-indicator disconnected">
+                        Disconnected from drone
+                    </div>
+                    <div id="backend-status" class="status-indicator backend-connected">
+                        Backend Connected
+                    </div>
+                    <div class="heartbeat-section">
+                        <span id="heartbeat-indicator" class="heartbeat-icon">❤️</span>
+                        <span id="heartbeat-counter" class="heartbeat-counter">0</span>
+                        <div class="heartbeat-controls">
+                            <label class="sound-toggle">
+                                <input type="checkbox" id="heartbeat-sound" />
+                                <span class="sound-icon">🔊</span>
+                                Sound
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="connection-inputs">
+                    <div class="input-group">
+                        <label for="ip-address">IP Address:</label>
+                        <input type="text" id="ip-address" placeholder="192.168.193.235" value="192.168.193.235" />
+                    </div>
+                    <div class="input-group">
+                        <label for="port-number">Port:</label>
+                        <input type="number" id="port-number" min="1" max="65535" value="5678" />
+                    </div>
+                </div>
+                <div class="connection-buttons">
+                    <button id="connect-btn" class="btn btn-connect">Connect</button>
+                    <button id="disconnect-btn" class="btn btn-disconnect" disabled>Disconnect</button>
+                </div>
+            </section>
+
+            <!-- Controls -->
+            <section class="panel flight-controls-panel">
+                <h3>Controls</h3>
+                <div class="control-groups">
+                    <div class="control-group">
+                        <div class="button-row">
+                            <button id="arm-btn" class="btn btn-warning">Arm</button>
+                            <button id="disarm-btn" class="btn btn-danger">Disarm</button>
+                        </div>
+                        <div class="button-row">
+                            <button id="takeoff-btn" class="btn btn-success">Takeoff</button>
+                            <button id="land-btn" class="btn btn-warning">Land</button>
+                            <button id="rtl-btn" class="btn btn-info">RTL</button>
+                        </div>
+                        <div class="takeoff-alt-row">
+                            <input type="number" id="takeoff-altitude" min="1" max="1000" value="5" placeholder="Alt (m)" class="alt-input">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <h4>Set Mode</h4>
+                        <select id="flight-mode-select" class="mode-select">
+                            <option value="STABILIZE">STABILIZE</option>
+                            <option value="ALT_HOLD">ALT_HOLD</option>
+                            <option value="POS_HOLD">POS_HOLD</option>
+                            <option value="LOITER">LOITER</option>
+                            <option value="GUIDED">GUIDED</option>
+                            <option value="RTL">RTL</option>
+                            <option value="LAND">LAND</option>
+                            <option value="AUTO">AUTO</option>
+                            <option value="BRAKE">BRAKE</option>
+                        </select>
+                        <button id="set-mode-btn" class="btn btn-primary">Set Mode</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Controls -->
+            <section class="panel navigation-panel">
+                <h3>Navigation</h3>
+                <div class="nav-inputs">
+                    <div class="input-group">
+                        <label for="nav-lat">Latitude:</label>
+                        <input type="number" id="nav-lat" step="0.000001" min="-90" max="90" placeholder="0.000000" />
+                    </div>
+                    <div class="input-group">
+                        <label for="nav-lon">Longitude:</label>
+                        <input type="number" id="nav-lon" step="0.000001" min="-180" max="180" placeholder="0.000000" />
+                    </div>
+                    <div class="input-group">
+                        <label for="nav-alt">Altitude (AGL):</label>
+                        <input type="number" id="nav-alt" min="-100" max="5000" value="10" placeholder="10" />
+                    </div>
+                </div>
+                <div class="nav-buttons">
+                    <button id="goto-btn" class="btn btn-primary">Go To</button>
+                    <button id="clear-nav-btn" class="btn btn-secondary">Clear</button>
+                </div>
+            </section>
+
+            <!-- Request Controls -->
+            <section class="panel request-panel">
+                <div class="request-buttons">
+                    <button id="request-fence-btn" class="btn btn-info">Request Fence</button>
+                    <button id="request-mission-btn" class="btn btn-info">Request Mission</button>
+                </div>
+            </section>
+
+            <!-- Voice/Audio Interface -->
+            <section class="panel audio-panel">
+                <h3>Voice & Audio</h3>
+                <div class="audio-controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="voice-announcements" />
+                        Voice Announcements
+                    </label>
+                </div>
+            </section>
+
+            <!-- Message Log -->
+            <section class="panel message-log-panel">
+                <h3>Message Log</h3>
+                <div id="message-log" class="message-log"></div>
+            </section>
+        </div>
+
+        <!-- Right Column: Map -->
+        <div class="right-column">
+            <div class="map-container">
+                <!-- Map Controls -->
+                <div class="map-controls">
+                    <button id="center-map-btn" class="btn btn-secondary">Center Map</button>
+                    <button id="fly-to-toggle" class="btn btn-secondary" data-active="false">Fly To: OFF</button>
+                    <button id="offline-maps-toggle" class="btn btn-secondary">📡 Offline Maps</button>
+                </div>
+                
+                <!-- Interactive Map -->
+                <div id="map" class="map"></div>
+                
+                <!-- Offline Maps Panel -->
+                <div id="offline-maps-panel" class="offline-maps-panel">
+                    <div class="panel-header">
+                        <h3>Offline Maps Management</h3>
+                        <button id="close-offline-panel" class="close-btn">×</button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="status-section">
+                            <div id="internet-status" class="internet-status">
+                                <span class="status-indicator">🌐</span>
+                                <span class="status-text">Checking connection...</span>
+                            </div>
+                        </div>
+                        
+                        <div class="download-section">
+                            <h4>Download Area</h4>
+                            <div class="coord-inputs">
+                                <div class="input-row">
+                                    <label>North Lat:</label>
+                                    <input type="number" id="north-lat" step="0.000001" />
+                                </div>
+                                <div class="input-row">
+                                    <label>South Lat:</label>
+                                    <input type="number" id="south-lat" step="0.000001" />
+                                </div>
+                                <div class="input-row">
+                                    <label>West Lon:</label>
+                                    <input type="number" id="west-lon" step="0.000001" />
+                                </div>
+                                <div class="input-row">
+                                    <label>East Lon:</label>
+                                    <input type="number" id="east-lon" step="0.000001" />
+                                </div>
+                            </div>
+                            <button id="use-current-view" class="btn btn-secondary">Use Current Map View</button>
+                            
+                            <div class="zoom-section">
+                                <div class="input-row">
+                                    <label>Min Zoom:</label>
+                                    <input type="number" id="min-zoom" min="1" max="20" value="2" />
+                                </div>
+                                <div class="input-row">
+                                    <label>Max Zoom:</label>
+                                    <input type="number" id="max-zoom" min="1" max="20" value="16" />
+                                </div>
+                            </div>
+                            
+                            <div class="map-types">
+                                <h4>Map Types</h4>
+                                <label><input type="checkbox" id="download-street" checked /> Street Map</label>
+                                <label><input type="checkbox" id="download-satellite" /> Satellite</label>
+                            </div>
+                            
+                            <div class="download-info">
+                                <div id="download-preview">
+                                    <p>Estimated tiles: <span id="estimated-tiles">0</span></p>
+                                    <p>Storage size: <span id="estimated-size">0 MB</span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="download-controls">
+                                <button id="download-tiles-btn" class="btn btn-primary">Download Tiles</button>
+                                <button id="stop-download-btn" class="btn btn-danger" disabled>Stop Download</button>
+                            </div>
+                            
+                            <div class="progress-section">
+                                <div id="download-progress" class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <div id="progress-text">Ready to download</div>
+                            </div>
+                        </div>
+                        
+                        <div class="cache-section">
+                            <h4>Cache Statistics</h4>
+                            <div class="cache-stats">
+                                <p>Street tiles: <span id="street-count">0</span></p>
+                                <p>Satellite tiles: <span id="satellite-count">0</span></p>
+                                <p>Total tiles: <span id="total-count">0</span></p>
+                            </div>
+                            <button id="clear-cache-btn" class="btn btn-warning">Clear Cache</button>
+                        </div>
+                        
+                        <div class="tips-section">
+                            <h4>Usage Tips</h4>
+                            <ul>
+                                <li>Smaller areas download faster</li>
+                                <li>Higher zoom levels require more storage</li>
+                                <li>Use current view for mission area</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div id="confirmation-dialog" class="modal">
+        <div class="modal-content">
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-message">Are you sure?</p>
+            <div class="modal-buttons">
+                <button id="confirm-yes" class="btn btn-danger">Yes</button>
+                <button id="confirm-no" class="btn btn-secondary">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/connection-manager.js"></script>
+    <script src="/static/js/flight-controls.js"></script>
+    <script src="/static/js/navigation-controls.js"></script>
+    <script src="/static/js/map-controller.js"></script>
+    <script src="/static/js/offline-maps.js"></script>
+    <script src="/static/js/telemetry-display.js"></script>
+    <script src="/static/js/audio-manager.js"></script>
+    <script src="/static/js/message-logger.js"></script>
+</body>
+</html>
