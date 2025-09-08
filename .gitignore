@@ -162,12 +162,12 @@ cython_debug/
 #  *.iws
 
 # Visual Studio Code
-.vscode/
-*.code-workspace
+# .vscode/
+# *.code-workspace
 
 # Sublime Text
-*.sublime-project
-*.sublime-workspace
+# *.sublime-project
+# *.sublime-workspace
 
 # Vim
 *.swp
@@ -298,21 +298,21 @@ temp/
 *.tlog
 
 # WebGCS specific
-backup/
-screenshots/
-examples/
-current_hud_state.png
-hud_*.png
-*.png
-*.jpg
-*.jpeg
-*.gif
+# backup/
+# screenshots/
+# examples/
+# current_hud_state.png
+# hud_*.png
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
 
 # Playwright MCP
-.playwright-mcp/
+# .playwright-mcp/
 
 # Claude AI
-.claude/
+# .claude/
 
 # UV lock file (optional - some prefer to commit this)
 # uv.lock
