@@ -1,0 +1,82 @@
+[
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "is the playwright mcp service installed"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "install playwrite mcp first then continue with the rest"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "why aren't you using subagents?"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "check if the subagents are active"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when i run /agents it lists a lot of subagents. why don't you see that when you run /agents?"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "we are going to run out of tokens refactor first"
+  },
+  {
+    "session_id": "982b3da6-4e03-49be-9235-a94fbbf1b219",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/982b3da6-4e03-49be-9235-a94fbbf1b219.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "148b897b-ff30-4da4-98b4-a496a309bec4",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/148b897b-ff30-4da4-98b4-a496a309bec4.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "plan",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "i ran the prd tests and the website did not connect to the drone when i clicked connect. there was no vfr hud visible, just a blank canvas. there was no map. think harder. were the tests for this project passed, and if so, should the tests be changed so they are more strict? I want the tests to load that actual webpage to confirm functionality, using the playwright mcp and subagents."
+  },
+  {
+    "session_id": "148b897b-ff30-4da4-98b4-a496a309bec4",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/148b897b-ff30-4da4-98b4-a496a309bec4.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "modify the prd md file to state clearly that tests should not be mock tests"
+  }
+]

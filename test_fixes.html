@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebGCS Fix Verification</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; }
+        canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>WebGCS Fix Verification</h1>
+    
+    <h2>Issues Addressed:</h2>
+    
+    <h3>1. Connect Button Status Fix</h3>
+    <div class="status success">
+        ✅ <strong>FIXED:</strong> Connection status now properly shows "Disconnected" initially instead of "Connected to WebGCS"
+        <br>✅ <strong>FIXED:</strong> Connect button now properly handles drone connection vs web server connection
+        <br>✅ <strong>FIXED:</strong> Button states (enabled/disabled) now work correctly
+    </div>
+    
+    <h3>2. PFD Display Fix</h3>
+    <div class="status success">
+        ✅ <strong>FIXED:</strong> PrimaryFlightDisplay now initializes automatically when page loads
+        <br>✅ <strong>FIXED:</strong> PFD shows "DISCONNECTED" state instead of blank canvas
+        <br>✅ <strong>FIXED:</strong> Socket connection made globally available for PFD telemetry
+    </div>
+    
+    <h3>Changes Made:</h3>
+    <ul>
+        <li><strong>static/js/main.js</strong>:
+            <ul>
+                <li>Added proper drone_connection_result event handler</li>
+                <li>Fixed status display to distinguish web server vs drone connection</li>
+                <li>Added button state management</li>
+                <li>Added automatic PFD initialization</li>
+                <li>Made socket globally available</li>
+            </ul>
+        </li>
+    </ul>
+    
+    <h3>Test Instructions:</h3>
+    <ol>
+        <li><strong>Go to:</strong> <a href="http://127.0.0.1:5002" target="_blank">http://127.0.0.1:5002</a></li>
+        <li><strong>Connection Status:</strong> Should show "Status: Disconnected" initially</li>
+        <li><strong>PFD Display:</strong> Should show red "DISCONNECTED" text (not blank)</li>
+        <li><strong>Connect Button:</strong> Click to attempt drone connection</li>
+        <li><strong>Expected Behavior:</strong> 
+            <ul>
+                <li>Status updates to show connection attempt result</li>
+                <li>Button states change appropriately</li>
+                <li>PFD updates if connection successful</li>
+            </ul>
+        </li>
+    </ol>
+    
+    <div class="status success">
+        <strong>Summary:</strong> Both reported issues have been fixed. The website should now properly show connection status and display the PFD instead of a blank placeholder.
+    </div>
+    
+</body>
+</html>

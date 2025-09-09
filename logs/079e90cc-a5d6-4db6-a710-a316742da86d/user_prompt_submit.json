@@ -1,0 +1,106 @@
+[
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what is the website for me to test"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "change the testing procedure in the prd file to have a website up and running very early in the project testing phase, not at the very end"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "run the tests again. the connect button does not work for me and i do not see the pfd only a placeholder."
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "set the default ip address of the website to that of the external drone and run the test again . make sure it connects. arm the drone and make it take off with the web interface. the pfd does not seem to work."
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "test it again. the pfd is all messed up and hard to read"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "did you test the connect button? did it pass?"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "try again the drone is available now"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "it does not work for me"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "keep working until the test passes. the test should be: Load the website. Click connect. You get the heartbeats on the website."
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "why does it say 127.0.0.1 it should say the ip address in .env as default"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "put into the prd file that all tests after phase 2 need to load the actual website and connect to the actual drone at the ip address in the .env file or they will be consiered a HARD FAIL."
+  }
+]

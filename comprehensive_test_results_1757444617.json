@@ -1,0 +1,20 @@
+{
+  "test_start": 1757444615.4937239,
+  "website_loads": true,
+  "connect_button_exists": false,
+  "ip_field_correct": false,
+  "port_field_correct": false,
+  "initial_status_correct": false,
+  "initial_heartbeat_zero": false,
+  "connect_button_responds": false,
+  "connection_status_updates": false,
+  "heartbeat_increments": false,
+  "final_status": "FAIL",
+  "screenshots": [],
+  "console_logs": [],
+  "errors": [
+    "Website load failed: Page.screenshot: 'str' object is not callable"
+  ],
+  "test_end": 1757444617.286458,
+  "test_duration": 1.792734146118164
+}

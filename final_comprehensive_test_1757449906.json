@@ -1,0 +1,36 @@
+{
+  "test_name": "Final Comprehensive Connection Test - Complete Workflow",
+  "timestamp": "2025-09-09T13:31:21.334566",
+  "test_url": "http://127.0.0.1:5002",
+  "expected_drone_ip": "192.168.193.235",
+  "expected_drone_port": "5678",
+  "tests": {
+    "Website Load": {
+      "status": "PASS",
+      "details": "Loaded http://127.0.0.1:5002",
+      "timestamp": "2025-09-09T13:31:24.164642"
+    },
+    "Page Elements": {
+      "status": "PASS",
+      "details": "All elements found - Status: Status: Connected to Drone",
+      "timestamp": "2025-09-09T13:31:27.192699"
+    },
+    "Disconnect Function": {
+      "status": "PASS",
+      "details": "Disconnected: Status: Disconnected",
+      "timestamp": "2025-09-09T13:31:30.387038"
+    },
+    "Connection Establishment": {
+      "status": "FAIL",
+      "details": "Connection not established in 15s",
+      "timestamp": "2025-09-09T13:31:46.828483"
+    }
+  },
+  "screenshots": [
+    "/Users/peterburke/Documents/Code/WebGCS6/final_test_initial_state_1757449887.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/final_test_after_disconnect_1757449890.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/final_test_after_connect_click_1757449891.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/final_test_connection_timeout_1757449906.png"
+  ],
+  "overall_status": "FAIL"
+}

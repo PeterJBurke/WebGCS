@@ -1,0 +1,42 @@
+[
+  {
+    "session_id": "dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "put into the prd file that all tests after phase 2 need to load the actual website and connect to the actual drone at the ip address in the .env file or they will be consiered a HARD FAIL."
+  },
+  {
+    "session_id": "dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the success should not be conneection attempts. it should actually connect to the drone and receive heartbeats"
+  },
+  {
+    "session_id": "dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now run the connection test. if it fails, continue to debug until it passses"
+  },
+  {
+    "session_id": "dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when i run it , it does not connect. create subtests to diagnose each step of the project. it does not work from my website. look at the website not the internal strucure to confirm it works. rewrite the test to have many subtests, each passs/fail and then run the new test again and tell me the results"
+  },
+  {
+    "session_id": "dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/dbe7ad2c-cfe8-41a2-a6eb-8361ff43cb46.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue to debug until the tests are passed"
+  }
+]

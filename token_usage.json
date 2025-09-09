@@ -1,0 +1,97 @@
+{
+  "usage": {
+    "main": {
+      "input": 0,
+      "output": 0,
+      "tasks": 0,
+      "total": 0
+    },
+    "coordinator-agent": {
+      "input": 0,
+      "output": 0,
+      "tasks": 0,
+      "total": 0
+    },
+    "mavlink-protocol-agent": {
+      "input": 2734140,
+      "output": 2183640,
+      "tasks": 109727,
+      "total": 4917780
+    },
+    "web-interface-agent": {
+      "input": 124975,
+      "output": 99280,
+      "tasks": 3771,
+      "total": 224255
+    },
+    "request-handlers-agent": {
+      "input": 0,
+      "output": 0,
+      "tasks": 0,
+      "total": 0
+    },
+    "infrastructure-agent": {
+      "input": 0,
+      "output": 0,
+      "tasks": 0,
+      "total": 0
+    },
+    "testing-agent": {
+      "input": 33430,
+      "output": 26045,
+      "tasks": 716,
+      "total": 59475
+    },
+    "connection-testing-agent": {
+      "input": 8790,
+      "output": 7270,
+      "tasks": 69,
+      "total": 16060
+    },
+    "flight-controls-testing-agent": {
+      "input": 3735,
+      "output": 3185,
+      "tasks": 61,
+      "total": 6920
+    },
+    "navigation-testing-agent": {
+      "input": 9160,
+      "output": 7905,
+      "tasks": 87,
+      "total": 17065
+    },
+    "telemetry-display-testing-agent": {
+      "input": 395,
+      "output": 325,
+      "tasks": 4,
+      "total": 720
+    },
+    "map-interface-testing-agent": {
+      "input": 2235,
+      "output": 1637,
+      "tasks": 26,
+      "total": 3872
+    },
+    "ui-validation-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "tasks": 0,
+      "total": 0
+    },
+    "virtual-drone-communication-agent": {
+      "input": 40,
+      "output": 25,
+      "tasks": 1,
+      "total": 65
+    },
+    "token-tracking-agent": {
+      "input": 0,
+      "output": 0,
+      "tasks": 0,
+      "total": 0
+    }
+  },
+  "task_count": 114453,
+  "session_start": "2025-09-09T14:24:52.559482",
+  "last_update": "2025-09-09T15:28:22.700893"
+}

@@ -1,0 +1,541 @@
+{
+  "test_name": "WebGCS Connection Testing Agent - Final Report",
+  "test_date": "2025-09-09T14:31:25.895959",
+  "virtual_drone": "192.168.193.235:5678",
+  "tests": [
+    {
+      "category": "Loading",
+      "test_name": "Page Title",
+      "passed": true,
+      "details": "Page title: 'WebGCS Drone Control System'",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.657748"
+    },
+    {
+      "category": "Connection UI",
+      "test_name": "IP Input Field",
+      "passed": true,
+      "details": "Element found",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.799503"
+    },
+    {
+      "category": "Connection UI",
+      "test_name": "Port Input Field",
+      "passed": true,
+      "details": "Element found",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.800661"
+    },
+    {
+      "category": "Connection UI",
+      "test_name": "Connect Button",
+      "passed": true,
+      "details": "Element found",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.801312"
+    },
+    {
+      "category": "Connection UI",
+      "test_name": "Disconnect Button",
+      "passed": true,
+      "details": "Element found",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.801945"
+    },
+    {
+      "category": "Connection UI",
+      "test_name": "Connection Status",
+      "passed": true,
+      "details": "Element found",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.802746"
+    },
+    {
+      "category": "Connection UI",
+      "test_name": "Heartbeat Counter",
+      "passed": true,
+      "details": "Element found",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:27.803426"
+    },
+    {
+      "category": "Connection State",
+      "test_name": "Status Display",
+      "passed": true,
+      "details": "Status: 'Status: Connected to Drone'",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:30.816007"
+    },
+    {
+      "category": "Connection State",
+      "test_name": "Button States Match Connection",
+      "passed": true,
+      "details": "Connected: True, Connect disabled: True, Disconnect disabled: False",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:30.816029"
+    },
+    {
+      "category": "Heartbeat",
+      "test_name": "Heart Icon Present",
+      "passed": true,
+      "details": "Heartbeat text: '\u2764\ufe0f Heartbeat: 220'",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.821841"
+    },
+    {
+      "category": "Heartbeat",
+      "test_name": "Counter Updates",
+      "passed": true,
+      "details": "Initial: '\u2764\ufe0f Heartbeat: 220' \u2192 After: '\u2764\ufe0f Heartbeat: 221'",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.821855"
+    },
+    {
+      "category": "PFD",
+      "test_name": "PFD Container",
+      "passed": true,
+      "details": "Element found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.826924"
+    },
+    {
+      "category": "PFD",
+      "test_name": "PFD Canvas",
+      "passed": true,
+      "details": "Element found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.829607"
+    },
+    {
+      "category": "Map",
+      "test_name": "Map Container",
+      "passed": true,
+      "details": "Map container found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.831648"
+    },
+    {
+      "category": "Flight Controls",
+      "test_name": "ARM Button",
+      "passed": true,
+      "details": "Button found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.835919"
+    },
+    {
+      "category": "Flight Controls",
+      "test_name": "DISARM Button",
+      "passed": true,
+      "details": "Button found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.838027"
+    },
+    {
+      "category": "Flight Controls",
+      "test_name": "TAKEOFF Button",
+      "passed": true,
+      "details": "Button found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.839803"
+    },
+    {
+      "category": "Flight Controls",
+      "test_name": "LAND Button",
+      "passed": true,
+      "details": "Button found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.842454"
+    },
+    {
+      "category": "Flight Controls",
+      "test_name": "RTL Button",
+      "passed": true,
+      "details": "Button found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.844032"
+    },
+    {
+      "category": "Navigation",
+      "test_name": "Latitude Input",
+      "passed": true,
+      "details": "Control found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.845712"
+    },
+    {
+      "category": "Navigation",
+      "test_name": "Longitude Input",
+      "passed": true,
+      "details": "Control found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.847290"
+    },
+    {
+      "category": "Navigation",
+      "test_name": "Altitude Input",
+      "passed": true,
+      "details": "Control found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.848861"
+    },
+    {
+      "category": "Navigation",
+      "test_name": "Go To Button",
+      "passed": true,
+      "details": "Control found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.850239"
+    },
+    {
+      "category": "Navigation",
+      "test_name": "Clear Button",
+      "passed": true,
+      "details": "Control found and visible",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:32.851779"
+    },
+    {
+      "category": "Console",
+      "test_name": "No Critical JavaScript Errors",
+      "passed": true,
+      "details": "Found 0 critical errors, 1 total errors",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:34.853553"
+    },
+    {
+      "category": "Console",
+      "test_name": "Initialization Messages Present",
+      "passed": true,
+      "details": "Found 471 log messages indicating active system",
+      "expected": "",
+      "actual": "",
+      "timestamp": "2025-09-09T14:31:34.853574"
+    }
+  ],
+  "screenshots": [
+    "final_test_screenshots/website_loaded_1757453487.png",
+    "final_test_screenshots/final_state_full_1757453494.png"
+  ],
+  "console_logs": [
+    {
+      "type": "log",
+      "text": "WebGCS initializing...",
+      "timestamp": "2025-09-09T14:31:26.838215"
+    },
+    {
+      "type": "log",
+      "text": "WebGCS initialized",
+      "timestamp": "2025-09-09T14:31:26.840353"
+    },
+    {
+      "type": "log",
+      "text": "Flight Controls initializing...",
+      "timestamp": "2025-09-09T14:31:26.840715"
+    },
+    {
+      "type": "log",
+      "text": "Flight Controls initialized",
+      "timestamp": "2025-09-09T14:31:26.840964"
+    },
+    {
+      "type": "log",
+      "text": "Navigation controls initializing...",
+      "timestamp": "2025-09-09T14:31:26.841120"
+    },
+    {
+      "type": "log",
+      "text": "Navigation controls initialized successfully",
+      "timestamp": "2025-09-09T14:31:26.841334"
+    },
+    {
+      "type": "log",
+      "text": "Initializing Professional PFD...",
+      "timestamp": "2025-09-09T14:31:26.841572"
+    },
+    {
+      "type": "log",
+      "text": "PFD: Initializing Professional Primary Flight Display for canvas: pfd-canvas",
+      "timestamp": "2025-09-09T14:31:26.841872"
+    },
+    {
+      "type": "log",
+      "text": "PFD: Professional canvas initialized, logical size: 800x600, pixel ratio: 1",
+      "timestamp": "2025-09-09T14:31:26.842071"
+    },
+    {
+      "type": "log",
+      "text": "PFD: Socket found, setting up telemetry listeners",
+      "timestamp": "2025-09-09T14:31:26.842148"
+    },
+    {
+      "type": "log",
+      "text": "Connected to WebGCS server",
+      "timestamp": "2025-09-09T14:31:26.862436"
+    },
+    {
+      "type": "log",
+      "text": "Drone status: {connected: true, system_id: 1, heartbeat_count: 216, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:26.862613"
+    },
+    {
+      "type": "log",
+      "text": "Updating drone status with data: {connected: true, system_id: 1, heartbeat_count: 216, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:26.862723"
+    },
+    {
+      "type": "log",
+      "text": "Heartbeat counter updated to: 216",
+      "timestamp": "2025-09-09T14:31:26.862861"
+    },
+    {
+      "type": "log",
+      "text": "Updating connection status to: Connected to Drone",
+      "timestamp": "2025-09-09T14:31:26.862967"
+    },
+    {
+      "type": "log",
+      "text": "Connection status updated successfully",
+      "timestamp": "2025-09-09T14:31:26.863027"
+    },
+    {
+      "type": "log",
+      "text": "Button states updated for connected",
+      "timestamp": "2025-09-09T14:31:26.863081"
+    },
+    {
+      "type": "log",
+      "text": "Initializing Primary Flight Display...",
+      "timestamp": "2025-09-09T14:31:26.941240"
+    },
+    {
+      "type": "log",
+      "text": "PFD: Initializing Professional Primary Flight Display for canvas: pfd-canvas",
+      "timestamp": "2025-09-09T14:31:26.941398"
+    },
+    {
+      "type": "log",
+      "text": "PFD: Professional canvas initialized, logical size: 800x600, pixel ratio: 1",
+      "timestamp": "2025-09-09T14:31:26.941526"
+    },
+    {
+      "type": "log",
+      "text": "PFD: Socket found, setting up telemetry listeners",
+      "timestamp": "2025-09-09T14:31:26.941626"
+    },
+    {
+      "type": "log",
+      "text": "Drone status: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:26.955844"
+    },
+    {
+      "type": "log",
+      "text": "Updating drone status with data: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:26.955940"
+    },
+    {
+      "type": "log",
+      "text": "Heartbeat counter updated to: 217",
+      "timestamp": "2025-09-09T14:31:26.956033"
+    },
+    {
+      "type": "log",
+      "text": "Updating connection status to: Connected to Drone",
+      "timestamp": "2025-09-09T14:31:26.956281"
+    },
+    {
+      "type": "log",
+      "text": "Connection status updated successfully",
+      "timestamp": "2025-09-09T14:31:26.956381"
+    },
+    {
+      "type": "log",
+      "text": "Button states updated for connected",
+      "timestamp": "2025-09-09T14:31:26.956454"
+    },
+    {
+      "type": "log",
+      "text": "Drone status: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.059672"
+    },
+    {
+      "type": "log",
+      "text": "Updating drone status with data: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.059875"
+    },
+    {
+      "type": "log",
+      "text": "Heartbeat counter updated to: 217",
+      "timestamp": "2025-09-09T14:31:27.059954"
+    },
+    {
+      "type": "log",
+      "text": "Updating connection status to: Connected to Drone",
+      "timestamp": "2025-09-09T14:31:27.060047"
+    },
+    {
+      "type": "log",
+      "text": "Connection status updated successfully",
+      "timestamp": "2025-09-09T14:31:27.060110"
+    },
+    {
+      "type": "log",
+      "text": "Button states updated for connected",
+      "timestamp": "2025-09-09T14:31:27.060169"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "timestamp": "2025-09-09T14:31:27.156920"
+    },
+    {
+      "type": "log",
+      "text": "Drone status: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.165234"
+    },
+    {
+      "type": "log",
+      "text": "Updating drone status with data: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.165346"
+    },
+    {
+      "type": "log",
+      "text": "Heartbeat counter updated to: 217",
+      "timestamp": "2025-09-09T14:31:27.165414"
+    },
+    {
+      "type": "log",
+      "text": "Updating connection status to: Connected to Drone",
+      "timestamp": "2025-09-09T14:31:27.165511"
+    },
+    {
+      "type": "log",
+      "text": "Connection status updated successfully",
+      "timestamp": "2025-09-09T14:31:27.165578"
+    },
+    {
+      "type": "log",
+      "text": "Button states updated for connected",
+      "timestamp": "2025-09-09T14:31:27.165641"
+    },
+    {
+      "type": "log",
+      "text": "Drone status: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.267144"
+    },
+    {
+      "type": "log",
+      "text": "Updating drone status with data: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.267300"
+    },
+    {
+      "type": "log",
+      "text": "Heartbeat counter updated to: 217",
+      "timestamp": "2025-09-09T14:31:27.267394"
+    },
+    {
+      "type": "log",
+      "text": "Updating connection status to: Connected to Drone",
+      "timestamp": "2025-09-09T14:31:27.267503"
+    },
+    {
+      "type": "log",
+      "text": "Connection status updated successfully",
+      "timestamp": "2025-09-09T14:31:27.267575"
+    },
+    {
+      "type": "log",
+      "text": "Button states updated for connected",
+      "timestamp": "2025-09-09T14:31:27.267649"
+    },
+    {
+      "type": "log",
+      "text": "Drone status: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.374419"
+    },
+    {
+      "type": "log",
+      "text": "Updating drone status with data: {connected: true, system_id: 1, heartbeat_count: 217, telemetry: Object}",
+      "timestamp": "2025-09-09T14:31:27.374940"
+    },
+    {
+      "type": "log",
+      "text": "Heartbeat counter updated to: 217",
+      "timestamp": "2025-09-09T14:31:27.375196"
+    },
+    {
+      "type": "log",
+      "text": "Updating connection status to: Connected to Drone",
+      "timestamp": "2025-09-09T14:31:27.375442"
+    }
+  ],
+  "summary": {
+    "total_tests": 26,
+    "passed": 26,
+    "failed": 0,
+    "pass_rate": 100.0,
+    "categories": {
+      "Loading": {
+        "total": 1,
+        "passed": 1
+      },
+      "Connection UI": {
+        "total": 6,
+        "passed": 6
+      },
+      "Connection State": {
+        "total": 2,
+        "passed": 2
+      },
+      "Heartbeat": {
+        "total": 2,
+        "passed": 2
+      },
+      "PFD": {
+        "total": 2,
+        "passed": 2
+      },
+      "Map": {
+        "total": 1,
+        "passed": 1
+      },
+      "Flight Controls": {
+        "total": 5,
+        "passed": 5
+      },
+      "Navigation": {
+        "total": 5,
+        "passed": 5
+      },
+      "Console": {
+        "total": 2,
+        "passed": 2
+      }
+    }
+  }
+}

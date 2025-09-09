@@ -1,0 +1,47 @@
+{
+  "test_name": "Comprehensive Connection Test - Hard Fail Requirements",
+  "timestamp": "2025-09-09T13:30:27.856510",
+  "test_url": "http://127.0.0.1:5002",
+  "expected_drone_ip": "192.168.193.235",
+  "expected_drone_port": "5678",
+  "tests": {
+    "Website Load": {
+      "status": "PASS",
+      "details": "Successfully loaded http://127.0.0.1:5002",
+      "timestamp": "2025-09-09T13:30:29.463294",
+      "screenshot": ""
+    },
+    "IP Field Verification": {
+      "status": "PASS",
+      "details": "IP field shows correct address: 192.168.193.235",
+      "timestamp": "2025-09-09T13:30:29.648837",
+      "screenshot": ""
+    },
+    "Port Field Verification": {
+      "status": "PASS",
+      "details": "Port field shows correct port: 5678",
+      "timestamp": "2025-09-09T13:30:29.653028",
+      "screenshot": ""
+    },
+    "Initial Heartbeat Counter": {
+      "status": "PASS",
+      "details": "Initial heartbeat counter: \u2764\ufe0f Heartbeat: 22",
+      "timestamp": "2025-09-09T13:30:29.656758",
+      "screenshot": ""
+    },
+    "Connect Button Click": {
+      "status": "FAIL",
+      "details": "Connect button disabled",
+      "timestamp": "2025-09-09T13:30:29.788174",
+      "screenshot": ""
+    }
+  },
+  "screenshots": [
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_website_loaded_1757449829.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_before_connect_1757449829.png"
+  ],
+  "overall_status": "PARTIAL",
+  "failure_details": [
+    "Connect Button Click: Connect button disabled"
+  ]
+}

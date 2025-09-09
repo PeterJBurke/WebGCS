@@ -1,0 +1,82 @@
+[
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "test the website connection again"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the mode keeps flickering between stabilize and unknown. "
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now change the prd to say the vfr hud should be in the top left and the map should occupy the right half in the layout section of the prd"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "change the prd so the hud is not a circle like old fashioned"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "for phase 5 in the prd, reoganize the tests to make more sense. think harder"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "add more detail to the vfr in the pfd using @HudLayoutExample.png and @HudLayoutItems.png . think harder"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now add reference to those two images to the prd. i will include the image files for the next time"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "create an md file which contains a list of md files needed (like the prd and agents) to start this project again from scratch. it should also contain instructions. think harder"
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "redo it. do not specify the directory structure. only list the files i need (md files, prd, agents, etc) . I will copy them over manually. do not embed the file contents in the md files."
+  },
+  {
+    "session_id": "b4cb510d-6f45-4b62-a989-0291f21ddd81",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/b4cb510d-6f45-4b62-a989-0291f21ddd81.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "after the list of files, tell me what prompt to send to the ai. if it is a long prompt, create it as a separate md file. also i do not want to mess with the root ~/.claude folder. all files needed should be in the project folder."
+  }
+]

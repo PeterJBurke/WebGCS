@@ -1,0 +1,23 @@
+[
+  {
+    "session_id": "148b897b-ff30-4da4-98b4-a496a309bec4",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/148b897b-ff30-4da4-98b4-a496a309bec4.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use "
+  },
+  {
+    "session_id": "148b897b-ff30-4da4-98b4-a496a309bec4",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/148b897b-ff30-4da4-98b4-a496a309bec4.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "hook_event_name": "Notification",
+    "message": "Claude needs your permission to use Bash"
+  },
+  {
+    "session_id": "148b897b-ff30-4da4-98b4-a496a309bec4",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/148b897b-ff30-4da4-98b4-a496a309bec4.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "hook_event_name": "Notification",
+    "message": "Claude is waiting for your input"
+  }
+]

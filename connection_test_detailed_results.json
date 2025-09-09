@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-09-09T12:00:07.758728",
+  "target_url": "http://127.0.0.1:5002",
+  "target_drone": "192.168.193.235:5678",
+  "tests": [
+    {
+      "test_id": "TEST-CM-001",
+      "description": "Connect Button Existence and Initial State",
+      "success": false,
+      "details": {
+        "button_exists": false
+      }
+    },
+    {
+      "test_id": "TEST-CM-002",
+      "description": "Connection State Management",
+      "success": false,
+      "details": {
+        "error": "'NoneType' object has no attribute 'inner_text'"
+      }
+    },
+    {
+      "test_id": "TEST-CM-003",
+      "description": "Heartbeat Monitoring",
+      "success": false,
+      "details": {
+        "heartbeat_animation_exists": false
+      }
+    }
+  ],
+  "summary": {
+    "total_tests": 3,
+    "passed_tests": 0,
+    "success_rate": "0.0%",
+    "overall_success": false
+  }
+}

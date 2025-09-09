@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-09-09T11:08:23.023473",
+  "test_name": "Improved ARM and TAKEOFF Integration Test",
+  "target_url": "http://127.0.0.1:5002",
+  "target_drone": "192.168.193.235:5678",
+  "results": {
+    "initial_state": {
+      "status": "PASS",
+      "page_title": "WebGCS Drone Control System",
+      "ip_found": false,
+      "port_found": false,
+      "initial_status": "Status: Disconnected",
+      "pfd_disconnected": true
+    },
+    "connection": {
+      "status": "EXECUTED",
+      "connection_result": "CONNECTED",
+      "current_status": "Status: Disconnected",
+      "connected_indicators": true,
+      "failed_indicators": false
+    },
+    "arm_safety": {
+      "status": "PASS",
+      "dialog_intercepted": true,
+      "dialog_message": "\u26a0\ufe0f ARM COMMAND SAFETY CONFIRMATION \u26a0\ufe0f\n\nThis will ARM the drone and enable motors.\nEnsure area is clear and safe for operation.\n\nConfirm ARM command?",
+      "contains_arm_text": true,
+      "contains_safety_text": true
+    },
+    "takeoff_validation": {
+      "status": "PASS",
+      "altitude_input_found": true,
+      "dialog_intercepted": true,
+      "dialog_message": "\u26a0\ufe0f TAKEOFF COMMAND SAFETY CONFIRMATION \u26a0\ufe0f\n\nThis will command the drone to TAKEOFF to 10m altitude.\nEnsure area is clear and safe for takeoff.\n\nConfirm TAKEOFF to 10m?",
+      "contains_takeoff_text": true,
+      "contains_altitude": true
+    },
+    "command_transmission": {
+      "status": "PASS",
+      "arm_dialog_accepted": true,
+      "takeoff_dialog_accepted": true,
+      "note": "Commands sent to backend - actual drone response depends on connection"
+    }
+  },
+  "screenshots": [
+    "/Users/peterburke/Documents/Code/WebGCS6/logs/improved_arm_takeoff_initial_20250909_110825.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/logs/improved_arm_takeoff_after_connection_20250909_110834.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/logs/improved_arm_takeoff_final_state_20250909_110843.png"
+  ]
+}

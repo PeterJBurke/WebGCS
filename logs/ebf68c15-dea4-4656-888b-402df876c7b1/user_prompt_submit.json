@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "what was the token usage for each subagent"
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "host the website so i can test it"
+  }
+]

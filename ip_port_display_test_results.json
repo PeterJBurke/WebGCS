@@ -1,0 +1,35 @@
+{
+  "test_id": "TEST-CM-ENV-001",
+  "test_name": "IP/Port Display from Environment Variables",
+  "timestamp": "2025-09-09T13:08:02.297345",
+  "expected_ip": "192.168.193.235",
+  "expected_port": "5678",
+  "tests_passed": 2,
+  "tests_failed": 2,
+  "details": [
+    {
+      "component": "ENV_FILE",
+      "status": "PASS",
+      "message": "Environment file contains correct IP and Port",
+      "timestamp": "2025-09-09T13:08:02.297398"
+    },
+    {
+      "component": "IP_FIELD",
+      "status": "FAIL",
+      "message": "Error testing IP field: Page.wait_for_selector: Timeout 10000ms exceeded.\nCall log:\n  - waiting for locator(\"#connection-panel\") to be visible\n",
+      "timestamp": "2025-09-09T13:08:15.269937"
+    },
+    {
+      "component": "PORT_FIELD",
+      "status": "FAIL",
+      "message": "Port field not found or has no value",
+      "timestamp": "2025-09-09T13:08:15.280617"
+    },
+    {
+      "component": "SCREENSHOT",
+      "status": "PASS",
+      "message": "Verification screenshot saved: ip_port_verification_screenshot.png",
+      "timestamp": "2025-09-09T13:08:16.440071"
+    }
+  ]
+}

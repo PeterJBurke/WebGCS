@@ -1,0 +1,55 @@
+{
+  "test_name": "Comprehensive Connection Test - Hard Fail Requirements",
+  "timestamp": "2025-09-09T13:20:18.731071",
+  "test_url": "http://127.0.0.1:5002",
+  "expected_drone_ip": "192.168.193.235",
+  "expected_drone_port": "5678",
+  "tests": {
+    "Website Load": {
+      "status": "PASS",
+      "details": "Successfully loaded http://127.0.0.1:5002",
+      "timestamp": "2025-09-09T13:20:20.432847",
+      "screenshot": ""
+    },
+    "IP Field Verification": {
+      "status": "PASS",
+      "details": "IP field shows correct address: 192.168.193.235",
+      "timestamp": "2025-09-09T13:20:20.619147",
+      "screenshot": ""
+    },
+    "Port Field Verification": {
+      "status": "PASS",
+      "details": "Port field shows correct port: 5678",
+      "timestamp": "2025-09-09T13:20:20.622010",
+      "screenshot": ""
+    },
+    "Initial Heartbeat Counter": {
+      "status": "PASS",
+      "details": "Initial heartbeat counter: \u2764\ufe0f Heartbeat: 0",
+      "timestamp": "2025-09-09T13:20:20.625681",
+      "screenshot": ""
+    },
+    "Connect Button Click": {
+      "status": "PASS",
+      "details": "Successfully clicked Connect button",
+      "timestamp": "2025-09-09T13:20:21.278593",
+      "screenshot": ""
+    },
+    "Connection Establishment": {
+      "status": "FAIL",
+      "details": "Connection not established within 15 seconds",
+      "timestamp": "2025-09-09T13:20:36.602554",
+      "screenshot": ""
+    }
+  },
+  "screenshots": [
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_website_loaded_1757449220.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_before_connect_1757449220.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_after_connect_click_1757449221.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_connection_timeout_1757449236.png"
+  ],
+  "overall_status": "FAIL",
+  "failure_details": [
+    "Connection Establishment: Connection not established within 15 seconds"
+  ]
+}

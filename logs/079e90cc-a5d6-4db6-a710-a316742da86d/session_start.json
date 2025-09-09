@@ -1,0 +1,23 @@
+[
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "hook_event_name": "SessionStart",
+    "source": "startup"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "hook_event_name": "SessionStart",
+    "source": "resume"
+  },
+  {
+    "session_id": "079e90cc-a5d6-4db6-a710-a316742da86d",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/079e90cc-a5d6-4db6-a710-a316742da86d.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "hook_event_name": "SessionStart",
+    "source": "compact"
+  }
+]

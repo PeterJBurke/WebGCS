@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-09-09T11:05:45.056450",
+  "test_name": "ARM and TAKEOFF Integration Test",
+  "target_url": "http://127.0.0.1:5002",
+  "target_drone": "192.168.193.235:5678",
+  "results": {
+    "page_load": {
+      "status": "PASS",
+      "title": "WebGCS Drone Control System",
+      "connect_button_found": true,
+      "arm_button_found": true,
+      "takeoff_button_found": true
+    },
+    "connection_parameters": {
+      "status": "FAIL",
+      "error": "Locator.get_attribute: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"input[placeholder*=\\\"IP\\\"], input[id*=\\\"ip\\\"], input[name*=\\\"ip\\\"]\").first\n"
+    },
+    "initial_status": {
+      "status": "PASS",
+      "status_text": "Status: Disconnected",
+      "disconnected_indicators_found": 1
+    },
+    "pfd_display": {
+      "status": "PASS",
+      "pfd_container_found": true,
+      "disconnected_message_found": true,
+      "pfd_content": "\n                Primary Flight Display\n                \n                    \n                \n            "
+    },
+    "connect_button": {
+      "status": "EXECUTED",
+      "button_found": true,
+      "connected_indicators": 1,
+      "error_indicators": 0,
+      "current_status": "\n                MAVLink Dump\n            ",
+      "connection_result": "CONNECTED"
+    },
+    "arm_button_safety": {
+      "status": "FAIL",
+      "button_found": true,
+      "confirmation_dialogs": 0,
+      "confirm_buttons": 0,
+      "cancel_buttons": 0,
+      "arm_text_found": 2
+    },
+    "takeoff_button_validation": {
+      "status": "PARTIAL",
+      "button_found": true,
+      "altitude_inputs": 0,
+      "confirmation_dialogs": 0,
+      "confirm_buttons": 0,
+      "cancel_buttons": 0,
+      "takeoff_text_found": 1,
+      "altitude_validation_tested": false
+    }
+  },
+  "screenshots": [
+    "/Users/peterburke/Documents/Code/WebGCS6/logs/arm_takeoff_test_initial_20250909_110547.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/logs/arm_takeoff_test_after_connect_20250909_110621.png",
+    "/Users/peterburke/Documents/Code/WebGCS6/logs/arm_takeoff_test_final_20250909_110625.png"
+  ]
+}

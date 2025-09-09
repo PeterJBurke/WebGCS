@@ -1,0 +1,49 @@
+{
+  "test_name": "Comprehensive Connection Test - Hard Fail Requirements",
+  "timestamp": "2025-09-09T13:18:06.554823",
+  "test_url": "http://127.0.0.1:5002",
+  "expected_drone_ip": "192.168.193.235",
+  "expected_drone_port": "5678",
+  "tests": {
+    "Website Load": {
+      "status": "PASS",
+      "details": "Successfully loaded http://127.0.0.1:5002",
+      "timestamp": "2025-09-09T13:18:08.332001",
+      "screenshot": ""
+    },
+    "IP Field Verification": {
+      "status": "FAIL",
+      "details": "IP address input field not found",
+      "timestamp": "2025-09-09T13:18:18.513212",
+      "screenshot": ""
+    },
+    "Port Field Verification": {
+      "status": "FAIL",
+      "details": "Port input field not found",
+      "timestamp": "2025-09-09T13:18:28.516391",
+      "screenshot": ""
+    },
+    "Initial Heartbeat Counter": {
+      "status": "FAIL",
+      "details": "Heartbeat counter element not found",
+      "timestamp": "2025-09-09T13:18:33.522537",
+      "screenshot": ""
+    },
+    "Connect Button Click": {
+      "status": "FAIL",
+      "details": "Connect button not found",
+      "timestamp": "2025-09-09T13:18:43.525742",
+      "screenshot": ""
+    }
+  },
+  "screenshots": [
+    "/Users/peterburke/Documents/Code/WebGCS6/hard_fail_test_website_loaded_1757449088.png"
+  ],
+  "overall_status": "PARTIAL",
+  "failure_details": [
+    "IP Field Verification: IP address input field not found",
+    "Port Field Verification: Port input field not found",
+    "Initial Heartbeat Counter: Heartbeat counter element not found",
+    "Connect Button Click: Connect button not found"
+  ]
+}

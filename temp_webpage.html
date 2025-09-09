@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGCS Drone Control System</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="webgcs-container">
+        <header class="webgcs-header">
+            <h1>WebGCS Drone Control System v2.0</h1>
+            <div class="mavlink-status">
+                <span id="mavlink-dump">MAVLink Dump</span>
+            </div>
+        </header>
+        
+        <main class="webgcs-main">
+            <!-- Connection Panel -->
+            <section class="connection-panel">
+                <h3>Connection</h3>
+                <div class="connection-controls">
+                    <label>IP: <input type="text" id="drone-host" value="192.168.193.235"></label>
+                    <label>Port: <input type="text" id="drone-port" value="5678"></label>
+                    <button id="connect-btn">Connect</button>
+                    <button id="disconnect-btn" disabled>Disconnect</button>
+                </div>
+                <div class="connection-status">
+                    <span id="connection-status">Status: Disconnected</span>
+                    <span id="heartbeat-counter">❤️ Heartbeat: 0</span>
+                </div>
+            </section>
+            
+            <!-- Flight Controls -->
+            <section class="flight-controls">
+                <h3>Flight Controls</h3>
+                <div class="control-buttons">
+                    <button id="arm-btn">ARM</button>
+                    <button id="disarm-btn">DISARM</button>
+                    <label>Alt: <input type="number" id="takeoff-alt" value="10">m</label>
+                    <button id="takeoff-btn">TAKEOFF</button>
+                    <button id="land-btn">LAND</button>
+                    <button id="rtl-btn">RTL</button>
+                    <label>Mode: 
+                        <select id="flight-mode">
+                            <option value="GUIDED">GUIDED</option>
+                            <option value="STABILIZE">STABILIZE</option>
+                            <option value="ALT_HOLD">ALT_HOLD</option>
+                            <option value="AUTO">AUTO</option>
+                            <option value="RTL">RTL</option>
+                        </select>
+                    </label>
+                    <button id="set-mode-btn">SET</button>
+                </div>
+            </section>
+            
+            <!-- Navigation -->
+            <section class="navigation-panel">
+                <h3>Navigation</h3>
+                <div class="nav-controls">
+                    <label>Lat: <input type="number" id="nav-lat" step="0.000001"></label>
+                    <label>Lon: <input type="number" id="nav-lon" step="0.000001"></label>
+                    <label>Alt: <input type="number" id="nav-alt" value="10">m</label>
+                    <button id="goto-btn">GO TO</button>
+                    <button id="clear-btn">CLEAR</button>
+                </div>
+            </section>
+            
+            <!-- Primary Flight Display -->
+            <section class="pfd-container">
+                <h3>Primary Flight Display</h3>
+                <div id="pfd-display" class="pfd-display">
+                    <canvas id="pfd-canvas" width="800" height="600"></canvas>
+                </div>
+            </section>
+            
+            <!-- Interactive Map -->
+            <section class="map-container">
+                <h3>Interactive Map</h3>
+                <div id="map-display" class="map-display" style="height: 400px; width: 100%;"></div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/flight-controls.js"></script>
+    <script src="/static/js/navigation-controls.js"></script>
+    <script src="/static/js/pfd-rendering.js"></script>
+    <script src="/static/js/pfd.js"></script>
+    <script src="/static/js/map.js"></script>
+</body>
+</html>

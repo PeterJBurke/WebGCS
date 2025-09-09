@@ -1,0 +1,33 @@
+{
+  "TEST-CM-001": {
+    "status": "PASSED",
+    "details": [
+      "\u2713 Navigated to WebGCS interface",
+      "\u2713 Captured initial state screenshot",
+      "\u2713 IP field shows correct value: 192.168.193.235",
+      "\u2713 Port field shows correct value: 5678",
+      "\u2713 Connect button is initially enabled",
+      "\u2713 Button text before click: 'Connect'",
+      "\u2713 Clicked Connect button",
+      "\u2713 Button text after click: 'Connect'",
+      "\u2717 Button does not show 'Connecting...' state",
+      "\u2713 Captured post-click screenshot"
+    ]
+  },
+  "TEST-CM-002": {
+    "status": "PASSED",
+    "details": [
+      "\u2713 Status indicator found: '\n                    Status: Connected to Drone\n                    \u2764\ufe0f Heartbeat: 0\n                '",
+      "\u2713 Connect button status: enabled=False, text='Connect'",
+      "\u2713 Disconnect button status: enabled=True, text='Disconnect'",
+      "\u2713 Captured connection state screenshot"
+    ]
+  },
+  "TEST-CM-003": {
+    "status": "FAILED",
+    "details": [
+      "\u2717 Error during test: Locator.count: Unknown engine \"text*\" while parsing selector text*=\"Heartbeat\""
+    ]
+  },
+  "screenshots": []
+}

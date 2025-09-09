@@ -1,0 +1,215 @@
+{
+  "test_start_time": "2025-09-09T14:27:07.492178",
+  "tests": [
+    {
+      "test_name": "Website Title Check",
+      "passed": true,
+      "details": "Page title: 'WebGCS Drone Control System'",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.617365"
+    },
+    {
+      "test_name": "Main Container Present",
+      "passed": true,
+      "details": "Main container element found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.626892"
+    },
+    {
+      "test_name": "Connect Button Found",
+      "passed": true,
+      "details": "Connect button located in UI",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.627932"
+    },
+    {
+      "test_name": "Connect Button Enabled",
+      "passed": true,
+      "details": "Button enabled state: True",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.630088"
+    },
+    {
+      "test_name": "PFD Display Present",
+      "passed": false,
+      "details": "PFD not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.639696"
+    },
+    {
+      "test_name": "Telemetry Altitude Indicator",
+      "passed": false,
+      "details": "Altitude indicator not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.643396"
+    },
+    {
+      "test_name": "Telemetry Airspeed Indicator",
+      "passed": false,
+      "details": "Airspeed indicator not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.645647"
+    },
+    {
+      "test_name": "Telemetry Heading Indicator",
+      "passed": false,
+      "details": "Heading indicator not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.647774"
+    },
+    {
+      "test_name": "Telemetry Gps Indicator",
+      "passed": false,
+      "details": "Gps indicator not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.650319"
+    },
+    {
+      "test_name": "Telemetry Battery Indicator",
+      "passed": false,
+      "details": "Battery indicator not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.652612"
+    },
+    {
+      "test_name": "Map Container Present",
+      "passed": true,
+      "details": "Map container found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.654053"
+    },
+    {
+      "test_name": "ARM Button Present",
+      "passed": true,
+      "details": "ARM button found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.654551"
+    },
+    {
+      "test_name": "DISARM Button Present",
+      "passed": true,
+      "details": "DISARM button found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.655032"
+    },
+    {
+      "test_name": "TAKEOFF Button Present",
+      "passed": true,
+      "details": "TAKEOFF button found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.655531"
+    },
+    {
+      "test_name": "LAND Button Present",
+      "passed": true,
+      "details": "LAND button found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.655974"
+    },
+    {
+      "test_name": "RTL Button Present",
+      "passed": true,
+      "details": "RTL button found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.656463"
+    },
+    {
+      "test_name": "Latitude Input",
+      "passed": false,
+      "details": "Latitude Input not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.658060"
+    },
+    {
+      "test_name": "Longitude Input",
+      "passed": false,
+      "details": "Longitude Input not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.659619"
+    },
+    {
+      "test_name": "Altitude Input",
+      "passed": false,
+      "details": "Altitude Input not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.661269"
+    },
+    {
+      "test_name": "Go To Button",
+      "passed": true,
+      "details": "Go To Button found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:09.661743"
+    },
+    {
+      "test_name": "Connect Button Click Response",
+      "passed": false,
+      "details": "Button text after click: 'Connect'",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.878083"
+    },
+    {
+      "test_name": "Heartbeat Indicator",
+      "passed": true,
+      "details": "Heartbeat indicator found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.880360"
+    },
+    {
+      "test_name": "Connection Status Indicator",
+      "passed": true,
+      "details": "Connection status indicator found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.880949"
+    },
+    {
+      "test_name": "GPS Status Element",
+      "passed": false,
+      "details": "GPS status not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.882749"
+    },
+    {
+      "test_name": "Battery Status Element",
+      "passed": false,
+      "details": "Battery status not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.886023"
+    },
+    {
+      "test_name": "Armed Status Element",
+      "passed": false,
+      "details": "Armed status not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.887853"
+    },
+    {
+      "test_name": "Mode Status Element",
+      "passed": true,
+      "details": "Mode status found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.888688"
+    },
+    {
+      "test_name": "Altitude Status Element",
+      "passed": false,
+      "details": "Altitude status not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.890701"
+    },
+    {
+      "test_name": "Speed Status Element",
+      "passed": false,
+      "details": "Speed status not found",
+      "error": "",
+      "timestamp": "2025-09-09T14:27:12.892825"
+    }
+  ],
+  "summary": {
+    "total_tests": 29,
+    "passed": 14,
+    "failed": 15,
+    "pass_rate": 48.28
+  },
+  "test_end_time": "2025-09-09T14:27:13.072259"
+}

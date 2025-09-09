@@ -1,0 +1,43 @@
+{
+  "test_id": "TEST-CM-ENV-001",
+  "test_name": "IP/Port Display from Environment Variables",
+  "timestamp": "2025-09-09T13:10:27.037919",
+  "expected_ip": "192.168.193.235",
+  "expected_port": "5678",
+  "actual_ip": "192.168.193.235",
+  "actual_port": "5678",
+  "tests_passed": 5,
+  "tests_failed": 0,
+  "details": [
+    {
+      "component": "ENV_FILE",
+      "status": "PASS",
+      "message": "Environment file contains correct IP and Port",
+      "timestamp": "2025-09-09T13:10:27.037960"
+    },
+    {
+      "component": "IP_FIELD",
+      "status": "PASS",
+      "message": "IP field displays correct value: 192.168.193.235",
+      "timestamp": "2025-09-09T13:10:31.216987"
+    },
+    {
+      "component": "PORT_FIELD",
+      "status": "PASS",
+      "message": "Port field displays correct value: 5678",
+      "timestamp": "2025-09-09T13:10:31.219974"
+    },
+    {
+      "component": "SCREENSHOT",
+      "status": "PASS",
+      "message": "Verification screenshot saved: ip_port_verification_final.png",
+      "timestamp": "2025-09-09T13:10:33.314902"
+    },
+    {
+      "component": "TEMPLATE_VALUES",
+      "status": "PASS",
+      "message": "Expected values found in page content",
+      "timestamp": "2025-09-09T13:10:33.316123"
+    }
+  ]
+}

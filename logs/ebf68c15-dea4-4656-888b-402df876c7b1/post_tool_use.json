@@ -1,0 +1,86 @@
+[
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "uv run python -c \"from src.web.app_factory import create_app, run_app; app = create_app(debug=True, host='127.0.0.1', port=5001); print('Starting WebGCS server on http://127.0.0.1:5001'); run_app(app, debug=True, host='127.0.0.1', port=5001)\"",
+      "description": "Start WebGCS Flask-SocketIO server on localhost:5001",
+      "run_in_background": true
+    },
+    "tool_response": {
+      "stdout": "",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "backgroundTaskId": "ba937b"
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "ba937b"
+    },
+    "tool_response": {
+      "shellId": "ba937b",
+      "command": "uv run python -c \"from src.web.app_factory import create_app, run_app; app = create_app(debug=True, host='127.0.0.1', port=5001); print('Starting WebGCS server on http://127.0.0.1:5001'); run_app(app, debug=True, host='127.0.0.1', port=5001)\"",
+      "status": "failed",
+      "exitCode": 1,
+      "stdout": "\u26a0\ufe0f  TOKEN USAGE WARNING: 171,825 tokens (85.9%) - Approaching 80% limit\n\u26a0\ufe0f  TOKEN USAGE WARNING: 171,915 tokens (86.0%) - Approaching 80% limit\n\u26a0\ufe0f  TOKEN USAGE WARNING: 172,020 tokens (86.0%) - Approaching 80% limit\nStarting WebGCS server on http://127.0.0.1:5001\n * Serving Flask app 'src.web.app_factory'\n * Debug mode: on",
+      "stderr": "ln: /usr/local/bin/cursor: File exists\nServer initialized for threading.\nWerkzeug appears to be used in a production deployment. Consider switching to a production web server instead.\n * Tip: There are .env files present. Install python-dotenv to use them.\nAddress already in use\nPort 5001 is in use by another program. Either identify and stop that program, or start the server with a different port.",
+      "stdoutLines": 6,
+      "stderrLines": 6,
+      "timestamp": "2025-09-09T15:37:50.916Z"
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "uv run python -c \"from src.web.app_factory import create_app, run_app; app = create_app(debug=True, host='127.0.0.1', port=5002); print('Starting WebGCS server on http://127.0.0.1:5002'); run_app(app, debug=True, host='127.0.0.1', port=5002)\"",
+      "description": "Start WebGCS server on port 5002",
+      "run_in_background": true
+    },
+    "tool_response": {
+      "stdout": "",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false,
+      "backgroundTaskId": "23824c"
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "23824c"
+    },
+    "tool_response": {
+      "shellId": "23824c",
+      "command": "uv run python -c \"from src.web.app_factory import create_app, run_app; app = create_app(debug=True, host='127.0.0.1', port=5002); print('Starting WebGCS server on http://127.0.0.1:5002'); run_app(app, debug=True, host='127.0.0.1', port=5002)\"",
+      "status": "running",
+      "exitCode": null,
+      "stdout": "\u26a0\ufe0f  TOKEN USAGE WARNING: 172,100 tokens (86.1%) - Approaching 80% limit\n\u26a0\ufe0f  TOKEN USAGE WARNING: 172,190 tokens (86.1%) - Approaching 80% limit\n\u26a0\ufe0f  TOKEN USAGE WARNING: 172,295 tokens (86.1%) - Approaching 80% limit\nStarting WebGCS server on http://127.0.0.1:5002\n * Serving Flask app 'src.web.app_factory'\n * Debug mode: on",
+      "stderr": "ln: /usr/local/bin/cursor: File exists\nServer initialized for threading.\nWerkzeug appears to be used in a production deployment. Consider switching to a production web server instead.\n * Tip: There are .env files present. Install python-dotenv to use them.\n\u001b[31m\u001b[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\u001b[0m\n * Running on http://127.0.0.1:5002\n\u001b[33mPress CTRL+C to quit\u001b[0m\n * Restarting with stat\nServer initialized for threading.\nWerkzeug appears to be used in a production deployment. Consider switching to a production web server instead.\n * Tip: There are .env files present. Install python-dotenv to use them.\n * Debugger is active!\n * Debugger PIN: 385-788-484",
+      "stdoutLines": 6,
+      "stderrLines": 13,
+      "timestamp": "2025-09-09T15:38:03.498Z"
+    }
+  }
+]

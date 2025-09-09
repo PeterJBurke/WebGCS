@@ -1,0 +1,61 @@
+[
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "uv run python -c \"from src.web.app_factory import create_app, run_app; app = create_app(debug=True, host='127.0.0.1', port=5001); print('Starting WebGCS server on http://127.0.0.1:5001'); run_app(app, debug=True, host='127.0.0.1', port=5001)\"",
+      "description": "Start WebGCS Flask-SocketIO server on localhost:5001",
+      "run_in_background": true
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "ba937b"
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "KillBash",
+    "tool_input": {
+      "shell_id": "ba937b"
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "uv run python -c \"from src.web.app_factory import create_app, run_app; app = create_app(debug=True, host='127.0.0.1', port=5002); print('Starting WebGCS server on http://127.0.0.1:5002'); run_app(app, debug=True, host='127.0.0.1', port=5002)\"",
+      "description": "Start WebGCS server on port 5002",
+      "run_in_background": true
+    }
+  },
+  {
+    "session_id": "ebf68c15-dea4-4656-888b-402df876c7b1",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS6/ebf68c15-dea4-4656-888b-402df876c7b1.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS6",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "BashOutput",
+    "tool_input": {
+      "bash_id": "23824c"
+    }
+  }
+]

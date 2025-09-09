@@ -1,0 +1,62 @@
+[
+  {
+    "test": "Website Accessibility",
+    "status": "PASS",
+    "details": "Status 200",
+    "timestamp": 1757451464.711317
+  },
+  {
+    "test": "HTML Content",
+    "status": "PASS",
+    "details": "All required elements found",
+    "timestamp": 1757451465.718003
+  },
+  {
+    "test": "Default IP Values",
+    "status": "PASS",
+    "details": "IP: 192.168.193.235, Port: 5678",
+    "timestamp": 1757451467.842828
+  },
+  {
+    "test": "Initial Status",
+    "status": "PASS",
+    "details": "Status: 'Status: Disconnected\n\u2764\ufe0f Heartbeat: 0'",
+    "timestamp": 1757451472.551111
+  },
+  {
+    "test": "Connect Button Clickable",
+    "status": "PASS",
+    "details": "Button is enabled",
+    "timestamp": 1757451474.249276
+  },
+  {
+    "test": "SocketIO Connection",
+    "status": "FAIL",
+    "details": "Error: SimpleClient.connect() got an unexpected keyword argument 'timeout'",
+    "timestamp": 1757451475.25755
+  },
+  {
+    "test": "Connect Button Response",
+    "status": "PASS",
+    "details": "Console activity: ['Connected to WebGCS server', 'Drone status: {connected: false, system_id: null, heartbeat_count: 0, telemetry: Object}', 'Updating drone status with data: {connected: false, system_id: null, heartbeat_count: 0, telemetry: Object}']",
+    "timestamp": 1757451485.0080981
+  },
+  {
+    "test": "Status Change",
+    "status": "FAIL",
+    "details": "Status unchanged: 'Status: Disconnected\n\u2764\ufe0f Heartbeat: 0'",
+    "timestamp": 1757451497.809388
+  },
+  {
+    "test": "Heartbeat Increment",
+    "status": "FAIL",
+    "details": "Count did not increase: 0 \u2192 0",
+    "timestamp": 1757451512.7298188
+  },
+  {
+    "test": "Telemetry Data",
+    "status": "PASS",
+    "details": "Found: ['lat', 'lon', 'mode']",
+    "timestamp": 1757451525.510477
+  }
+]
