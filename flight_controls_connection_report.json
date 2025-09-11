@@ -1,0 +1,97 @@
+{
+  "test_suite": "Phase 4: Flight Controls with Connection Testing",
+  "timestamp": "2025-09-09 20:11:53",
+  "base_url": "http://localhost:5002",
+  "total_tests": 4,
+  "passed_tests": 3,
+  "success_rate": "75.0%",
+  "key_findings": {
+    "connection_established": true,
+    "buttons_enabled_when_connected": true,
+    "safety_confirmations_working": false,
+    "flight_modes_functional": false,
+    "takeoff_validation_working": false
+  },
+  "detailed_results": {
+    "connection_test": {
+      "connected": true,
+      "button_states": {
+        "arm-btn": {
+          "enabled": false,
+          "visible": true
+        },
+        "disarm-btn": {
+          "enabled": false,
+          "visible": true
+        },
+        "takeoff-btn": {
+          "enabled": false,
+          "visible": true
+        },
+        "land-btn": {
+          "enabled": false,
+          "visible": true
+        },
+        "rtl-btn": {
+          "enabled": true,
+          "visible": true
+        },
+        "stabilize-btn": {
+          "enabled": true,
+          "visible": true
+        },
+        "emergency-stop-btn": {
+          "enabled": false,
+          "visible": true
+        }
+      }
+    },
+    "arm_disarm_test": {
+      "arm_enabled": false,
+      "disarm_enabled": false,
+      "dialog_appeared": false,
+      "dialog_message": ""
+    },
+    "flight_modes_test": {
+      "connected": false,
+      "modes": {
+        "STABILIZE": {
+          "exists": true,
+          "enabled": false,
+          "visible": true
+        },
+        "LOITER": {
+          "exists": true,
+          "enabled": false,
+          "visible": true
+        },
+        "RTL": {
+          "exists": true,
+          "enabled": false,
+          "visible": true
+        },
+        "AUTO": {
+          "exists": true,
+          "enabled": false,
+          "visible": true
+        },
+        "GUIDED": {
+          "exists": true,
+          "enabled": false,
+          "visible": true
+        }
+      }
+    },
+    "takeoff_test": {
+      "error": "cannot access local variable 'takeoff_dialog' where it is not associated with a value"
+    }
+  },
+  "screenshots_directory": "screenshots",
+  "summary": [
+    "\u2713 Successfully established drone connection",
+    "\u2713 Flight control buttons enabled when connected",
+    "\u26a0 Safety confirmation dialogs not detected",
+    "\u26a0 Flight mode buttons not functional",
+    "\u26a0 Takeoff validation not working"
+  ]
+}

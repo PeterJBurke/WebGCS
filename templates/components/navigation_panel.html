@@ -1,0 +1,80 @@
+<!-- Navigation Panel Component -->
+<div class="navigation-panel-content">
+    <h3>Navigation Controls</h3>
+    
+    <div class="nav-group">
+        <h4>Position Control</h4>
+        <div class="position-inputs">
+            <div class="input-row">
+                <label for="goto-latitude">Latitude:</label>
+                <input type="number" id="goto-latitude" step="0.000001" placeholder="37.7749" data-validation="latitude">
+                <div id="goto-latitude-error" class="error-message"></div>
+            </div>
+            <div class="input-row">
+                <label for="goto-longitude">Longitude:</label>
+                <input type="number" id="goto-longitude" step="0.000001" placeholder="-122.4194" data-validation="longitude">
+                <div id="goto-longitude-error" class="error-message"></div>
+            </div>
+            <div class="input-row">
+                <label for="goto-altitude">Altitude (m):</label>
+                <input type="number" id="goto-altitude" step="0.1" placeholder="100" data-validation="altitude">
+                <div id="goto-altitude-error" class="error-message"></div>
+            </div>
+        </div>
+        <button id="goto-btn" class="btn btn-primary flight-control-btn" disabled>Go To Waypoint</button>
+    </div>
+    
+    <div class="nav-group">
+        <h4>Velocity Control</h4>
+        <div class="velocity-inputs">
+            <div class="input-row">
+                <label for="velocity-x">Velocity X (m/s):</label>
+                <input type="number" id="velocity-x" step="0.1" min="-10" max="10" value="0">
+            </div>
+            <div class="input-row">
+                <label for="velocity-y">Velocity Y (m/s):</label>
+                <input type="number" id="velocity-y" step="0.1" min="-10" max="10" value="0">
+            </div>
+            <div class="input-row">
+                <label for="velocity-z">Velocity Z (m/s):</label>
+                <input type="number" id="velocity-z" step="0.1" min="-5" max="5" value="0">
+            </div>
+        </div>
+        <button id="set-velocity-btn" class="btn btn-primary" disabled>Set Velocity</button>
+    </div>
+    
+    <div class="nav-group">
+        <h4>Quick Actions</h4>
+        <button id="set-home-btn" class="btn btn-secondary flight-control-btn" disabled>Set Home Position</button>
+    </div>
+    
+    <div class="nav-group">
+        <h4>Gimbal Controls</h4>
+        <div class="button-grid">
+            <button id="gimbal-center-btn" class="btn btn-secondary flight-control-btn" disabled>Center Gimbal</button>
+            <button id="gimbal-down-btn" class="btn btn-secondary flight-control-btn" disabled>Point Down</button>
+        </div>
+    </div>
+    
+    <div class="nav-group">
+        <h4>Current Position</h4>
+        <div class="telemetry-grid">
+            <div class="telemetry-item">
+                <label>Latitude:</label>
+                <span id="telemetry-latitude">N/A</span>
+            </div>
+            <div class="telemetry-item">
+                <label>Longitude:</label>
+                <span id="telemetry-longitude">N/A</span>
+            </div>
+            <div class="telemetry-item">
+                <label>Altitude:</label>
+                <span id="telemetry-altitude">N/A</span>
+            </div>
+            <div class="telemetry-item">
+                <label>Heading:</label>
+                <span id="telemetry-heading">N/A</span>
+            </div>
+        </div>
+    </div>
+</div>

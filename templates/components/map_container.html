@@ -1,0 +1,44 @@
+<!-- Map Container Component -->
+<div class="map-container-content">
+    <h3>Interactive Map</h3>
+    
+    <div class="map-controls">
+        <div class="control-group">
+            <button id="center-drone-btn" class="btn btn-secondary" disabled>Center on Drone</button>
+            <button id="clear-waypoints-btn" class="btn btn-secondary" disabled>Clear Waypoints</button>
+            <button id="upload-mission-btn" class="btn btn-primary" disabled>Upload Mission</button>
+        </div>
+        
+        <div class="map-info">
+            <div class="info-item">
+                <label>Drone Position:</label>
+                <span id="drone-position">Unknown</span>
+            </div>
+            <div class="info-item">
+                <label>Map Center:</label>
+                <span id="map-center">37.7749, -122.4194</span>
+            </div>
+            <div class="info-item">
+                <label>Zoom Level:</label>
+                <span id="zoom-level">15</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="map-display">
+        <div id="map" class="leaflet-map">
+            <!-- Map will be initialized here -->
+            <div class="map-placeholder">
+                <p>Map loading...</p>
+                <p>Click anywhere to set waypoints when connected</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="waypoint-list">
+        <h4>Mission Waypoints</h4>
+        <div id="waypoint-list-content" class="waypoint-content">
+            <p>No waypoints set</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,814 @@
+[
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "in_progress",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "pending",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "pending",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "pending",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "pending",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "in_progress",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "pending",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "pending",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "pending",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "pending",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find . -type f -name \"*.py\" -o -name \"*.toml\" -o -name \"*.md\" -o -name \"*.json\" -o -name \"*.yaml\" -o -name \"*.yml\" | head -20",
+      "description": "List key configuration and Python files in the project"
+    },
+    "tool_response": {
+      "stdout": "./pyproject.toml\n./agents/connection-testing-agent.md\n./agents/coordinator-agent.md\n./agents/infrastructure-agent.md\n./agents/web-interface-agent.md\n./agents/testing-agent.md\n./agents/request-handlers-agent.md\n./agents/mavlink-protocol-agent.md\n./agents/telemetry-display-testing-agent.md\n./agents/virtual-drone-communication-agent.md\n./agents/ui-validation-testing-agent.md\n./agents/flight-controls-testing-agent.md\n./agents/token-tracking-agent.md\n./agents/navigation-testing-agent.md\n./agents/map-interface-testing-agent.md\n./README.md\n./INITIAL_SETUP_PROMPT.md\n./logs/c724c157-7d57-419f-bec9-1430080ce4c4/session_start.json\n./logs/3a730f54-3bd2-415a-aa9e-72e788c80105/session_start.json\n./logs/3a730f54-3bd2-415a-aa9e-72e788c80105/pre_tool_use.json\nln: /usr/local/bin/cursor: File exists",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "find agents/ -type f -name \"*.py\" | head -10",
+      "description": "List Python files in agents directory"
+    },
+    "tool_response": {
+      "stdout": "ln: /usr/local/bin/cursor: File exists",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la",
+      "description": "Show all files and directories in root"
+    },
+    "tool_response": {
+      "stdout": "total 2048\ndrwxr-xr-x  18 peterburke  staff     576 Sep  9 15:38 .\ndrwxr-xr-x  12 peterburke  staff     384 Sep  9 15:36 ..\n-rw-r--r--@  1 peterburke  staff     233 Sep  9 15:37 .env\ndrwxr-xr-x@  9 peterburke  staff     288 Sep  9 15:38 .git\n-rw-r--r--@  1 peterburke  staff       5 Sep  9 15:37 .python-version\ndrwxr-xr-x@  9 peterburke  staff     288 Sep  9 15:38 .venv\ndrwxr-xr-x@ 16 peterburke  staff     512 Sep  9 15:37 agents\n-rw-r--r--@  1 peterburke  staff     576 Sep  9 15:37 CLAUDE.md\n-rw-r--r--@  1 peterburke  staff  790400 Sep  9 15:37 HudLayoutExample.png\n-rw-r--r--@  1 peterburke  staff  131398 Sep  9 15:37 HudLayoutItems.png\n-rw-r--r--@  1 peterburke  staff    2422 Sep  9 15:37 INITIAL_SETUP_PROMPT.md\ndrwxr-xr-x@  4 peterburke  staff     128 Sep  9 15:38 logs\n-rw-r--r--@  1 peterburke  staff      85 Sep  9 15:37 main.py\n-rw-r--r--@  1 peterburke  staff     275 Sep  9 15:38 pyproject.toml\n-rw-r--r--@  1 peterburke  staff       0 Sep  9 15:37 README.md\n-rw-r--r--@  1 peterburke  staff   51239 Sep  9 15:38 uv.lock\n-rw-r--r--@  1 peterburke  staff   35182 Sep  9 15:37 WEBGCS_COMPLETE_PRD_WITH_ALL_AGENTS.md\n-rw-r--r--@  1 peterburke  staff    4463 Sep  9 15:37 WEBGCS_PROJECT_BOOTSTRAP.md\nln: /usr/local/bin/cursor: File exists",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "in_progress",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "pending",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "pending",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "pending",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "in_progress",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "pending",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "pending",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "pending",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/pyproject.toml"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/pyproject.toml",
+        "content": "[project]\nname = \"webgcs7\"\nversion = \"0.1.0\"\ndescription = \"Add your description here\"\nreadme = \"README.md\"\nrequires-python = \">=3.13\"\ndependencies = [\n    \"flask>=3.1.2\",\n    \"flask-socketio>=5.5.1\",\n    \"playwright>=1.55.0\",\n    \"pymavlink>=2.4.49\",\n    \"pytest>=8.4.2\",\n]\n",
+        "numLines": 14,
+        "startLine": 1,
+        "totalLines": 14
+      }
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/INITIAL_SETUP_PROMPT.md"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/INITIAL_SETUP_PROMPT.md",
+        "content": "# Initial Setup Prompt for WebGCS Project\n\n## Send this complete prompt to Claude Code after copying all files:\n\n---\n\nI have set up a new WebGCS project with all required files. I've copied:\n\n**Core Files (4):**\n- CLAUDE.md (project instructions)\n- WEBGCS_COMPLETE_PRD_WITH_ALL_AGENTS.md (complete PRD)\n- HudLayoutExample.png (VFR HUD reference)\n- HudLayoutItems.png (HUD component list)\n\n**Agent Files (14) in .claude/agents/:**\n- coordinator-agent.md\n- mavlink-protocol-agent.md\n- web-interface-agent.md  \n- request-handlers-agent.md\n- infrastructure-agent.md\n- testing-agent.md\n- connection-testing-agent.md\n- flight-controls-testing-agent.md\n- navigation-testing-agent.md\n- telemetry-display-testing-agent.md\n- map-interface-testing-agent.md\n- ui-validation-testing-agent.md\n- virtual-drone-communication-agent.md\n- token-tracking-agent.md\n\n**Environment Setup Complete:**\n- UV installed and initialized\n- Dependencies installed: flask flask-socketio pymavlink pytest playwright\n\n**Please help me:**\n\n1. **Activate all 14 agents** from the `.claude/agents/` directory\n2. **Verify agent activation** by running `/agents` command\n3. **Read the CLAUDE.md and PRD** to understand project requirements\n4. **Initialize project structure** according to modular architecture rules\n5. **Begin Phase 1 development** following the PRD specifications:\n   - Implement basic MAVLink connection to virtual drone at 192.168.193.235:5678\n   - Create telemetry handling with heartbeat monitoring\n   - Ensure all 3 Phase 1 tests pass before proceeding\n\n**Critical Requirements:**\n- NO files over 200 lines (modular architecture)\n- Use virtual drone at 192.168.193.235:5678 for testing\n- Follow VFR HUD specifications exactly from reference images\n- Monitor token usage across all 14 agents\n- 100% test pass rate required before phase transitions\n- Professional glass cockpit styling with rectangular artificial horizon\n\n**Development Approach:**\n- Test-first development (write failing test \u2192 implement \u2192 pass test)\n- Use specialized agents for their designated responsibilities\n- Track progress with TodoWrite tool\n- Generate token usage reports every 10 tasks\n\nThe project should result in a complete, production-ready web-based ground control station with professional VFR HUD display and comprehensive drone control capabilities.\n\nPlease confirm agent activation and begin Phase 1 development according to the PRD specifications.",
+        "numLines": 62,
+        "startLine": 1,
+        "totalLines": 62
+      }
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/README.md"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/README.md",
+        "content": "",
+        "numLines": 1,
+        "startLine": 1,
+        "totalLines": 1
+      }
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_COMPLETE_PRD_WITH_ALL_AGENTS.md"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_COMPLETE_PRD_WITH_ALL_AGENTS.md",
+        "content": "# WebGCS Complete Product Requirements Document with All Subagents\n\n## CRITICAL: Complete Subagent System Activation\n\n### MANDATORY FIRST STEP: Activate ALL 14 Subagents\n\n**WARNING: The project WILL NOT WORK without ALL agents active. You MUST:**\n1. Create all 14 agent configuration files in `.claude/agents/`\n2. **RESTART Claude Code** (required for activation)\n3. Run `/agents` command\n4. Verify ALL 14 agents show as \"active\"\n5. DO NOT PROCEED until all agents are active\n\n### Complete List of Required Subagents\n\n#### 1. Core Development Agents\n\n**File:** `.claude/agents/coordinator-agent.md`\n```yaml\n---\nname: coordinator-agent\ndescription: Project coordination and cross-component integration specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, TodoWrite]\n---\n\nYou are the Project Coordinator managing the entire WebGCS project. Your responsibilities:\n- Coordinate work between ALL 14 subagents\n- Maintain PROJECT_COORDINATION.md as central communication hub\n- Track token usage across all agents\n- Ensure ALL tests pass before phase transitions\n- Monitor progress and resolve blocking issues\n- Enforce modular architecture (NO files over 200 lines)\n- Never allow partial implementations\n```\n\n**File:** `.claude/agents/mavlink-protocol-agent.md`\n```yaml\n---\nname: mavlink-protocol-agent\ndescription: MAVLink communication specialist for drone protocol handling\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task]\n---\n\nYou are the MAVLink Protocol Specialist. Your responsibilities:\n- Implement mavlink_connection_manager.py (max 150 lines)\n- Implement mavlink_message_processor.py (max 150 lines)\n- Implement mavlink_command_sender.py (max 150 lines)\n- Handle all MAVLink message types (HEARTBEAT, GLOBAL_POSITION_INT, COMMAND_ACK)\n- Ensure thread-safe drone state management\n- Test against virtual drone at 192.168.193.235:5678\n- Process telemetry at 10Hz rate\n```\n\n**File:** `.claude/agents/web-interface-agent.md`\n```yaml\n---\nname: web-interface-agent\ndescription: Frontend development specialist for Flask-SocketIO web application\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task]\n---\n\nYou are the Web Interface Specialist. Your responsibilities:\n- Break index.html into components (max 150 lines each):\n  - templates/index.html (main layout only)\n  - templates/components/connection_panel.html\n  - templates/components/flight_controls.html\n  - templates/components/navigation_panel.html\n  - templates/components/pfd_display.html\n  - templates/components/map_container.html\n- Separate JavaScript into modules:\n  - static/js/main.js (initialization, max 100 lines)\n  - static/js/connection.js (connection management, max 150 lines)\n  - static/js/telemetry.js (telemetry updates, max 150 lines)\n  - static/js/controls.js (button handlers, max 200 lines)\n  - static/js/map.js (map functionality, max 200 lines)\n  - static/js/pfd.js (Primary Flight Display, max 200 lines)\n  - static/js/validation.js (input validation, max 150 lines)\n- Break app.py into modules (max 150 lines each):\n  - src/web/app_factory.py\n  - src/web/routes.py\n  - src/web/socketio_events.py\n```\n\n**File:** `.claude/agents/request-handlers-agent.md`\n```yaml\n---\nname: request-handlers-agent\ndescription: Mission and geofence request processing specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task]\n---\n\nYou are the Request Handlers Specialist. Your responsibilities:\n- Implement mission upload/download functionality\n- Handle geofence configuration requests\n- Process waypoint management\n- Implement request queuing and scheduling\n- Handle parameter read/write operations\n- Ensure all requests have timeout handling\n- Maximum 150 lines per handler module\n```\n\n**File:** `.claude/agents/infrastructure-agent.md`\n```yaml\n---\nname: infrastructure-agent\ndescription: System infrastructure, configuration, and deployment specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task]\n---\n\nYou are the Infrastructure Specialist. Your responsibilities:\n- Set up modular project structure\n- Implement high-performance logging (<1ms latency)\n- Create deployment scripts for Ubuntu/Raspberry Pi\n- Configure systemd services\n- Manage environment variables and configuration\n- Set up health monitoring endpoints\n- Ensure cross-platform compatibility\n```\n\n**File:** `.claude/agents/testing-agent.md`\n```yaml\n---\nname: testing-agent\ndescription: Test automation and quality assurance specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task]\n---\n\nYou are the Testing Specialist. Your responsibilities:\n- Implement comprehensive test suite\n- Ensure 95% code coverage\n- Create performance benchmarks\n- Validate all safety-critical paths\n- Set up continuous testing\n- Never allow tests to be marked as passed unless they actually pass\n- \ud83d\udea8 CRITICAL: NO MOCK TESTS - All tests must verify real functionality\n- Tests must connect to actual virtual drone and verify real responses\n- Tests must FAIL when functionality is broken (not pass with fake implementations)\n- Coordinate with all testing agents\n```\n\n#### 2. Specialized Testing Agents (Using Playwright MCP)\n\n**File:** `.claude/agents/connection-testing-agent.md`\n```yaml\n---\nname: connection-testing-agent\ndescription: WebGCS connection management and heartbeat testing specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, mcp__playwright__*]\n---\n\nYou are the Connection Testing Specialist using Playwright MCP. Your responsibilities:\n- Test Connect button functionality with IP/Port input\n- Test Disconnect button and connection termination\n- Verify heartbeat indicator animation and counter\n- Test heartbeat audio beep functionality\n- Validate connection status display changes\n- Test automatic reconnection on failure\n- Verify connection error handling and user feedback\n- MUST use Playwright MCP to click actual buttons\n- NEVER mark tests passed until buttons actually work\n- \ud83d\udea8 NO MOCK TESTS: Verify real MAVLink connection to virtual drone\n- Tests must FAIL if connection doesn't actually establish\n```\n\n**File:** `.claude/agents/flight-controls-testing-agent.md`\n```yaml\n---\nname: flight-controls-testing-agent\ndescription: Flight control button testing and MAVLink command verification specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, mcp__playwright__*]\n---\n\nYou are the Flight Controls Testing Specialist using Playwright MCP. Your responsibilities:\n- Test ARM button with safety confirmation dialog\n- Test DISARM button with confirmation\n- Test TAKEOFF button with altitude input validation\n- Test LAND button for immediate landing\n- Test RTL (Return to Launch) button\n- Test flight mode dropdown and SET MODE button\n- Verify all commands send correct MAVLink messages\n- Confirm command acknowledgments are received\n- Test button enable/disable states based on connection\n- MUST test actual button clicks with Playwright MCP\n- \ud83d\udea8 NO MOCK TESTS: Verify actual MAVLink commands are sent to drone\n- Tests must FAIL if commands don't result in real MAVLink messages\n```\n\n**File:** `.claude/agents/navigation-testing-agent.md`\n```yaml\n---\nname: navigation-testing-agent\ndescription: Navigation input validation and Go To command testing specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, mcp__playwright__*]\n---\n\nYou are the Navigation Testing Specialist using Playwright MCP. Your responsibilities:\n- Test latitude input field validation (-90 to 90)\n- Test longitude input field validation (-180 to 180)\n- Test altitude input field (AGL) validation\n- Test GO TO button with valid coordinates\n- Test CLEAR button to reset navigation inputs\n- Verify navigation commands sent to drone\n- Test invalid input error handling\n- Validate coordinate precision (6 decimal places)\n- Test map click-to-fly functionality\n- MUST use Playwright MCP for all UI interactions\n- \ud83d\udea8 NO MOCK TESTS: Verify real coordinate validation and command sending\n- Tests must FAIL if navigation commands don't reach drone backend\n```\n\n**File:** `.claude/agents/telemetry-display-testing-agent.md`\n```yaml\n---\nname: telemetry-display-testing-agent\ndescription: Primary Flight Display and real-time telemetry testing specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, mcp__playwright__*]\n---\n\nYou are the Telemetry Display Testing Specialist using Playwright MCP. Your responsibilities:\n- Test PFD (Primary Flight Display) rendering\n- Verify attitude indicator updates (pitch/roll)\n- Test airspeed tape display and updates\n- Test altitude tape display and climb rate\n- Verify heading compass display\n- Test battery voltage and current display\n- Verify GPS status and satellite count\n- Test armed/disarmed status overlay\n- Ensure 10Hz telemetry update rate\n- Test all 15 VFR HUD components from specifications\n- MUST verify actual visual updates with Playwright MCP\n- \ud83d\udea8 NO MOCK TESTS: Verify real telemetry data updates in UI components\n- Tests must FAIL if PFD canvas is blank or shows no real data\n```\n\n**File:** `.claude/agents/map-interface-testing-agent.md`\n```yaml\n---\nname: map-interface-testing-agent\ndescription: Interactive map functionality and drone visualization testing specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, mcp__playwright__*]\n---\n\nYou are the Map Interface Testing Specialist using Playwright MCP. Your responsibilities:\n- Test drone position marker updates on map\n- Test home position marker display\n- Test target marker for fly-to destinations\n- Test CENTER MAP button functionality\n- Test FLY TO mode toggle button\n- Test click-to-fly when mode enabled\n- Verify map zoom controls (levels 2-22)\n- Test layer switching (Street/Satellite)\n- Test offline map tile download interface\n- Verify map controls positioning and styling\n- MUST interact with actual map using Playwright MCP  \n- \ud83d\udea8 NO MOCK TESTS: Verify real map tiles load and drone markers display\n- Tests must FAIL if map is blank or doesn't show actual drone position\n```\n\n**File:** `.claude/agents/ui-validation-testing-agent.md`\n```yaml\n---\nname: ui-validation-testing-agent\ndescription: Input validation, error handling, and safety confirmation testing specialist\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task, mcp__playwright__*]\n---\n\nYou are the UI Validation Testing Specialist using Playwright MCP. Your responsibilities:\n- Test all input field validations\n- Test safety confirmation dialogs for ARM/DISARM/TAKEOFF\n- Test error message display for invalid inputs\n- Test button state management (enabled/disabled)\n- Test form validation before command submission\n- Test timeout handling for unacknowledged commands\n- Test user feedback for all actions\n- Verify accessibility features (ARIA labels, tooltips)\n- Test responsive design on different screen sizes\n- MUST test actual UI behavior with Playwright MCP\n- \ud83d\udea8 NO MOCK TESTS: Verify real confirmation dialogs and safety mechanisms  \n- Tests must FAIL if safety confirmations don't actually prevent unsafe commands\n```\n\n**File:** `.claude/agents/virtual-drone-communication-agent.md`\n```yaml\n---\nname: virtual-drone-communication-agent\ndescription: End-to-end MAVLink communication verification with virtual drone\ntools: [Read, Write, Edit, Bash, Grep, Glob, Task]\n---\n\nYou are the Virtual Drone Communication Specialist. Your responsibilities:\n- Maintain constant connection to 192.168.193.235:5678\n- Verify all MAVLink messages are properly formatted\n- Test command-response cycles\n- Validate telemetry stream consistency\n- Test connection recovery scenarios\n- Simulate various drone states for testing\n- Ensure protocol compliance with ArduPilot\n- Monitor message rates and latencies\n```\n\n**File:** `.claude/agents/token-tracking-agent.md`\n```yaml\n---\nname: token-tracking-agent\ndescription: Token usage monitoring and reporting for all agents\ntools: [Read, Write, Edit, Bash, Task]\n---\n\nYou are the Token Tracking Specialist. Your responsibilities:\n- Track token usage for ALL 14 agents plus main\n- Implement src/utils/token_tracker.py with AgentTracker class\n- Generate reports showing tokens per agent every 10 tasks\n- Alert at 80% context limit (160k tokens)\n- Critical warning at 90% (180k tokens)\n- Export detailed usage statistics\n- Track cumulative usage across entire session\n- Update PROJECT_COORDINATION.md with token stats\n- Monitor high-usage agents (>20k tokens)\n```\n\n## Complete PRD: WebGCS Drone Control System\n\n### Executive Summary\n\nWebGCS is a production-ready, safety-critical web-based ground control station for MAVLink-compatible drones. The system provides comprehensive drone control through a browser interface with real-time telemetry, flight controls, and mission planning capabilities.\n\n### Core Requirements\n\n#### System Architecture\n- **Modular Design**: NO file exceeds 200 lines\n- **14 Specialized Subagents**: Each handles specific domain\n- **Test-Driven Development**: Write tests first, implement to pass\n- **Token Tracking**: Monitor all agents' token usage\n- **Real Drone Testing**: Virtual drone at 192.168.193.235:5678\n\n#### Performance Requirements\n- **Telemetry Rate**: 10Hz updates to web interface\n- **Logging Latency**: <1ms per log entry\n- **End-to-End Latency**: <100ms for telemetry\n- **Command Acknowledgment**: <5 seconds timeout\n- **Connection Time**: <5 seconds to establish\n\n#### Safety Requirements\n- **Confirmation Dialogs**: ARM, DISARM, TAKEOFF require explicit confirmation\n- **Command Tracking**: All commands tracked with acknowledgment\n- **Timeout Handling**: Automatic timeout for unacknowledged commands\n- **Connection Monitoring**: Automatic detection of connection loss\n- **Fail-Safe Behaviors**: Safe defaults on communication failure\n\n### VFR HUD Specifications (Based on Reference Screenshots)\n\n#### Primary Flight Display Components (800x600px Canvas)\n\n**REFERENCE IMAGES:**\n- `HudLayoutExample.png` - Complete HUD layout with numbered element positions (1-15)\n- `HudLayoutItems.png` - Detailed component descriptions and specifications\n\n**Layout Based on HudLayoutExample.png - Exact Positioning Required**\n\n1. **Airspeed Tape** (Position 1 - Left Side, 60px wide)\n   - Vertical tape from top to horizon line\n   - Black background with white text\n   - Values: 10, 5, 0 (descending)\n   - Current speed highlighted in black box with white border\n   - White horizontal tick marks at each value\n   - Font: Arial Bold, 14px, white text\n\n2. **Crosstrack Error & Turn Rate** (Position 2 - Top Center Left)\n   - Small green rectangular bars above heading tape\n   - Turn rate indicator \"T\" with directional arrow\n   - Width: ~50px, positioned left of center\n   - Green color when on track, red when off\n\n3. **Heading Tape** (Position 3 - Top Horizontal, Full Width)\n   - Continuous horizontal tape: 215\u00b0-W-285\u00b0-304\u00b0-NW-330\u00b0-345\u00b0\n   - Blue background with white text and tick marks\n   - Current heading in orange box with black border\n   - Cardinal directions: N, NE, E, SE, S, SW, W, NW\n   - 5-degree minor ticks, 10-degree major ticks with numbers\n   - Font: Arial Bold, 12px for numbers, 16px for cardinals\n\n4. **Bank Angle Arc** (Position 4 - Top Center Arc)\n   - Semi-circular arc above horizon: 60\u00b0-45\u00b0-30\u00b0-20\u00b0-10\u00b0-0-10\u00b0-20\u00b0-30\u00b0-45\u00b0-60\u00b0\n   - Orange triangle pointer showing current bank angle\n   - White tick marks and degree numbers\n   - Arc radius: ~140px from center\n\n5. **Telemetry Link Quality** (Position 5 - Top Right Corner)\n   - Format: \"22%\" (example value)\n   - Green background box with white text\n   - Font: Arial Bold, 14px\n   - Position: 20px from right edge, 20px from top\n\n6. **GPS Time** (Position 6 - Top Right, Below Link Quality)\n   - Format: \"03:15:31\" (HH:MM:SS UTC)\n   - White text on transparent background\n   - Font: Arial, 12px\n   - Position: Right-aligned, 40px from top\n\n7. **Altitude Tape** (Position 7 - Right Side, 70px wide)\n   - Vertical tape: 10, 5, 0, -5, -10\n   - Black background with white text\n   - Current altitude in black box with white border\n   - Blue vertical bar indicating climb/descent rate\n   - White horizontal tick marks at each value\n\n8. **Airspeed Readout** (Position 8 - Bottom Left, First Line)\n   - Format: \"AS 0.0\" (Airspeed in m/s)\n   - White text on green background box\n   - Font: Arial Bold, 12px\n   - Position: 10px from left, 80px from bottom\n\n9. **Groundspeed Readout** (Position 9 - Bottom Left, Second Line)\n   - Format: \"GS 0.0\" (Groundspeed in m/s)\n   - White text on green background box\n   - Font: Arial Bold, 12px\n   - Position: 10px from left, 60px from bottom\n\n10. **Battery Status** (Position 10 - Bottom Left, Third Line)\n    - Format: \"Bat 10.00v 10%\"\n    - White text on green background box\n    - Color coding: Green >40%, Yellow 20-40%, Red <20%\n    - Font: Arial Bold, 12px\n    - Position: 10px from left, 40px from bottom\n\n11. **Artificial Horizon** (Position 11 - Center Rectangle)\n    - **Full rectangular display filling center area**\n    - Sky: Blue gradient (#87CEEB to #4682B4)\n    - Ground: Green gradient (#8FBC8F to #556B2F)\n    - Sharp horizontal horizon line (white, 2px thick)\n    - Pitch ladder: White lines every 5\u00b0 (-20\u00b0 to +20\u00b0)\n    - Horizon line tilts with roll angle\n    - Pitch ladder numbers: \u00b15, \u00b110, \u00b115, \u00b120\n\n12. **Aircraft Symbol** (Position 12 - Fixed Center)\n    - Orange/red chevron pointing upward\n    - Fixed position in exact center of display\n    - Wing-like horizontal lines extending left/right\n    - Size: 30px wide, 20px tall\n    - Always remains level regardless of aircraft attitude\n\n13. **GPS Status** (Position 13 - Bottom Right)\n    - Format: \"GPS: No Fix\" or \"GPS: 3D Fix (12)\"\n    - White text with colored background:\n      - Red: No Fix\n      - Yellow: 2D Fix\n      - Green: 3D Fix\n    - Font: Arial Bold, 12px\n    - Position: Right-aligned, 40px from bottom\n\n14. **Distance to Waypoint** (Position 14 - Bottom Center)\n    - Format: \"0>0\u00b0\" (Distance > Bearing)\n    - White text on dark background\n    - Font: Arial Bold, 12px\n    - Centered horizontally, 20px from bottom\n\n15. **Flight Mode** (Position 15 - Bottom Right Corner)\n    - Format: \"Stabilize\" or current flight mode\n    - Large white text on semi-transparent dark background\n    - Font: Arial Bold, 16px\n    - Position: Right-aligned, 20px from bottom right\n\n**Critical Styling Requirements:**\n- **DISARMED Status**: Large red text \"DISARMED\" centered over horizon\n- **ARMED Status**: Large green text \"ARMED\" centered over horizon\n- Background: Sky blue above horizon, grass green below horizon\n- All text must be clearly readable with high contrast\n- Use anti-aliased fonts for smooth appearance\n- Update rate: 10Hz minimum for smooth animation\n\n### User Interface Layout\n\n```\n+------------------------------------------------------------------+\n|  Drone Control Interface v2.0                    [MAVLink Dump] |\n+------------------------------------------------------------------+\n| +------------------------------------+  +----------------------+ |\n| | PRIMARY FLIGHT DISPLAY (VFR HUD)  |  | INTERACTIVE MAP      | |\n| | +--------++-----------++--------+ |  | +------------------+ | |\n| | |Speed   ||Rectangular||Altitude| |  | |                  | | |\n| | |Tape    || Attitude  ||Tape    | |  | |  Leaflet Map:    | | |\n| | |        ||           ||        | |  | |  - Drone (blue)  | | |\n| | |60x250px|| 280x250px ||70x250px| |  | |  - Home (green)  | | |\n| | +--------++-----------++--------+ |  | |  - Target (red)  | | |\n| | [=======Compass Tape===========] |  | |  - Flight trail  | | |\n| | [Status Bar with Mode/Battery ] |  | |                  | | |\n| +------------------------------------+  | |                  | | |\n| +----------------------+                | |                  | | |\n| | CONNECTION PANEL     |                | +------------------+ | |\n| | IP: [192.168.193.235]|                | [Center] [Fly To]  | |\n| | Port: [5678]         |                +----------------------+ |\n| | [Connect][Disconnect]|                +----------------------+ |\n| | Status: Connected \u2713  |                | OFFLINE MAPS PANEL   | |\n| | \u2764\ufe0f Heartbeat: 523    |                | (collapsible)        | |\n| +----------------------+                | Download tiles,      | |\n| | FLIGHT CONTROLS      |                | manage cache         | |\n| | [ARM] [DISARM]       |                +----------------------+ |\n| | Alt:[10m][TAKEOFF]   |                                       | |\n| | [LAND] [RTL]         |                                       | |\n| | Mode:[GUIDED\u25bc][SET]  |                                       | |\n| +----------------------+                                       | |\n| | NAVIGATION           |                                       | |\n| | Lat: [________]      |                                       | |\n| | Lon: [________]      |                                       | |\n| | Alt: [10m]           |                                       | |\n| | [GO TO] [CLEAR]      |                                       | |\n| +----------------------+                                       | |\n| | REQUESTS             |                                       | |\n| | [Request Fence]      |                                       | |\n| | [Request Mission]    |                                       | |\n| +----------------------+                                       | |\n| | MESSAGE LOG          |                                       | |\n| | [Scrollable area     |                                       | |\n| |  with timestamps]    |                                       | |\n| +----------------------+                                       | |\n+------------------------------------------------------------------+\n```\n\n### Testing Requirements - Complete Test Suite\n\n**\ud83d\udea8 CRITICAL TESTING MANDATE: NO MOCK TESTS ALLOWED \ud83d\udea8**\n\n**ALL tests must verify actual functionality, not mock implementations:**\n- \u274c **PROHIBITED**: Mock tests that fake success responses\n- \u274c **PROHIBITED**: Tests that only check UI elements exist\n- \u274c **PROHIBITED**: Tests that only verify SocketIO events are emitted\n- \u2705 **REQUIRED**: Tests that verify real MAVLink connection to virtual drone\n- \u2705 **REQUIRED**: Tests that confirm actual command sending and acknowledgment\n- \u2705 **REQUIRED**: Tests that validate real telemetry streaming and display updates\n- \u2705 **REQUIRED**: Tests that check visual components render actual data (not blank)\n- \u2705 **REQUIRED**: Tests that FAIL when functionality is broken\n\n**Why This Matters:**\nMock tests led to false confidence - tests passed while website had no actual functionality:\n- Connect button didn't connect to drone \u274c\n- VFR HUD was blank canvas \u274c  \n- Interactive map was missing \u274c\n- Flight commands weren't sent to drone \u274c\n- All tests still passed because they tested fake implementations \u274c\n\n**Test Implementation Requirements:**\n- Use **Playwright MCP** to interact with actual webpage UI\n- Connect to **real virtual drone** at 192.168.193.235:5678\n- Verify **actual MAVLink message exchange**\n- Validate **real-time telemetry updates** in UI components\n- Check **canvas content is not blank** for VFR HUD\n- Confirm **map tiles load and display** properly\n- Test **end-to-end workflows** from UI click to drone response\n\n**Tests must be strict enough to catch real functionality failures.**\n\n#### Test Phases with Gate Criteria\n\n**Phase 1: MAVLink Foundation (Tests 001-003)**\n- TEST-001: Basic connection to virtual drone (`test_001_basic_connection.py`)\n- TEST-002: Heartbeat message reception (`test_002_heartbeat_reception.py`)\n- TEST-003: Telemetry/message processing (`test_003_message_processing.py`)\n- **Gate**: ALL must pass before Phase 2\n\n**Phase 2: Web Interface Foundation (Tests 004-006)**\n\n**CRITICAL: Deploy Website Early for Testing**\n- **BEFORE RUNNING TESTS**: Create `app.py` entry point and deploy website at http://127.0.0.1:5002\n- Website MUST be accessible during ALL subsequent testing phases\n- All Phase 4+ UI tests require live website for Playwright MCP testing\n\n**\ud83d\udea8 CRITICAL: HARD FAIL REQUIREMENT FOR ALL TESTS AFTER PHASE 2 \ud83d\udea8**\n- **MANDATORY**: ALL tests after Phase 2 MUST load the actual website at http://127.0.0.1:5002\n- **MANDATORY**: ALL tests after Phase 2 MUST successfully connect to the actual drone at the IP address specified in .env file\n- **MANDATORY**: ALL tests after Phase 2 MUST verify heartbeat reception from the connected drone\n- **HARD FAIL**: Any test that does not load the actual website will be considered a HARD FAIL\n- **HARD FAIL**: Any test that does not successfully connect to the .env drone IP will be considered a HARD FAIL\n- **HARD FAIL**: Any test that does not receive and verify heartbeats will be considered a HARD FAIL\n- **NO EXCEPTIONS**: Tests that use mock implementations, fake connections, connection attempts without success, or skip website loading will automatically fail\n- **VERIFICATION REQUIRED**: Each test must demonstrate:\n  1. Actual website loading at http://127.0.0.1:5002\n  2. Successful MAVLink connection to drone at .env IP address\n  3. Active heartbeat reception and counter incrementing\n  4. Real telemetry data flow (not simulated or mocked data)\n\n**Phase 2 Tests:**\n- TEST-004: Flask-SocketIO server startup (`test_004_flask_server.py`)\n- TEST-005: SocketIO real-time connection (`test_005_socketio_connection.py`)\n- TEST-006: Flight command execution (`test_006_flight_command_execution.py`)\n- **Website Deployment Requirement**: \n  ```bash\n  # Create app.py entry point\n  PYTHONPATH=. uv run python app.py\n  # Website MUST be running at http://127.0.0.1:5002\n  # Keep server running during ALL testing phases\n  ```\n- **Gate**: ALL must pass AND website must be deployed before Phase 3\n\n**Phase 3: Performance & Safety (Tests 007-010)**\n- TEST-007: Logging performance <1ms (`test_007_logging_performance.py`)\n- TEST-008: Telemetry latency <100ms (`test_008_telemetry_latency.py`)\n- TEST-009: Command safety mechanisms (`test_009_command_safety.py`)\n- TEST-010: Integration workflow (`test_010_integration.py`)\n- **Gate**: ALL must pass before Phase 4\n\n**Phase 4: Individual Button Testing with Playwright MCP**\n\n**PREREQUISITE: Website Running at http://127.0.0.1:5002**\n- Website MUST be deployed and accessible before starting Phase 4\n- If not running, start with: `PYTHONPATH=. uv run python app.py`\n- All Phase 4 tests require live website interaction\n\nAll button tests MUST use Playwright MCP to click actual UI buttons:\n\n**Connection Tests:**\n- TEST-011: Connect button (`test_connect_button.py`)\n- TEST-012: Disconnect button (`test_disconnect_button.py`)\n- TEST-013: Connection status display (`test_connect_button_functionality.py`)\n- TEST-014: Disconnect/reconnect cycle (`test_disconnect_reconnect.py`)\n\n**Flight Control Tests:**\n- TEST-015: Arm button with confirmation (`test_arm_button.py`)\n- TEST-016: Disarm button with confirmation (`test_disarm_button.py`)\n- TEST-017: Takeoff button with altitude (`test_takeoff_button.py`)\n- TEST-018: Land button (`test_land_button.py`)\n- TEST-019: RTL button (`test_rtl_button.py`)\n- TEST-020: Set Mode button (`test_set_mode_button.py`)\n- TEST-021: Comprehensive flight controls (`test_comprehensive_flight_controls.py`)\n\n**Navigation Tests:**\n- TEST-022: Go To button with coordinates (`test_goto_button.py`)\n- TEST-023: Clear navigation button (`test_clear_nav_button.py`)\n- TEST-024: Navigation integration (`test_navigation_integration.py`)\n- TEST-025: Navigation controls validation (`test_navigation_controls.py`)\n\n**Mission/Fence Tests:**\n- TEST-026: Request fence button (`test_request_fence_button.py`)\n- TEST-027: Request mission button (`test_request_mission_button.py`)\n\n**Map Interface Tests:**\n- TEST-028: Center map button (`test_center_map_button.py`)\n- TEST-029: Fly-to toggle button (`test_fly_to_toggle_button.py`)\n- TEST-030: Map interface interactions (`test_map_interface.py`)\n- TEST-031: Drone location on map (`test_drone_location_map_display.py`)\n- TEST-032: Visual map validation (`test_drone_location_map_display_visual.py`)\n\n**Phase 5: VFR HUD/PFD Display Testing**\n**PREREQUISITE: Website Running at http://127.0.0.1:5002** (required for visual validation)\n- TEST-033: PFD canvas foundation (`test_pfd_canvas_foundation.py`)\n  * Verify 800x600 canvas rendering, coordinate system, basic graphics pipeline\n- TEST-034: Rectangular attitude display (`test_rectangular_attitude_display.py`)\n  * Test artificial horizon (rectangular), pitch ladder, roll indication, aircraft symbol\n- TEST-035: Flight data tapes (`test_flight_data_tapes.py`)\n  * Verify airspeed tape (left), altitude tape (right), current value highlighting\n- TEST-036: Navigation elements (`test_navigation_elements.py`)\n  * Test heading compass tape, GPS status, satellite count, waypoint distance\n- TEST-037: System status displays (`test_system_status_displays.py`)\n  * Verify battery status, armed/disarmed overlay, flight mode, telemetry link quality\n- TEST-038: Complete VFR integration (`test_complete_vfr_integration.py`)\n  * All 15 HUD elements integrated, real-time updates, professional glass cockpit styling\n\n**Phase 6: UI Validation & Safety**\n**PREREQUISITE: Website Running at http://127.0.0.1:5002** (required for UI interaction)\n- TEST-039: UI validation comprehensive (`test_ui_validation_comprehensive.py`)\n- TEST-040: Validation logic (`test_validation_logic_direct.py`)\n- TEST-041: Safety confirmations (`test_safety_confirmations_manual.py`)\n- TEST-042: Critical validation (`test_critical_validation.py`)\n- TEST-043: Final validation report (`test_final_validation_report.py`)\n\n**Phase 7: Additional Integration Tests**\n**PREREQUISITE: Website Running at http://127.0.0.1:5002** (required for end-to-end testing)\n- TEST-044: Button functionality (`test_button_functionality.py`)\n- TEST-045: Real drone buttons (`test_real_drone_buttons.py`)\n- TEST-046: Flight buttons direct (`test_flight_buttons_direct.py`)\n- TEST-047: Connect button integration (`test_connect_button_integration.py`)\n- TEST-048: SocketIO connection (`test_socketio_connection.py`)\n- TEST-049: Minimal SocketIO (`test_minimal_socketio.py`)\n- TEST-050: Navigation with connection (`test_navigation_with_connection.py`)\n\n**Gate Criteria Summary:**\n\n**\ud83c\udf10 CRITICAL REQUIREMENT: Early Website Deployment**\n- **Phase 2 Gate**: Website MUST be deployed at http://127.0.0.1:5002 before Phase 3\n- **Phases 4-7**: All require live website for Playwright MCP testing\n- **Command**: `PYTHONPATH=. uv run python app.py` (keep running throughout testing)\n\n**Testing Phase Requirements:**\n- Phase 1: Core foundation (3 tests) - Backend MAVLink functionality\n- Phase 2: Web foundation (3 tests) + **DEPLOY WEBSITE**\n- Phase 3: Performance & safety (4 tests) - Website must be running\n- Phase 4: Button testing (22 tests) - Requires live website for UI interaction\n- Phase 5: Display tests (6 tests) - Requires live website for visual validation  \n- Phase 6: Validation tests (5 tests) - Requires live website for UI interaction\n- Phase 7: Integration tests (7 tests) - Requires live website for end-to-end testing\n\n**TOTAL: 50+ comprehensive tests** with mandatory website deployment after Phase 2\n\n### Token Tracking Implementation\n\n```python\n# src/utils/token_tracker.py\nclass AgentTracker:\n    \"\"\"Track token usage for all 14 agents + main\"\"\"\n    \n    AGENTS = [\n        'main',\n        'coordinator-agent',\n        'mavlink-protocol-agent',\n        'web-interface-agent',\n        'request-handlers-agent',\n        'infrastructure-agent',\n        'testing-agent',\n        'connection-testing-agent',\n        'flight-controls-testing-agent',\n        'navigation-testing-agent',\n        'telemetry-display-testing-agent',\n        'map-interface-testing-agent',\n        'ui-validation-testing-agent',\n        'virtual-drone-communication-agent',\n        'token-tracking-agent'\n    ]\n    \n    def __init__(self):\n        self.usage = {agent: {'input': 0, 'output': 0, 'tasks': 0} \n                     for agent in self.AGENTS}\n```\n\n### Project Coordination Structure\n\n```markdown\n# PROJECT_COORDINATION.md\n\n## Token Usage Dashboard\n| Agent | Input | Output | Total | Tasks | % Usage |\n|-------|-------|--------|-------|-------|---------|\n| All 14 agents listed with stats...\n\n## Current Phase: [1-5]\n## Tests Passed: X/20\n## Current Blockers: []\n\n## Inter-Agent Communication\n[Messages between agents]\n\n## Active Tasks by Agent\n[Current work items per agent]\n```\n\n### Deployment Requirements\n\n#### Ubuntu Desktop\n- Python 3.9+\n- systemd service configuration\n- TCP connection to drone\n- Web interface on port 5001\n\n#### Raspberry Pi\n- UART connection to flight controller\n- MAVLink router setup\n- WiFi hotspot capability\n- Headless operation\n\n### Success Criteria\n\n**Project is ONLY complete when:**\n1. \u2705 All 14 subagents active (verified with `/agents`)\n2. \u2705 ALL 50+ tests PASS (100% pass rate required, not just 20)\n3. \u2705 Every button works (tested with Playwright MCP)\n4. \u2705 Token tracking shows all agents' usage\n5. \u2705 No file exceeds 200 lines\n6. \u2705 Real drone connection verified (192.168.193.235:5678)\n7. \u2705 Performance requirements met (<1ms log, <100ms telemetry)\n8. \u2705 Safety confirmations implemented\n9. \u2705 VFR HUD displays all 15 components correctly\n10. \u2705 Modular architecture enforced\n11. \u2705 All individual button tests pass\n12. \u2705 All display tests verify visual elements\n13. \u2705 All safety tests confirm dialogs work\n\n### Critical Implementation Rules\n\n1. **Test-First Development**: Write test \u2192 Verify it fails \u2192 Implement \u2192 Pass\n2. **No Partial Credit**: Tests either pass completely or fail\n3. **Continuous Testing**: Never stop until 100% pass rate\n4. **Real Hardware Testing**: Use virtual drone for all tests\n5. **Token Monitoring**: Track and report every 10 tasks\n6. **Modular Architecture**: Break large files immediately\n7. **Safety First**: Never skip confirmation dialogs\n8. **Complete Implementation**: Website must be FULLY functional\n9. **\ud83d\udea8 NO MOCK TESTS**: All tests must verify actual functionality, not fake implementations\n10. **Real Failure Detection**: Tests must FAIL when functionality is broken (not pass with mocks)\n\n## Start Development Command\n\nAfter creating all 14 agent files and restarting Claude Code:\n\n```\nI need to build the WebGCS drone control system following WEBGCS_COMPLETE_PRD_WITH_ALL_AGENTS.md.\n\nCRITICAL: First verify ALL 14 agents are active with /agents command.\n\nThe system requires:\n- 14 specialized subagents (all must be active)\n- 50+ comprehensive tests (ALL must pass, not just 20)\n- Every button tested individually with Playwright MCP\n- Token tracking for all agents\n- No files over 200 lines\n- Real drone at 192.168.193.235:5678\n\nTest breakdown:\n- 3 MAVLink foundation tests\n- 3 Web interface tests  \n- 4 Performance/safety tests\n- 14 Individual button tests (connect, arm, takeoff, etc.)\n- 8 Navigation/mission tests\n- 6 VFR HUD/PFD display tests\n- 5 UI validation tests\n- 7+ Integration tests\n\nDo NOT stop until ALL 50+ tests pass and website is FULLY functional.\n\nBegin by checking /agents to confirm all 14 agents are active.\n```\n\n### End State\n\nA fully functional drone control website with:\n- Real-time telemetry at 10Hz\n- All flight controls working\n- Professional VFR HUD display\n- Interactive map with click-to-fly\n- Safety confirmations on critical commands\n- Offline map support\n- Complete test coverage\n- Token usage tracking\n- Modular, maintainable codebase",
+        "numLines": 831,
+        "startLine": 1,
+        "totalLines": 831
+      }
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "completed",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "in_progress",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "pending",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "pending",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "completed",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "in_progress",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "pending",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "pending",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/main.py"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/main.py",
+        "content": "def main():\n    print(\"Hello from webgcs7!\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+        "numLines": 7,
+        "startLine": 1,
+        "totalLines": 7
+      }
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/agents/coordinator-agent.md",
+      "limit": 10
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/agents/coordinator-agent.md",
+        "content": "---\nname: coordinator-agent\ndescription: Project coordination and cross-component integration specialist\ntools: Read, Write, Edit, Bash, Grep, Glob, Task, TodoWrite\n---\n\nYou are the Coordinator Agent, responsible for overall project coordination, cross-component integration, and ensuring all specialized agents work together effectively to deliver the WebGCS system.\n\n## Your Primary Responsibility\nOrchestrate the coordinated development of WebGCS across all 6 specialized agents, maintain project architecture, and ensure successful integration of all components while adhering to safety-critical development practices.",
+        "numLines": 10,
+        "startLine": 1,
+        "totalLines": 89
+      }
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la agents/",
+      "description": "List all files in agents directory"
+    },
+    "tool_response": {
+      "stdout": "total 112\ndrwxr-xr-x@ 16 peterburke  staff   512 Sep  9 15:37 .\ndrwxr-xr-x  18 peterburke  staff   576 Sep  9 15:38 ..\n-rw-r--r--@  1 peterburke  staff  2599 Sep  9 15:37 connection-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  4096 Sep  9 15:37 coordinator-agent.md\n-rw-r--r--@  1 peterburke  staff  3203 Sep  9 15:37 flight-controls-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  3051 Sep  9 15:37 infrastructure-agent.md\n-rw-r--r--@  1 peterburke  staff  1627 Sep  9 15:37 map-interface-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  2511 Sep  9 15:37 mavlink-protocol-agent.md\n-rw-r--r--@  1 peterburke  staff  2550 Sep  9 15:37 navigation-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  2653 Sep  9 15:37 request-handlers-agent.md\n-rw-r--r--@  1 peterburke  staff  2302 Sep  9 15:37 telemetry-display-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  3714 Sep  9 15:37 testing-agent.md\n-rw-r--r--@  1 peterburke  staff   628 Sep  9 15:37 token-tracking-agent.md\n-rw-r--r--@  1 peterburke  staff   928 Sep  9 15:37 ui-validation-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  1121 Sep  9 15:37 virtual-drone-communication-agent.md\n-rw-r--r--@  1 peterburke  staff  2896 Sep  9 15:37 web-interface-agent.md\nln: /usr/local/bin/cursor: File exists",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "completed",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "completed",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "completed",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "in_progress",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "completed",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "completed",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "completed",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "in_progress",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/CLAUDE.md",
+      "old_string": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nThis is a ClaudeHelloWorld project - a new empty repository ready for development.\n\n## Development Setup\n\n**Python Environment:**\n- Always use `uv` instead of `python` for all Python operations\n- Run Python scripts with: `uv run python script.py`\n- Install packages with: `uv add package_name`\n- Run tests with: `uv run pytest`\n\n## Architecture\n\nProject structure will be established based on the chosen technology stack and requirements.",
+      "new_string": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nWebGCS is a production-ready, safety-critical web-based ground control station for MAVLink-compatible drones. The system provides comprehensive drone control through a browser interface with real-time telemetry, flight controls, and mission planning capabilities.\n\n## Development Setup\n\n**Python Environment:**\n- Always use `uv` instead of `python` for all Python operations\n- Run Python scripts with: `uv run python script.py`\n- Install packages with: `uv add package_name`\n- Run tests with: `uv run pytest`\n\n**Virtual Drone Connection:**\n- Virtual drone endpoint: `192.168.193.235:5678`\n- All testing must connect to this real virtual drone\n- No mock testing allowed - all tests must verify actual functionality\n\n## Common Commands\n\n**Development:**\n```bash\n# Start the web application\nPYTHONPATH=. uv run python app.py\n\n# Run specific test\nuv run pytest tests/test_specific.py -v\n\n# Run all tests (50+ comprehensive tests required)\nuv run pytest tests/ -v\n\n# Install new dependencies\nuv add package_name\n\n# Check Python syntax/imports\nuv run python -m py_compile filename.py\n```\n\n**Testing Requirements:**\n- Deploy website at `http://127.0.0.1:5002` before Phase 4+ testing\n- All UI tests require live website for Playwright MCP interaction\n- Tests must achieve 100% pass rate (not partial)\n- No mock tests - verify real drone connectivity and functionality\n\n## Architecture Overview\n\n### Multi-Agent System (14 Specialized Agents)\n\nThis project uses 14 specialized Claude Code agents located in `agents/` directory:\n\n**Core Development Agents:**\n1. `coordinator-agent` - Project coordination and integration\n2. `mavlink-protocol-agent` - MAVLink communication specialist  \n3. `web-interface-agent` - Frontend Flask-SocketIO development\n4. `request-handlers-agent` - Mission and geofence processing\n5. `infrastructure-agent` - System setup and deployment\n6. `testing-agent` - Test automation and QA\n\n**Specialized Testing Agents (using Playwright MCP):**\n7. `connection-testing-agent` - Connection UI testing\n8. `flight-controls-testing-agent` - Flight button testing\n9. `navigation-testing-agent` - Navigation input validation\n10. `telemetry-display-testing-agent` - PFD/VFR HUD testing\n11. `map-interface-testing-agent` - Interactive map testing\n12. `ui-validation-testing-agent` - Safety confirmation testing\n13. `virtual-drone-communication-agent` - End-to-end MAVLink verification\n14. `token-tracking-agent` - Usage monitoring across all agents\n\n### Modular Architecture Rules\n\n**Critical Constraints:**\n- NO file may exceed 200 lines (strict enforcement)\n- Break large files immediately into smaller modules\n- Each component should have single responsibility\n- Maximum function length: 50 lines\n\n**Directory Structure:**\n```\nsrc/\n  web/\n    app_factory.py      (max 150 lines)\n    routes.py           (max 150 lines) \n    socketio_events.py  (max 150 lines)\n  mavlink/\n    connection_manager.py    (max 150 lines)\n    message_processor.py     (max 150 lines)\n    command_sender.py        (max 150 lines)\n  utils/\n    token_tracker.py         (max 150 lines)\n    logger.py               (max 150 lines)\ntemplates/\n  index.html              (main layout only)\n  components/\n    connection_panel.html\n    flight_controls.html\n    navigation_panel.html\n    pfd_display.html\n    map_container.html\nstatic/\n  js/\n    main.js             (max 100 lines)\n    connection.js       (max 150 lines)\n    telemetry.js        (max 150 lines)\n    controls.js         (max 200 lines)\n    map.js              (max 200 lines)\n    pfd.js              (max 200 lines)\n    validation.js       (max 150 lines)\n  css/\n    styles.css\ntests/\n  test_001_basic_connection.py\n  ... (50+ comprehensive tests)\n```\n\n### Performance Requirements\n\n**Critical Performance Targets:**\n- Telemetry update rate: 10Hz to web interface\n- Logging latency: <1ms per log entry\n- End-to-end telemetry latency: <100ms\n- Command acknowledgment timeout: <5 seconds\n- Connection establishment: <5 seconds\n\n### VFR HUD/Primary Flight Display\n\n**Reference Images:**\n- `HudLayoutExample.png` - Complete HUD layout (15 numbered elements)\n- `HudLayoutItems.png` - Component specifications\n\n**Display Requirements:**\n- 800x600px canvas with rectangular artificial horizon\n- 15 specific components positioned per reference images\n- Professional glass cockpit styling\n- Real-time updates at 10Hz minimum\n- Armed/Disarmed status overlay\n- All flight data tapes and navigation elements\n\n### Safety Requirements\n\n**Mandatory Safety Features:**\n- Confirmation dialogs for ARM, DISARM, TAKEOFF operations\n- Command tracking with acknowledgment verification\n- Timeout handling for unacknowledged commands\n- Connection monitoring with automatic failure detection\n- Fail-safe behaviors on communication loss\n\n### Testing Strategy\n\n**7 Testing Phases (50+ total tests):**\n\n1. **Phase 1: MAVLink Foundation (3 tests)** - Backend connectivity\n2. **Phase 2: Web Interface Foundation (3 tests)** - Flask-SocketIO + **Deploy Website**\n3. **Phase 3: Performance & Safety (4 tests)** - Benchmarks and safety mechanisms  \n4. **Phase 4: Individual Button Testing (22+ tests)** - Every UI button with Playwright MCP\n5. **Phase 5: VFR HUD/PFD Display (6 tests)** - Visual component validation\n6. **Phase 6: UI Validation & Safety (5 tests)** - Input validation and confirmations\n7. **Phase 7: Integration Testing (7+ tests)** - End-to-end workflows\n\n**Critical Testing Requirements:**\n- Website must be deployed at `http://127.0.0.1:5002` before Phase 4\n- All tests must connect to real virtual drone at IP in .env\n- Use Playwright MCP for all UI interaction testing\n- Tests must FAIL when functionality is broken (no false positives)\n- 100% pass rate required before project completion\n\n### Token Usage Monitoring\n\n**Implementation Required:**\n```python\n# src/utils/token_tracker.py\nclass AgentTracker:\n    AGENTS = ['main', 'coordinator-agent', 'mavlink-protocol-agent', \n              'web-interface-agent', ...] # All 14 agents\n    \n    def track_usage(self, agent, input_tokens, output_tokens):\n        # Track per agent with alerts at 80% (160k) and 90% (180k) limits\n```\n\n**Reporting:**\n- Generate usage reports every 10 tasks\n- Update PROJECT_COORDINATION.md with statistics\n- Monitor high-usage agents (>20k tokens)\n- Alert at context limit thresholds\n\n### Deployment Targets\n\n**Ubuntu Desktop:**\n- systemd service configuration\n- TCP connection to drone\n- Web interface on port 5001\n\n**Raspberry Pi:**\n- UART connection to flight controller\n- MAVLink router setup\n- WiFi hotspot capability\n- Headless operation\n\n## Project Success Criteria\n\n**Project completion requires ALL of:**\n1. \u2705 All 14 subagents active (verify with `/agents`)\n2. \u2705 ALL 50+ tests PASS (100% pass rate, not partial)\n3. \u2705 Every button functional (tested with Playwright MCP)\n4. \u2705 Token tracking implemented across all agents\n5. \u2705 No file exceeds 200 lines (modular architecture)\n6. \u2705 Real drone connection verified (192.168.193.235:5678)\n7. \u2705 Performance requirements met (<1ms log, <100ms telemetry)\n8. \u2705 Safety confirmations implemented and tested\n9. \u2705 VFR HUD displays all 15 components correctly\n10. \u2705 Modular architecture enforced throughout\n11. \u2705 Website fully functional at http://127.0.0.1:5002\n\n## Development Guidelines\n\n**Test-Driven Development:**\n1. Write failing test first\n2. Implement minimal code to pass\n3. Refactor while maintaining green tests\n4. Never skip tests or accept partial implementations\n\n**Agent Coordination:**\n- Use PROJECT_COORDINATION.md for inter-agent communication\n- Each agent handles specific domain expertise\n- Coordinator agent manages cross-component integration\n- Token tracking agent monitors resource usage\n\n**Code Quality:**\n- Follow existing code patterns and conventions\n- Maintain high performance for safety-critical operations  \n- Implement proper error handling and logging\n- Use type hints and documentation\n\n**Critical Notes:**\n- NO mock testing allowed - all tests must verify real functionality\n- Tests must FAIL when features are broken (strict validation)\n- Deploy website early (Phase 2) for subsequent UI testing phases\n- Monitor token usage across all 14 agents continuously"
+    },
+    "tool_response": {
+      "filePath": "/Users/peterburke/Documents/Code/WebGCS7/CLAUDE.md",
+      "oldString": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nThis is a ClaudeHelloWorld project - a new empty repository ready for development.\n\n## Development Setup\n\n**Python Environment:**\n- Always use `uv` instead of `python` for all Python operations\n- Run Python scripts with: `uv run python script.py`\n- Install packages with: `uv add package_name`\n- Run tests with: `uv run pytest`\n\n## Architecture\n\nProject structure will be established based on the chosen technology stack and requirements.",
+      "newString": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nWebGCS is a production-ready, safety-critical web-based ground control station for MAVLink-compatible drones. The system provides comprehensive drone control through a browser interface with real-time telemetry, flight controls, and mission planning capabilities.\n\n## Development Setup\n\n**Python Environment:**\n- Always use `uv` instead of `python` for all Python operations\n- Run Python scripts with: `uv run python script.py`\n- Install packages with: `uv add package_name`\n- Run tests with: `uv run pytest`\n\n**Virtual Drone Connection:**\n- Virtual drone endpoint: `192.168.193.235:5678`\n- All testing must connect to this real virtual drone\n- No mock testing allowed - all tests must verify actual functionality\n\n## Common Commands\n\n**Development:**\n```bash\n# Start the web application\nPYTHONPATH=. uv run python app.py\n\n# Run specific test\nuv run pytest tests/test_specific.py -v\n\n# Run all tests (50+ comprehensive tests required)\nuv run pytest tests/ -v\n\n# Install new dependencies\nuv add package_name\n\n# Check Python syntax/imports\nuv run python -m py_compile filename.py\n```\n\n**Testing Requirements:**\n- Deploy website at `http://127.0.0.1:5002` before Phase 4+ testing\n- All UI tests require live website for Playwright MCP interaction\n- Tests must achieve 100% pass rate (not partial)\n- No mock tests - verify real drone connectivity and functionality\n\n## Architecture Overview\n\n### Multi-Agent System (14 Specialized Agents)\n\nThis project uses 14 specialized Claude Code agents located in `agents/` directory:\n\n**Core Development Agents:**\n1. `coordinator-agent` - Project coordination and integration\n2. `mavlink-protocol-agent` - MAVLink communication specialist  \n3. `web-interface-agent` - Frontend Flask-SocketIO development\n4. `request-handlers-agent` - Mission and geofence processing\n5. `infrastructure-agent` - System setup and deployment\n6. `testing-agent` - Test automation and QA\n\n**Specialized Testing Agents (using Playwright MCP):**\n7. `connection-testing-agent` - Connection UI testing\n8. `flight-controls-testing-agent` - Flight button testing\n9. `navigation-testing-agent` - Navigation input validation\n10. `telemetry-display-testing-agent` - PFD/VFR HUD testing\n11. `map-interface-testing-agent` - Interactive map testing\n12. `ui-validation-testing-agent` - Safety confirmation testing\n13. `virtual-drone-communication-agent` - End-to-end MAVLink verification\n14. `token-tracking-agent` - Usage monitoring across all agents\n\n### Modular Architecture Rules\n\n**Critical Constraints:**\n- NO file may exceed 200 lines (strict enforcement)\n- Break large files immediately into smaller modules\n- Each component should have single responsibility\n- Maximum function length: 50 lines\n\n**Directory Structure:**\n```\nsrc/\n  web/\n    app_factory.py      (max 150 lines)\n    routes.py           (max 150 lines) \n    socketio_events.py  (max 150 lines)\n  mavlink/\n    connection_manager.py    (max 150 lines)\n    message_processor.py     (max 150 lines)\n    command_sender.py        (max 150 lines)\n  utils/\n    token_tracker.py         (max 150 lines)\n    logger.py               (max 150 lines)\ntemplates/\n  index.html              (main layout only)\n  components/\n    connection_panel.html\n    flight_controls.html\n    navigation_panel.html\n    pfd_display.html\n    map_container.html\nstatic/\n  js/\n    main.js             (max 100 lines)\n    connection.js       (max 150 lines)\n    telemetry.js        (max 150 lines)\n    controls.js         (max 200 lines)\n    map.js              (max 200 lines)\n    pfd.js              (max 200 lines)\n    validation.js       (max 150 lines)\n  css/\n    styles.css\ntests/\n  test_001_basic_connection.py\n  ... (50+ comprehensive tests)\n```\n\n### Performance Requirements\n\n**Critical Performance Targets:**\n- Telemetry update rate: 10Hz to web interface\n- Logging latency: <1ms per log entry\n- End-to-end telemetry latency: <100ms\n- Command acknowledgment timeout: <5 seconds\n- Connection establishment: <5 seconds\n\n### VFR HUD/Primary Flight Display\n\n**Reference Images:**\n- `HudLayoutExample.png` - Complete HUD layout (15 numbered elements)\n- `HudLayoutItems.png` - Component specifications\n\n**Display Requirements:**\n- 800x600px canvas with rectangular artificial horizon\n- 15 specific components positioned per reference images\n- Professional glass cockpit styling\n- Real-time updates at 10Hz minimum\n- Armed/Disarmed status overlay\n- All flight data tapes and navigation elements\n\n### Safety Requirements\n\n**Mandatory Safety Features:**\n- Confirmation dialogs for ARM, DISARM, TAKEOFF operations\n- Command tracking with acknowledgment verification\n- Timeout handling for unacknowledged commands\n- Connection monitoring with automatic failure detection\n- Fail-safe behaviors on communication loss\n\n### Testing Strategy\n\n**7 Testing Phases (50+ total tests):**\n\n1. **Phase 1: MAVLink Foundation (3 tests)** - Backend connectivity\n2. **Phase 2: Web Interface Foundation (3 tests)** - Flask-SocketIO + **Deploy Website**\n3. **Phase 3: Performance & Safety (4 tests)** - Benchmarks and safety mechanisms  \n4. **Phase 4: Individual Button Testing (22+ tests)** - Every UI button with Playwright MCP\n5. **Phase 5: VFR HUD/PFD Display (6 tests)** - Visual component validation\n6. **Phase 6: UI Validation & Safety (5 tests)** - Input validation and confirmations\n7. **Phase 7: Integration Testing (7+ tests)** - End-to-end workflows\n\n**Critical Testing Requirements:**\n- Website must be deployed at `http://127.0.0.1:5002` before Phase 4\n- All tests must connect to real virtual drone at IP in .env\n- Use Playwright MCP for all UI interaction testing\n- Tests must FAIL when functionality is broken (no false positives)\n- 100% pass rate required before project completion\n\n### Token Usage Monitoring\n\n**Implementation Required:**\n```python\n# src/utils/token_tracker.py\nclass AgentTracker:\n    AGENTS = ['main', 'coordinator-agent', 'mavlink-protocol-agent', \n              'web-interface-agent', ...] # All 14 agents\n    \n    def track_usage(self, agent, input_tokens, output_tokens):\n        # Track per agent with alerts at 80% (160k) and 90% (180k) limits\n```\n\n**Reporting:**\n- Generate usage reports every 10 tasks\n- Update PROJECT_COORDINATION.md with statistics\n- Monitor high-usage agents (>20k tokens)\n- Alert at context limit thresholds\n\n### Deployment Targets\n\n**Ubuntu Desktop:**\n- systemd service configuration\n- TCP connection to drone\n- Web interface on port 5001\n\n**Raspberry Pi:**\n- UART connection to flight controller\n- MAVLink router setup\n- WiFi hotspot capability\n- Headless operation\n\n## Project Success Criteria\n\n**Project completion requires ALL of:**\n1. \u2705 All 14 subagents active (verify with `/agents`)\n2. \u2705 ALL 50+ tests PASS (100% pass rate, not partial)\n3. \u2705 Every button functional (tested with Playwright MCP)\n4. \u2705 Token tracking implemented across all agents\n5. \u2705 No file exceeds 200 lines (modular architecture)\n6. \u2705 Real drone connection verified (192.168.193.235:5678)\n7. \u2705 Performance requirements met (<1ms log, <100ms telemetry)\n8. \u2705 Safety confirmations implemented and tested\n9. \u2705 VFR HUD displays all 15 components correctly\n10. \u2705 Modular architecture enforced throughout\n11. \u2705 Website fully functional at http://127.0.0.1:5002\n\n## Development Guidelines\n\n**Test-Driven Development:**\n1. Write failing test first\n2. Implement minimal code to pass\n3. Refactor while maintaining green tests\n4. Never skip tests or accept partial implementations\n\n**Agent Coordination:**\n- Use PROJECT_COORDINATION.md for inter-agent communication\n- Each agent handles specific domain expertise\n- Coordinator agent manages cross-component integration\n- Token tracking agent monitors resource usage\n\n**Code Quality:**\n- Follow existing code patterns and conventions\n- Maintain high performance for safety-critical operations  \n- Implement proper error handling and logging\n- Use type hints and documentation\n\n**Critical Notes:**\n- NO mock testing allowed - all tests must verify real functionality\n- Tests must FAIL when features are broken (strict validation)\n- Deploy website early (Phase 2) for subsequent UI testing phases\n- Monitor token usage across all 14 agents continuously",
+      "originalFile": "# CLAUDE.md\n\nThis file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.\n\n## Project Overview\n\nThis is a ClaudeHelloWorld project - a new empty repository ready for development.\n\n## Development Setup\n\n**Python Environment:**\n- Always use `uv` instead of `python` for all Python operations\n- Run Python scripts with: `uv run python script.py`\n- Install packages with: `uv add package_name`\n- Run tests with: `uv run pytest`\n\n## Architecture\n\nProject structure will be established based on the chosen technology stack and requirements.",
+      "structuredPatch": [
+        {
+          "oldStart": 4,
+          "oldLines": 7,
+          "newStart": 4,
+          "newLines": 7,
+          "lines": [
+            " ",
+            " ## Project Overview",
+            " ",
+            "-This is a ClaudeHelloWorld project - a new empty repository ready for development.",
+            "+WebGCS is a production-ready, safety-critical web-based ground control station for MAVLink-compatible drones. The system provides comprehensive drone control through a browser interface with real-time telemetry, flight controls, and mission planning capabilities.",
+            " ",
+            " ## Development Setup",
+            " "
+          ]
+        },
+        {
+          "oldStart": 14,
+          "oldLines": 6,
+          "newStart": 14,
+          "newLines": 227,
+          "lines": [
+            " - Install packages with: `uv add package_name`",
+            " - Run tests with: `uv run pytest`",
+            " ",
+            "-## Architecture",
+            "+**Virtual Drone Connection:**",
+            "+- Virtual drone endpoint: `192.168.193.235:5678`",
+            "+- All testing must connect to this real virtual drone",
+            "+- No mock testing allowed - all tests must verify actual functionality",
+            " ",
+            "-Project structure will be established based on the chosen technology stack and requirements.",
+            "\\ No newline at end of file",
+            "+## Common Commands",
+            "+",
+            "+**Development:**",
+            "+```bash",
+            "+# Start the web application",
+            "+PYTHONPATH=. uv run python app.py",
+            "+",
+            "+# Run specific test",
+            "+uv run pytest tests/test_specific.py -v",
+            "+",
+            "+# Run all tests (50+ comprehensive tests required)",
+            "+uv run pytest tests/ -v",
+            "+",
+            "+# Install new dependencies",
+            "+uv add package_name",
+            "+",
+            "+# Check Python syntax/imports",
+            "+uv run python -m py_compile filename.py",
+            "+```",
+            "+",
+            "+**Testing Requirements:**",
+            "+- Deploy website at `http://127.0.0.1:5002` before Phase 4+ testing",
+            "+- All UI tests require live website for Playwright MCP interaction",
+            "+- Tests must achieve 100% pass rate (not partial)",
+            "+- No mock tests - verify real drone connectivity and functionality",
+            "+",
+            "+## Architecture Overview",
+            "+",
+            "+### Multi-Agent System (14 Specialized Agents)",
+            "+",
+            "+This project uses 14 specialized Claude Code agents located in `agents/` directory:",
+            "+",
+            "+**Core Development Agents:**",
+            "+1. `coordinator-agent` - Project coordination and integration",
+            "+2. `mavlink-protocol-agent` - MAVLink communication specialist  ",
+            "+3. `web-interface-agent` - Frontend Flask-SocketIO development",
+            "+4. `request-handlers-agent` - Mission and geofence processing",
+            "+5. `infrastructure-agent` - System setup and deployment",
+            "+6. `testing-agent` - Test automation and QA",
+            "+",
+            "+**Specialized Testing Agents (using Playwright MCP):**",
+            "+7. `connection-testing-agent` - Connection UI testing",
+            "+8. `flight-controls-testing-agent` - Flight button testing",
+            "+9. `navigation-testing-agent` - Navigation input validation",
+            "+10. `telemetry-display-testing-agent` - PFD/VFR HUD testing",
+            "+11. `map-interface-testing-agent` - Interactive map testing",
+            "+12. `ui-validation-testing-agent` - Safety confirmation testing",
+            "+13. `virtual-drone-communication-agent` - End-to-end MAVLink verification",
+            "+14. `token-tracking-agent` - Usage monitoring across all agents",
+            "+",
+            "+### Modular Architecture Rules",
+            "+",
+            "+**Critical Constraints:**",
+            "+- NO file may exceed 200 lines (strict enforcement)",
+            "+- Break large files immediately into smaller modules",
+            "+- Each component should have single responsibility",
+            "+- Maximum function length: 50 lines",
+            "+",
+            "+**Directory Structure:**",
+            "+```",
+            "+src/",
+            "+  web/",
+            "+    app_factory.py      (max 150 lines)",
+            "+    routes.py           (max 150 lines) ",
+            "+    socketio_events.py  (max 150 lines)",
+            "+  mavlink/",
+            "+    connection_manager.py    (max 150 lines)",
+            "+    message_processor.py     (max 150 lines)",
+            "+    command_sender.py        (max 150 lines)",
+            "+  utils/",
+            "+    token_tracker.py         (max 150 lines)",
+            "+    logger.py               (max 150 lines)",
+            "+templates/",
+            "+  index.html              (main layout only)",
+            "+  components/",
+            "+    connection_panel.html",
+            "+    flight_controls.html",
+            "+    navigation_panel.html",
+            "+    pfd_display.html",
+            "+    map_container.html",
+            "+static/",
+            "+  js/",
+            "+    main.js             (max 100 lines)",
+            "+    connection.js       (max 150 lines)",
+            "+    telemetry.js        (max 150 lines)",
+            "+    controls.js         (max 200 lines)",
+            "+    map.js              (max 200 lines)",
+            "+    pfd.js              (max 200 lines)",
+            "+    validation.js       (max 150 lines)",
+            "+  css/",
+            "+    styles.css",
+            "+tests/",
+            "+  test_001_basic_connection.py",
+            "+  ... (50+ comprehensive tests)",
+            "+```",
+            "+",
+            "+### Performance Requirements",
+            "+",
+            "+**Critical Performance Targets:**",
+            "+- Telemetry update rate: 10Hz to web interface",
+            "+- Logging latency: <1ms per log entry",
+            "+- End-to-end telemetry latency: <100ms",
+            "+- Command acknowledgment timeout: <5 seconds",
+            "+- Connection establishment: <5 seconds",
+            "+",
+            "+### VFR HUD/Primary Flight Display",
+            "+",
+            "+**Reference Images:**",
+            "+- `HudLayoutExample.png` - Complete HUD layout (15 numbered elements)",
+            "+- `HudLayoutItems.png` - Component specifications",
+            "+",
+            "+**Display Requirements:**",
+            "+- 800x600px canvas with rectangular artificial horizon",
+            "+- 15 specific components positioned per reference images",
+            "+- Professional glass cockpit styling",
+            "+- Real-time updates at 10Hz minimum",
+            "+- Armed/Disarmed status overlay",
+            "+- All flight data tapes and navigation elements",
+            "+",
+            "+### Safety Requirements",
+            "+",
+            "+**Mandatory Safety Features:**",
+            "+- Confirmation dialogs for ARM, DISARM, TAKEOFF operations",
+            "+- Command tracking with acknowledgment verification",
+            "+- Timeout handling for unacknowledged commands",
+            "+- Connection monitoring with automatic failure detection",
+            "+- Fail-safe behaviors on communication loss",
+            "+",
+            "+### Testing Strategy",
+            "+",
+            "+**7 Testing Phases (50+ total tests):**",
+            "+",
+            "+1. **Phase 1: MAVLink Foundation (3 tests)** - Backend connectivity",
+            "+2. **Phase 2: Web Interface Foundation (3 tests)** - Flask-SocketIO + **Deploy Website**",
+            "+3. **Phase 3: Performance & Safety (4 tests)** - Benchmarks and safety mechanisms  ",
+            "+4. **Phase 4: Individual Button Testing (22+ tests)** - Every UI button with Playwright MCP",
+            "+5. **Phase 5: VFR HUD/PFD Display (6 tests)** - Visual component validation",
+            "+6. **Phase 6: UI Validation & Safety (5 tests)** - Input validation and confirmations",
+            "+7. **Phase 7: Integration Testing (7+ tests)** - End-to-end workflows",
+            "+",
+            "+**Critical Testing Requirements:**",
+            "+- Website must be deployed at `http://127.0.0.1:5002` before Phase 4",
+            "+- All tests must connect to real virtual drone at IP in .env",
+            "+- Use Playwright MCP for all UI interaction testing",
+            "+- Tests must FAIL when functionality is broken (no false positives)",
+            "+- 100% pass rate required before project completion",
+            "+",
+            "+### Token Usage Monitoring",
+            "+",
+            "+**Implementation Required:**",
+            "+```python",
+            "+# src/utils/token_tracker.py",
+            "+class AgentTracker:",
+            "+    AGENTS = ['main', 'coordinator-agent', 'mavlink-protocol-agent', ",
+            "+              'web-interface-agent', ...] # All 14 agents",
+            "+    ",
+            "+    def track_usage(self, agent, input_tokens, output_tokens):",
+            "+        # Track per agent with alerts at 80% (160k) and 90% (180k) limits",
+            "+```",
+            "+",
+            "+**Reporting:**",
+            "+- Generate usage reports every 10 tasks",
+            "+- Update PROJECT_COORDINATION.md with statistics",
+            "+- Monitor high-usage agents (>20k tokens)",
+            "+- Alert at context limit thresholds",
+            "+",
+            "+### Deployment Targets",
+            "+",
+            "+**Ubuntu Desktop:**",
+            "+- systemd service configuration",
+            "+- TCP connection to drone",
+            "+- Web interface on port 5001",
+            "+",
+            "+**Raspberry Pi:**",
+            "+- UART connection to flight controller",
+            "+- MAVLink router setup",
+            "+- WiFi hotspot capability",
+            "+- Headless operation",
+            "+",
+            "+## Project Success Criteria",
+            "+",
+            "+**Project completion requires ALL of:**",
+            "+1. \u2705 All 14 subagents active (verify with `/agents`)",
+            "+2. \u2705 ALL 50+ tests PASS (100% pass rate, not partial)",
+            "+3. \u2705 Every button functional (tested with Playwright MCP)",
+            "+4. \u2705 Token tracking implemented across all agents",
+            "+5. \u2705 No file exceeds 200 lines (modular architecture)",
+            "+6. \u2705 Real drone connection verified (192.168.193.235:5678)",
+            "+7. \u2705 Performance requirements met (<1ms log, <100ms telemetry)",
+            "+8. \u2705 Safety confirmations implemented and tested",
+            "+9. \u2705 VFR HUD displays all 15 components correctly",
+            "+10. \u2705 Modular architecture enforced throughout",
+            "+11. \u2705 Website fully functional at http://127.0.0.1:5002",
+            "+",
+            "+## Development Guidelines",
+            "+",
+            "+**Test-Driven Development:**",
+            "+1. Write failing test first",
+            "+2. Implement minimal code to pass",
+            "+3. Refactor while maintaining green tests",
+            "+4. Never skip tests or accept partial implementations",
+            "+",
+            "+**Agent Coordination:**",
+            "+- Use PROJECT_COORDINATION.md for inter-agent communication",
+            "+- Each agent handles specific domain expertise",
+            "+- Coordinator agent manages cross-component integration",
+            "+- Token tracking agent monitors resource usage",
+            "+",
+            "+**Code Quality:**",
+            "+- Follow existing code patterns and conventions",
+            "+- Maintain high performance for safety-critical operations  ",
+            "+- Implement proper error handling and logging",
+            "+- Use type hints and documentation",
+            "+",
+            "+**Critical Notes:**",
+            "+- NO mock testing allowed - all tests must verify real functionality",
+            "+- Tests must FAIL when features are broken (strict validation)",
+            "+- Deploy website early (Phase 2) for subsequent UI testing phases",
+            "+- Monitor token usage across all 14 agents continuously",
+            "\\ No newline at end of file"
+          ]
+        }
+      ],
+      "userModified": false,
+      "replaceAll": false
+    }
+  },
+  {
+    "session_id": "3a730f54-3bd2-415a-aa9e-72e788c80105",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/3a730f54-3bd2-415a-aa9e-72e788c80105.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "completed",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "completed",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "completed",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "completed",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Analyze codebase structure and identify key files",
+          "status": "completed",
+          "activeForm": "Analyzing codebase structure and identifying key files"
+        },
+        {
+          "content": "Read configuration files (pyproject.toml, README.md, etc.)",
+          "status": "completed",
+          "activeForm": "Reading configuration files"
+        },
+        {
+          "content": "Examine main application entry point and architecture",
+          "status": "completed",
+          "activeForm": "Examining main application entry point and architecture"
+        },
+        {
+          "content": "Review agents/ directory structure and functionality",
+          "status": "completed",
+          "activeForm": "Reviewing agents directory structure"
+        },
+        {
+          "content": "Create comprehensive CLAUDE.md file",
+          "status": "completed",
+          "activeForm": "Creating comprehensive CLAUDE.md file"
+        }
+      ]
+    }
+  }
+]

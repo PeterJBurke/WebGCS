@@ -1,0 +1,197 @@
+[
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Assess current project state and identify next steps",
+          "status": "in_progress",
+          "activeForm": "Assessing current project state and identifying next steps"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Assess current project state and identify next steps",
+          "status": "in_progress",
+          "activeForm": "Assessing current project state and identifying next steps"
+        }
+      ]
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/*.py"
+    },
+    "tool_response": {
+      "filenames": [
+        "/Users/peterburke/Documents/Code/WebGCS7/main.py"
+      ],
+      "durationMs": 28,
+      "numFiles": 1,
+      "truncated": false
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/*.js"
+    },
+    "tool_response": {
+      "filenames": [],
+      "durationMs": 35,
+      "numFiles": 0,
+      "truncated": false
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Glob",
+    "tool_input": {
+      "pattern": "**/*.html"
+    },
+    "tool_response": {
+      "filenames": [],
+      "durationMs": 36,
+      "numFiles": 0,
+      "truncated": false
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la",
+      "description": "List all files and directories in current location"
+    },
+    "tool_response": {
+      "stdout": "total 2064\ndrwxr-xr-x  19 peterburke  staff     608 Sep  9 15:42 .\ndrwxr-xr-x  12 peterburke  staff     384 Sep  9 15:36 ..\ndrwxr-xr-x@  4 peterburke  staff     128 Sep  9 15:47 .claude\n-rw-r--r--@  1 peterburke  staff     233 Sep  9 15:37 .env\ndrwxr-xr-x@  9 peterburke  staff     288 Sep  9 15:48 .git\n-rw-r--r--@  1 peterburke  staff       5 Sep  9 15:37 .python-version\ndrwxr-xr-x@  9 peterburke  staff     288 Sep  9 15:38 .venv\ndrwxr-xr-x@ 16 peterburke  staff     512 Sep  9 15:37 agents\n-rw-r--r--@  1 peterburke  staff    8309 Sep  9 15:41 CLAUDE.md\n-rw-r--r--@  1 peterburke  staff  790400 Sep  9 15:37 HudLayoutExample.png\n-rw-r--r--@  1 peterburke  staff  131398 Sep  9 15:37 HudLayoutItems.png\n-rw-r--r--@  1 peterburke  staff    2422 Sep  9 15:37 INITIAL_SETUP_PROMPT.md\ndrwxr-xr-x@  8 peterburke  staff     256 Sep  9 15:48 logs\n-rw-r--r--@  1 peterburke  staff      85 Sep  9 15:37 main.py\n-rw-r--r--@  1 peterburke  staff     275 Sep  9 15:38 pyproject.toml\n-rw-r--r--@  1 peterburke  staff       0 Sep  9 15:37 README.md\n-rw-r--r--@  1 peterburke  staff   51239 Sep  9 15:38 uv.lock\n-rw-r--r--@  1 peterburke  staff   35182 Sep  9 15:37 WEBGCS_COMPLETE_PRD_WITH_ALL_AGENTS.md\n-rw-r--r--@  1 peterburke  staff    4463 Sep  9 15:37 WEBGCS_PROJECT_BOOTSTRAP.md\nln: /usr/local/bin/cursor: File exists",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/main.py"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/main.py",
+        "content": "def main():\n    print(\"Hello from webgcs7!\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+        "numLines": 7,
+        "startLine": 1,
+        "totalLines": 7
+      }
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Bash",
+    "tool_input": {
+      "command": "ls -la agents/",
+      "description": "Check agents directory structure"
+    },
+    "tool_response": {
+      "stdout": "total 112\ndrwxr-xr-x@ 16 peterburke  staff   512 Sep  9 15:37 .\ndrwxr-xr-x  19 peterburke  staff   608 Sep  9 15:42 ..\n-rw-r--r--@  1 peterburke  staff  2599 Sep  9 15:37 connection-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  4096 Sep  9 15:37 coordinator-agent.md\n-rw-r--r--@  1 peterburke  staff  3203 Sep  9 15:37 flight-controls-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  3051 Sep  9 15:37 infrastructure-agent.md\n-rw-r--r--@  1 peterburke  staff  1627 Sep  9 15:37 map-interface-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  2511 Sep  9 15:37 mavlink-protocol-agent.md\n-rw-r--r--@  1 peterburke  staff  2550 Sep  9 15:37 navigation-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  2653 Sep  9 15:37 request-handlers-agent.md\n-rw-r--r--@  1 peterburke  staff  2302 Sep  9 15:37 telemetry-display-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  3714 Sep  9 15:37 testing-agent.md\n-rw-r--r--@  1 peterburke  staff   628 Sep  9 15:37 token-tracking-agent.md\n-rw-r--r--@  1 peterburke  staff   928 Sep  9 15:37 ui-validation-testing-agent.md\n-rw-r--r--@  1 peterburke  staff  1121 Sep  9 15:37 virtual-drone-communication-agent.md\n-rw-r--r--@  1 peterburke  staff  2896 Sep  9 15:37 web-interface-agent.md\nln: /usr/local/bin/cursor: File exists",
+      "stderr": "",
+      "interrupted": false,
+      "isImage": false
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/.env"
+    },
+    "tool_response": {
+      "type": "text",
+      "file": {
+        "filePath": "/Users/peterburke/Documents/Code/WebGCS7/.env",
+        "content": "DRONE_TCP_ADDRESS=192.168.193.235\nDRONE_TCP_PORT=5678\nWEB_SERVER_HOST=localhost\nWEB_SERVER_PORT=5001\nSECRET_KEY=webgcs_development_key\nHEARTBEAT_TIMEOUT=30\nREQUEST_STREAM_RATE_HZ=4\nCOMMAND_ACK_TIMEOUT=10\nTELEMETRY_UPDATE_INTERVAL=0.1",
+        "numLines": 9,
+        "startLine": 1,
+        "totalLines": 9
+      }
+    }
+  },
+  {
+    "session_id": "ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/ecbeaaae-7b79-4ca9-8c57-6d8ce8fa3e6e.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PostToolUse",
+    "tool_name": "TodoWrite",
+    "tool_input": {
+      "todos": [
+        {
+          "content": "Assess current project state and identify next steps",
+          "status": "completed",
+          "activeForm": "Assessing current project state and identifying next steps"
+        },
+        {
+          "content": "Set up initial WebGCS project structure",
+          "status": "in_progress",
+          "activeForm": "Setting up initial WebGCS project structure"
+        }
+      ]
+    },
+    "tool_response": {
+      "oldTodos": [],
+      "newTodos": [
+        {
+          "content": "Assess current project state and identify next steps",
+          "status": "completed",
+          "activeForm": "Assessing current project state and identifying next steps"
+        },
+        {
+          "content": "Set up initial WebGCS project structure",
+          "status": "in_progress",
+          "activeForm": "Setting up initial WebGCS project structure"
+        }
+      ]
+    }
+  }
+]

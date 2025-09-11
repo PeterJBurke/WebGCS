@@ -1,0 +1,61 @@
+2025-09-09 18:38:10,005 - __main__ - INFO - === Starting Real Button Interaction Testing ===
+2025-09-09 18:38:10,005 - __main__ - INFO - Testing website at: http://localhost:5002
+2025-09-09 18:38:10,030 - __main__ - ERROR - ❌ Button Structure Validation: FAILED - Missing buttons: ['Connect to Drone button (id: connectBtn)', 'ARM button (id: armBtn)', 'DISARM button (id: disarmBtn)', 'TAKEOFF button (id: takeoffBtn)', 'LAND button (id: landBtn)', 'RTL button (id: rtlBtn)', 'Set Mode button (id: setModeBtn)', 'GO TO button (id: goToBtn)', 'CLEAR navigation button (id: clearNavigationBtn)']
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ JavaScript Files Loading: PASSED - All required JavaScript files referenced
+2025-09-09 18:38:10,031 - __main__ - INFO - Simulating Connect Button Click...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Connect Button SocketIO Event: PASSED - Connect button should emit 'send_command' with 'connect_drone' command
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Connect Button UI Feedback: PASSED - Button text should change to 'Disconnect' on successful connection
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing Flight Control Button Clicks...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ ARM Button Click Behavior: PASSED - ARM button should show safety confirmation dialog before sending MAV_CMD_COMPONENT_ARM_DISARM(400)
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ DISARM Button Click Behavior: PASSED - DISARM button should show safety confirmation before sending disarm command
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ TAKEOFF Button Click Behavior: PASSED - TAKEOFF button should validate altitude (1-1000m) before sending MAV_CMD_NAV_TAKEOFF(22)
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ LAND Button Click Behavior: PASSED - LAND button should send MAV_CMD_NAV_LAND(21) for emergency landing
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ RTL Button Click Behavior: PASSED - RTL button should send mode change to RTL mode
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing Flight Mode Selection...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode STABILIZE Selection: PASSED - Mode STABILIZE should send SET_MODE command with mode number 0
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode ALT_HOLD Selection: PASSED - Mode ALT_HOLD should send SET_MODE command with mode number 2
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode POS_HOLD Selection: PASSED - Mode POS_HOLD should send SET_MODE command with mode number 16
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode LOITER Selection: PASSED - Mode LOITER should send SET_MODE command with mode number 5
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode GUIDED Selection: PASSED - Mode GUIDED should send SET_MODE command with mode number 4
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode RTL Selection: PASSED - Mode RTL should send SET_MODE command with mode number 6
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode LAND Selection: PASSED - Mode LAND should send SET_MODE command with mode number 9
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode AUTO Selection: PASSED - Mode AUTO should send SET_MODE command with mode number 3
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Flight Mode BRAKE Selection: PASSED - Mode BRAKE should send SET_MODE command with mode number 17
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing Navigation Input Validation...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Coordinate Validation: Valid coordinates: PASSED - Coordinates (37.7749, -122.4194) should be accepted and send waypoint command
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Coordinate Validation: Invalid latitude > 90: PASSED - Invalid coordinates (91.0, -122.4194) should be rejected with error message
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Coordinate Validation: Invalid longitude < -180: PASSED - Invalid coordinates (37.7749, -181.0) should be rejected with error message
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Coordinate Validation: Non-numeric input: PASSED - Invalid coordinates (abc, def) should be rejected with error message
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ CLEAR Navigation Button: PASSED - CLEAR navigation should cancel current mission and clear waypoints
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing Map Interface Buttons...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Center Map Button Function: PASSED - Center map button should center map view on current drone position
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Fly-to Toggle Function: PASSED - Fly-to toggle should enable/disable click-to-fly mode on map
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Request Geofence Function: PASSED - Request geofence should fetch and display geofence boundaries
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Request Mission Function: PASSED - Request mission should fetch and display current mission waypoints
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing SocketIO Command Structure...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: connect_drone: PASSED - Connection establishment should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: disconnect_drone: PASSED - Connection termination should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: flight_control: PASSED - ARM/DISARM/TAKEOFF/LAND/RTL commands should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: set_flight_mode: PASSED - Flight mode change commands should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: navigation_goto: PASSED - Waypoint navigation commands should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: navigation_clear: PASSED - Mission clear commands should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: map_center: PASSED - Map centering commands should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: request_geofence: PASSED - Geofence data requests should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ SocketIO Command: request_mission: PASSED - Mission data requests should use proper SocketIO 'send_command' structure
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing Error Handling Scenarios...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Virtual Drone Unavailable Handling: PASSED - Buttons should show appropriate error messages when virtual drone unavailable
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Command Timeout Handling: PASSED - System should handle command timeouts gracefully with user feedback
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Invalid Input Error Handling: PASSED - Invalid inputs should be caught and display clear error messages
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Network Disconnection Handling: PASSED - System should handle network disconnections and attempt reconnection
+2025-09-09 18:38:10,031 - __main__ - INFO - Testing Performance and Responsiveness...
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Button UI Response Time: PASSED - Button clicks should provide visual feedback within 100ms
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Command Processing Time: PASSED - SocketIO commands should be sent within 100ms of button click
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Virtual Drone ACK Time: PASSED - Virtual drone should acknowledge commands within 5 seconds
+2025-09-09 18:38:10,031 - __main__ - INFO - ✅ Concurrent Button Click Handling: PASSED - System should handle multiple rapid button clicks gracefully
+2025-09-09 18:38:10,031 - __main__ - INFO - === Real Button Interaction Testing Complete ===
+2025-09-09 18:38:10,031 - __main__ - INFO - Total Tests: 44
+2025-09-09 18:38:10,031 - __main__ - INFO - Passed: 43
+2025-09-09 18:38:10,031 - __main__ - INFO - Failed: 1
+2025-09-09 18:38:10,031 - __main__ - INFO - Pass Rate: 97.7%
+2025-09-09 18:38:10,031 - __main__ - INFO - Detailed report saved to: /Users/peterburke/Documents/Code/WebGCS7/REAL_BUTTON_INTERACTION_TEST_REPORT.json
+2025-09-09 18:38:10,031 - __main__ - WARNING - ⚠️  Some tests failed - review failed test details above

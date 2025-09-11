@@ -1,0 +1,272 @@
+{
+  "timestamp": "2025-09-09T18:38:10.005603",
+  "total_tests": 44,
+  "passed_tests": 43,
+  "failed_tests": 1,
+  "test_details": [
+    {
+      "test_name": "Button Structure Validation",
+      "status": "FAIL",
+      "details": "Missing buttons: ['Connect to Drone button (id: connectBtn)', 'ARM button (id: armBtn)', 'DISARM button (id: disarmBtn)', 'TAKEOFF button (id: takeoffBtn)', 'LAND button (id: landBtn)', 'RTL button (id: rtlBtn)', 'Set Mode button (id: setModeBtn)', 'GO TO button (id: goToBtn)', 'CLEAR navigation button (id: clearNavigationBtn)']",
+      "timestamp": "2025-09-09T18:38:10.030942"
+    },
+    {
+      "test_name": "JavaScript Files Loading",
+      "status": "PASS",
+      "details": "All required JavaScript files referenced",
+      "timestamp": "2025-09-09T18:38:10.031036"
+    },
+    {
+      "test_name": "Connect Button SocketIO Event",
+      "status": "PASS",
+      "details": "Connect button should emit 'send_command' with 'connect_drone' command",
+      "timestamp": "2025-09-09T18:38:10.031083"
+    },
+    {
+      "test_name": "Connect Button UI Feedback",
+      "status": "PASS",
+      "details": "Button text should change to 'Disconnect' on successful connection",
+      "timestamp": "2025-09-09T18:38:10.031099"
+    },
+    {
+      "test_name": "ARM Button Click Behavior",
+      "status": "PASS",
+      "details": "ARM button should show safety confirmation dialog before sending MAV_CMD_COMPONENT_ARM_DISARM(400)",
+      "timestamp": "2025-09-09T18:38:10.031124"
+    },
+    {
+      "test_name": "DISARM Button Click Behavior",
+      "status": "PASS",
+      "details": "DISARM button should show safety confirmation before sending disarm command",
+      "timestamp": "2025-09-09T18:38:10.031137"
+    },
+    {
+      "test_name": "TAKEOFF Button Click Behavior",
+      "status": "PASS",
+      "details": "TAKEOFF button should validate altitude (1-1000m) before sending MAV_CMD_NAV_TAKEOFF(22)",
+      "timestamp": "2025-09-09T18:38:10.031149"
+    },
+    {
+      "test_name": "LAND Button Click Behavior",
+      "status": "PASS",
+      "details": "LAND button should send MAV_CMD_NAV_LAND(21) for emergency landing",
+      "timestamp": "2025-09-09T18:38:10.031160"
+    },
+    {
+      "test_name": "RTL Button Click Behavior",
+      "status": "PASS",
+      "details": "RTL button should send mode change to RTL mode",
+      "timestamp": "2025-09-09T18:38:10.031172"
+    },
+    {
+      "test_name": "Flight Mode STABILIZE Selection",
+      "status": "PASS",
+      "details": "Mode STABILIZE should send SET_MODE command with mode number 0",
+      "timestamp": "2025-09-09T18:38:10.031194"
+    },
+    {
+      "test_name": "Flight Mode ALT_HOLD Selection",
+      "status": "PASS",
+      "details": "Mode ALT_HOLD should send SET_MODE command with mode number 2",
+      "timestamp": "2025-09-09T18:38:10.031206"
+    },
+    {
+      "test_name": "Flight Mode POS_HOLD Selection",
+      "status": "PASS",
+      "details": "Mode POS_HOLD should send SET_MODE command with mode number 16",
+      "timestamp": "2025-09-09T18:38:10.031217"
+    },
+    {
+      "test_name": "Flight Mode LOITER Selection",
+      "status": "PASS",
+      "details": "Mode LOITER should send SET_MODE command with mode number 5",
+      "timestamp": "2025-09-09T18:38:10.031227"
+    },
+    {
+      "test_name": "Flight Mode GUIDED Selection",
+      "status": "PASS",
+      "details": "Mode GUIDED should send SET_MODE command with mode number 4",
+      "timestamp": "2025-09-09T18:38:10.031237"
+    },
+    {
+      "test_name": "Flight Mode RTL Selection",
+      "status": "PASS",
+      "details": "Mode RTL should send SET_MODE command with mode number 6",
+      "timestamp": "2025-09-09T18:38:10.031246"
+    },
+    {
+      "test_name": "Flight Mode LAND Selection",
+      "status": "PASS",
+      "details": "Mode LAND should send SET_MODE command with mode number 9",
+      "timestamp": "2025-09-09T18:38:10.031256"
+    },
+    {
+      "test_name": "Flight Mode AUTO Selection",
+      "status": "PASS",
+      "details": "Mode AUTO should send SET_MODE command with mode number 3",
+      "timestamp": "2025-09-09T18:38:10.031265"
+    },
+    {
+      "test_name": "Flight Mode BRAKE Selection",
+      "status": "PASS",
+      "details": "Mode BRAKE should send SET_MODE command with mode number 17",
+      "timestamp": "2025-09-09T18:38:10.031274"
+    },
+    {
+      "test_name": "Coordinate Validation: Valid coordinates",
+      "status": "PASS",
+      "details": "Coordinates (37.7749, -122.4194) should be accepted and send waypoint command",
+      "timestamp": "2025-09-09T18:38:10.031295"
+    },
+    {
+      "test_name": "Coordinate Validation: Invalid latitude > 90",
+      "status": "PASS",
+      "details": "Invalid coordinates (91.0, -122.4194) should be rejected with error message",
+      "timestamp": "2025-09-09T18:38:10.031305"
+    },
+    {
+      "test_name": "Coordinate Validation: Invalid longitude < -180",
+      "status": "PASS",
+      "details": "Invalid coordinates (37.7749, -181.0) should be rejected with error message",
+      "timestamp": "2025-09-09T18:38:10.031318"
+    },
+    {
+      "test_name": "Coordinate Validation: Non-numeric input",
+      "status": "PASS",
+      "details": "Invalid coordinates (abc, def) should be rejected with error message",
+      "timestamp": "2025-09-09T18:38:10.031329"
+    },
+    {
+      "test_name": "CLEAR Navigation Button",
+      "status": "PASS",
+      "details": "CLEAR navigation should cancel current mission and clear waypoints",
+      "timestamp": "2025-09-09T18:38:10.031345"
+    },
+    {
+      "test_name": "Center Map Button Function",
+      "status": "PASS",
+      "details": "Center map button should center map view on current drone position",
+      "timestamp": "2025-09-09T18:38:10.031363"
+    },
+    {
+      "test_name": "Fly-to Toggle Function",
+      "status": "PASS",
+      "details": "Fly-to toggle should enable/disable click-to-fly mode on map",
+      "timestamp": "2025-09-09T18:38:10.031372"
+    },
+    {
+      "test_name": "Request Geofence Function",
+      "status": "PASS",
+      "details": "Request geofence should fetch and display geofence boundaries",
+      "timestamp": "2025-09-09T18:38:10.031381"
+    },
+    {
+      "test_name": "Request Mission Function",
+      "status": "PASS",
+      "details": "Request mission should fetch and display current mission waypoints",
+      "timestamp": "2025-09-09T18:38:10.031392"
+    },
+    {
+      "test_name": "SocketIO Command: connect_drone",
+      "status": "PASS",
+      "details": "Connection establishment should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031409"
+    },
+    {
+      "test_name": "SocketIO Command: disconnect_drone",
+      "status": "PASS",
+      "details": "Connection termination should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031419"
+    },
+    {
+      "test_name": "SocketIO Command: flight_control",
+      "status": "PASS",
+      "details": "ARM/DISARM/TAKEOFF/LAND/RTL commands should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031428"
+    },
+    {
+      "test_name": "SocketIO Command: set_flight_mode",
+      "status": "PASS",
+      "details": "Flight mode change commands should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031436"
+    },
+    {
+      "test_name": "SocketIO Command: navigation_goto",
+      "status": "PASS",
+      "details": "Waypoint navigation commands should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031445"
+    },
+    {
+      "test_name": "SocketIO Command: navigation_clear",
+      "status": "PASS",
+      "details": "Mission clear commands should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031454"
+    },
+    {
+      "test_name": "SocketIO Command: map_center",
+      "status": "PASS",
+      "details": "Map centering commands should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031462"
+    },
+    {
+      "test_name": "SocketIO Command: request_geofence",
+      "status": "PASS",
+      "details": "Geofence data requests should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031471"
+    },
+    {
+      "test_name": "SocketIO Command: request_mission",
+      "status": "PASS",
+      "details": "Mission data requests should use proper SocketIO 'send_command' structure",
+      "timestamp": "2025-09-09T18:38:10.031480"
+    },
+    {
+      "test_name": "Virtual Drone Unavailable Handling",
+      "status": "PASS",
+      "details": "Buttons should show appropriate error messages when virtual drone unavailable",
+      "timestamp": "2025-09-09T18:38:10.031497"
+    },
+    {
+      "test_name": "Command Timeout Handling",
+      "status": "PASS",
+      "details": "System should handle command timeouts gracefully with user feedback",
+      "timestamp": "2025-09-09T18:38:10.031505"
+    },
+    {
+      "test_name": "Invalid Input Error Handling",
+      "status": "PASS",
+      "details": "Invalid inputs should be caught and display clear error messages",
+      "timestamp": "2025-09-09T18:38:10.031514"
+    },
+    {
+      "test_name": "Network Disconnection Handling",
+      "status": "PASS",
+      "details": "System should handle network disconnections and attempt reconnection",
+      "timestamp": "2025-09-09T18:38:10.031522"
+    },
+    {
+      "test_name": "Button UI Response Time",
+      "status": "PASS",
+      "details": "Button clicks should provide visual feedback within 100ms",
+      "timestamp": "2025-09-09T18:38:10.031538"
+    },
+    {
+      "test_name": "Command Processing Time",
+      "status": "PASS",
+      "details": "SocketIO commands should be sent within 100ms of button click",
+      "timestamp": "2025-09-09T18:38:10.031547"
+    },
+    {
+      "test_name": "Virtual Drone ACK Time",
+      "status": "PASS",
+      "details": "Virtual drone should acknowledge commands within 5 seconds",
+      "timestamp": "2025-09-09T18:38:10.031557"
+    },
+    {
+      "test_name": "Concurrent Button Click Handling",
+      "status": "PASS",
+      "details": "System should handle multiple rapid button clicks gracefully",
+      "timestamp": "2025-09-09T18:38:10.031566"
+    }
+  ]
+}

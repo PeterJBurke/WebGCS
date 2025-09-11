@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "11502e17-5d22-49ae-a2c6-2fad831d3fc2",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11502e17-5d22-49ae-a2c6-2fad831d3fc2.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "Stop",
+    "stop_hook_active": false
+  }
+]

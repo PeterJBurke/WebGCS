@@ -1,0 +1,92 @@
+{
+  "test_name": "Real Browser Connect Button Test",
+  "test_timestamp": "2025-09-09T20:51:30.677657",
+  "summary": {
+    "console_messages_count": 17,
+    "dialogs_detected": 1,
+    "network_requests": 12,
+    "errors_encountered": 0
+  },
+  "detailed_results": {
+    "pre_click_state": {
+      "window_webgcs": "object",
+      "window_io": "function",
+      "webgcs_connected": false,
+      "socket_connected": false,
+      "socket_id": null,
+      "connection_manager_exists": "function",
+      "button_text": "Connect to Drone",
+      "button_enabled": true,
+      "button_visible": true,
+      "connection_status_text": "Disconnected"
+    },
+    "click_time": "2025-09-09T20:50:48.937658",
+    "post_click_state": {
+      "window_webgcs": "object",
+      "window_io": "function",
+      "webgcs_connected": false,
+      "socket_connected": false,
+      "socket_id": null,
+      "connection_manager_exists": "function",
+      "button_text": "Connect to Drone",
+      "button_enabled": true,
+      "button_visible": true,
+      "connection_status_text": "Disconnected"
+    },
+    "final_state": {
+      "window_webgcs": "object",
+      "window_io": "function",
+      "webgcs_connected": false,
+      "socket_connected": false,
+      "socket_id": null,
+      "connection_manager_exists": "function",
+      "button_text": "Connect to Drone",
+      "button_enabled": true,
+      "button_visible": true,
+      "connection_status_text": "Disconnected"
+    },
+    "console_messages": [
+      "[LOG] Initializing WebGCS...",
+      "[LOG] Initializing connection manager...",
+      "[LOG] Connecting to WebGCS server...",
+      "[LOG] Setting up SocketIO event handlers...",
+      "[LOG] Initializing telemetry display...",
+      "[LOG] Initializing flight controls...",
+      "[LOG] Initializing Primary Flight Display...",
+      "[LOG] Initializing input validation...",
+      "[LOG] UI components initialized",
+      "[LOG] WebGCS initialization complete",
+      "[ERROR] Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "[LOG] \ud83d\udd18 Connect button clicked",
+      "[ERROR] \u274c SocketIO not connected to server",
+      "[ERROR] Socket state: {connected: false, disconnected: true, id: undefined}",
+      "[ERROR] \u274c SocketIO connection timeout after 10 seconds",
+      "[ERROR] Server may be incompatible or not running",
+      "[ERROR] Check console for SocketIO negotiation errors"
+    ],
+    "dialog_messages": [
+      {
+        "type": "alert",
+        "message": "Not connected to WebGCS server. Check console for details.",
+        "default_value": ""
+      }
+    ],
+    "network_messages": [
+      "REQUEST: GET https://cdn.socket.io/4.3.2/socket.io.min.js",
+      "REQUEST: GET http://localhost:5002/static/js/connection.js",
+      "RESPONSE: 200 http://localhost:5002/static/js/connection.js",
+      "RESPONSE: 200 https://cdn.socket.io/4.3.2/socket.io.min.js",
+      "REQUEST: GET http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr50",
+      "RESPONSE: 200 http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr50",
+      "REQUEST: POST http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr58&sid=0Ml1Hwv0C2RpUDBLAAAT",
+      "REQUEST: GET http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr5A&sid=0Ml1Hwv0C2RpUDBLAAAT",
+      "RESPONSE: 200 http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr58&sid=0Ml1Hwv0C2RpUDBLAAAT",
+      "RESPONSE: 200 http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr5A&sid=0Ml1Hwv0C2RpUDBLAAAT",
+      "REQUEST: GET http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr5G&sid=0Ml1Hwv0C2RpUDBLAAAT",
+      "RESPONSE: 200 http://localhost:5002/socket.io/?EIO=4&transport=polling&t=Panlr5G&sid=0Ml1Hwv0C2RpUDBLAAAT"
+    ],
+    "error_messages": [],
+    "test_completed": true,
+    "test_duration_seconds": 41.739959
+  }
+}

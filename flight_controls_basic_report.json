@@ -1,0 +1,103 @@
+{
+  "test_suite": "Phase 4: Flight Controls Basic Testing",
+  "timestamp": "2025-09-09 16:42:41",
+  "base_url": "http://localhost:5002",
+  "total_tests": 5,
+  "passed_tests": 2,
+  "success_rate": "40.0%",
+  "detailed_results": {
+    "website_accessible": true,
+    "buttons_exist": {
+      "all_buttons": {
+        "arm-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "disarm-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "takeoff-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "land-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "rtl-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "stabilize-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "alt-hold-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "loiter-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "guided-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "auto-btn": {
+          "exists": true,
+          "visible": true
+        },
+        "emergency-stop-btn": {
+          "exists": true,
+          "visible": true
+        }
+      },
+      "critical_buttons_exist": true
+    },
+    "arm_button": {
+      "error": "Locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator(\"#arm-btn\")\n    - locator resolved to <button disabled id=\"arm-btn\" class=\"btn btn-danger\">ARM</button>\n  - attempting click action\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not enabled\n    - retrying click action\n    - waiting 20ms\n    2 \u00d7 waiting for element to be visible, enabled and stable\n      - element is not enabled\n    - retrying click action\n      - waiting 100ms\n    58 \u00d7 waiting for element to be visible, enabled and stable\n       - element is not enabled\n     - retrying click action\n       - waiting 500ms\n"
+    },
+    "flight_modes": {
+      "STABILIZE": {
+        "exists": true,
+        "visible": true,
+        "enabled": false,
+        "clicked": false
+      },
+      "LOITER": {
+        "exists": true,
+        "visible": true,
+        "enabled": false,
+        "clicked": false
+      },
+      "RTL": {
+        "exists": true,
+        "visible": true,
+        "enabled": false,
+        "clicked": false
+      },
+      "AUTO": {
+        "exists": true,
+        "visible": true,
+        "enabled": false,
+        "clicked": false
+      },
+      "GUIDED": {
+        "exists": true,
+        "visible": true,
+        "enabled": false,
+        "clicked": false
+      }
+    },
+    "takeoff_altitude": {
+      "altitude_input_exists": true,
+      "takeoff_btn_exists": true,
+      "altitude_5": true,
+      "altitude_15": true,
+      "altitude_25": true
+    }
+  },
+  "screenshots_directory": "screenshots"
+}

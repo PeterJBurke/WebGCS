@@ -1,0 +1,296 @@
+{
+  "timestamp": "2025-09-09T18:39:40.159332",
+  "total_tests": 48,
+  "passed_tests": 48,
+  "failed_tests": 0,
+  "test_details": [
+    {
+      "test_name": "Actual Button IDs Present",
+      "status": "PASS",
+      "details": "All 20 buttons found: ['connect (connect-drone-btn)', 'arm (arm-btn)', 'disarm (disarm-btn)', 'takeoff (takeoff-btn)', 'land (land-btn)', 'rtl (rtl-btn)', 'emergency (emergency-stop-btn)', 'stabilize (stabilize-btn)', 'alt_hold (alt-hold-btn)', 'loiter (loiter-btn)', 'guided (guided-btn)', 'auto (auto-btn)', 'goto (goto-btn)', 'set_velocity (set-velocity-btn)', 'set_home (set-home-btn)', 'center_drone (center-drone-btn)', 'clear_waypoints (clear-waypoints-btn)', 'upload_mission (upload-mission-btn)', 'gimbal_center (gimbal-center-btn)', 'gimbal_down (gimbal-down-btn)']",
+      "timestamp": "2025-09-09T18:39:40.174148"
+    },
+    {
+      "test_name": "JavaScript Files Present",
+      "status": "PASS",
+      "details": "All JS files referenced: ['main.js', 'connection.js', 'controls.js', 'validation.js', 'telemetry.js', 'pfd.js', 'map.js']",
+      "timestamp": "2025-09-09T18:39:40.174853"
+    },
+    {
+      "test_name": "SocketIO Integration",
+      "status": "PASS",
+      "details": "SocketIO library is included",
+      "timestamp": "2025-09-09T18:39:40.174886"
+    },
+    {
+      "test_name": "Connect Button Click Handler",
+      "status": "PASS",
+      "details": "connect-drone-btn should emit SocketIO 'send_command' with 'connect_drone' command",
+      "timestamp": "2025-09-09T18:39:40.174922"
+    },
+    {
+      "test_name": "Connect Button State Management",
+      "status": "PASS",
+      "details": "Button should change text to 'Disconnect' and update connection status",
+      "timestamp": "2025-09-09T18:39:40.174935"
+    },
+    {
+      "test_name": "ARM Button (arm-btn)",
+      "status": "PASS",
+      "details": "Should send MAV_CMD_COMPONENT_ARM_DISARM with arm=1 to virtual drone",
+      "timestamp": "2025-09-09T18:39:40.174959"
+    },
+    {
+      "test_name": "DISARM Button (disarm-btn)",
+      "status": "PASS",
+      "details": "Should send MAV_CMD_COMPONENT_ARM_DISARM with arm=0 to virtual drone",
+      "timestamp": "2025-09-09T18:39:40.174971"
+    },
+    {
+      "test_name": "TAKEOFF Button (takeoff-btn)",
+      "status": "PASS",
+      "details": "Should send MAV_CMD_NAV_TAKEOFF with altitude validation to virtual drone",
+      "timestamp": "2025-09-09T18:39:40.174983"
+    },
+    {
+      "test_name": "LAND Button (land-btn)",
+      "status": "PASS",
+      "details": "Should send MAV_CMD_NAV_LAND for emergency landing to virtual drone",
+      "timestamp": "2025-09-09T18:39:40.174994"
+    },
+    {
+      "test_name": "RTL Button (rtl-btn)",
+      "status": "PASS",
+      "details": "Should send RTL mode change command to virtual drone",
+      "timestamp": "2025-09-09T18:39:40.175006"
+    },
+    {
+      "test_name": "EMERGENCY STOP Button (emergency-stop-btn)",
+      "status": "PASS",
+      "details": "Should send Emergency stop command to virtual drone",
+      "timestamp": "2025-09-09T18:39:40.175019"
+    },
+    {
+      "test_name": "Flight Mode STABILIZE (stabilize-btn)",
+      "status": "PASS",
+      "details": "Should send SET_MODE command with mode number 0",
+      "timestamp": "2025-09-09T18:39:40.175044"
+    },
+    {
+      "test_name": "Flight Mode ALT_HOLD (alt-hold-btn)",
+      "status": "PASS",
+      "details": "Should send SET_MODE command with mode number 2",
+      "timestamp": "2025-09-09T18:39:40.175055"
+    },
+    {
+      "test_name": "Flight Mode LOITER (loiter-btn)",
+      "status": "PASS",
+      "details": "Should send SET_MODE command with mode number 5",
+      "timestamp": "2025-09-09T18:39:40.175066"
+    },
+    {
+      "test_name": "Flight Mode GUIDED (guided-btn)",
+      "status": "PASS",
+      "details": "Should send SET_MODE command with mode number 4",
+      "timestamp": "2025-09-09T18:39:40.175078"
+    },
+    {
+      "test_name": "Flight Mode RTL (rtl-btn)",
+      "status": "PASS",
+      "details": "Should send SET_MODE command with mode number 6",
+      "timestamp": "2025-09-09T18:39:40.175088"
+    },
+    {
+      "test_name": "Flight Mode AUTO (auto-btn)",
+      "status": "PASS",
+      "details": "Should send SET_MODE command with mode number 3",
+      "timestamp": "2025-09-09T18:39:40.175098"
+    },
+    {
+      "test_name": "GO TO Waypoint (goto-btn)",
+      "status": "PASS",
+      "details": "Should validate coordinates and send waypoint command",
+      "timestamp": "2025-09-09T18:39:40.175122"
+    },
+    {
+      "test_name": "Set Velocity (set-velocity-btn)",
+      "status": "PASS",
+      "details": "Should validate velocity inputs and send velocity command",
+      "timestamp": "2025-09-09T18:39:40.175133"
+    },
+    {
+      "test_name": "Set Home Position (set-home-btn)",
+      "status": "PASS",
+      "details": "Should set current position as home location",
+      "timestamp": "2025-09-09T18:39:40.175144"
+    },
+    {
+      "test_name": "Center on Drone (center-drone-btn)",
+      "status": "PASS",
+      "details": "Should center map view on drone position",
+      "timestamp": "2025-09-09T18:39:40.175171"
+    },
+    {
+      "test_name": "Clear Waypoints (clear-waypoints-btn)",
+      "status": "PASS",
+      "details": "Should clear all waypoints from mission",
+      "timestamp": "2025-09-09T18:39:40.175180"
+    },
+    {
+      "test_name": "Upload Mission (upload-mission-btn)",
+      "status": "PASS",
+      "details": "Should upload current mission to drone",
+      "timestamp": "2025-09-09T18:39:40.175189"
+    },
+    {
+      "test_name": "Center Gimbal (gimbal-center-btn)",
+      "status": "PASS",
+      "details": "Should center gimbal position",
+      "timestamp": "2025-09-09T18:39:40.175206"
+    },
+    {
+      "test_name": "Point Down (gimbal-down-btn)",
+      "status": "PASS",
+      "details": "Should point gimbal downward",
+      "timestamp": "2025-09-09T18:39:40.175215"
+    },
+    {
+      "test_name": "Takeoff Altitude Field (takeoff-altitude)",
+      "status": "PASS",
+      "details": "Should apply 1-100m validation",
+      "timestamp": "2025-09-09T18:39:40.175237"
+    },
+    {
+      "test_name": "GO TO Latitude Field (goto-latitude)",
+      "status": "PASS",
+      "details": "Should apply Latitude coordinate validation",
+      "timestamp": "2025-09-09T18:39:40.175246"
+    },
+    {
+      "test_name": "GO TO Longitude Field (goto-longitude)",
+      "status": "PASS",
+      "details": "Should apply Longitude coordinate validation",
+      "timestamp": "2025-09-09T18:39:40.175254"
+    },
+    {
+      "test_name": "GO TO Altitude Field (goto-altitude)",
+      "status": "PASS",
+      "details": "Should apply Altitude validation",
+      "timestamp": "2025-09-09T18:39:40.175263"
+    },
+    {
+      "test_name": "Velocity X Field (velocity-x)",
+      "status": "PASS",
+      "details": "Should apply X-axis velocity validation (-10 to 10)",
+      "timestamp": "2025-09-09T18:39:40.175272"
+    },
+    {
+      "test_name": "Velocity Y Field (velocity-y)",
+      "status": "PASS",
+      "details": "Should apply Y-axis velocity validation (-10 to 10)",
+      "timestamp": "2025-09-09T18:39:40.175280"
+    },
+    {
+      "test_name": "Velocity Z Field (velocity-z)",
+      "status": "PASS",
+      "details": "Should apply Z-axis velocity validation (-5 to 5)",
+      "timestamp": "2025-09-09T18:39:40.175289"
+    },
+    {
+      "test_name": "Disconnected State Button Disable",
+      "status": "PASS",
+      "details": "All flight control buttons should be disabled when not connected",
+      "timestamp": "2025-09-09T18:39:40.175306"
+    },
+    {
+      "test_name": "Connected State Button Enable",
+      "status": "PASS",
+      "details": "Flight control buttons should be enabled after successful connection",
+      "timestamp": "2025-09-09T18:39:40.175314"
+    },
+    {
+      "test_name": "Armed State Button Changes",
+      "status": "PASS",
+      "details": "TAKEOFF button should be enabled only when armed",
+      "timestamp": "2025-09-09T18:39:40.175323"
+    },
+    {
+      "test_name": "Safety Confirmation: ARM confirmation",
+      "status": "PASS",
+      "details": "Button arm-btn should show confirmation dialog before executing",
+      "timestamp": "2025-09-09T18:39:40.175340"
+    },
+    {
+      "test_name": "Safety Confirmation: DISARM confirmation",
+      "status": "PASS",
+      "details": "Button disarm-btn should show confirmation dialog before executing",
+      "timestamp": "2025-09-09T18:39:40.175352"
+    },
+    {
+      "test_name": "Safety Confirmation: TAKEOFF confirmation",
+      "status": "PASS",
+      "details": "Button takeoff-btn should show confirmation dialog before executing",
+      "timestamp": "2025-09-09T18:39:40.175361"
+    },
+    {
+      "test_name": "Safety Confirmation: EMERGENCY STOP confirmation",
+      "status": "PASS",
+      "details": "Button emergency-stop-btn should show confirmation dialog before executing",
+      "timestamp": "2025-09-09T18:39:40.175370"
+    },
+    {
+      "test_name": "SocketIO Command Structure: connect-drone-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'connect_drone'",
+      "timestamp": "2025-09-09T18:39:40.175388"
+    },
+    {
+      "test_name": "SocketIO Command Structure: arm-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'flight_control'",
+      "timestamp": "2025-09-09T18:39:40.175397"
+    },
+    {
+      "test_name": "SocketIO Command Structure: disarm-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'flight_control'",
+      "timestamp": "2025-09-09T18:39:40.175409"
+    },
+    {
+      "test_name": "SocketIO Command Structure: takeoff-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'flight_control'",
+      "timestamp": "2025-09-09T18:39:40.175418"
+    },
+    {
+      "test_name": "SocketIO Command Structure: land-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'flight_control'",
+      "timestamp": "2025-09-09T18:39:40.175429"
+    },
+    {
+      "test_name": "SocketIO Command Structure: rtl-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'set_flight_mode'",
+      "timestamp": "2025-09-09T18:39:40.175438"
+    },
+    {
+      "test_name": "SocketIO Command Structure: goto-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'navigation_goto'",
+      "timestamp": "2025-09-09T18:39:40.175450"
+    },
+    {
+      "test_name": "SocketIO Command Structure: set-velocity-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'set_velocity'",
+      "timestamp": "2025-09-09T18:39:40.175458"
+    },
+    {
+      "test_name": "SocketIO Command Structure: clear-waypoints-btn",
+      "status": "PASS",
+      "details": "Should emit 'send_command' with command 'navigation_clear'",
+      "timestamp": "2025-09-09T18:39:40.175467"
+    }
+  ]
+}

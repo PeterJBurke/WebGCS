@@ -1,0 +1,162 @@
+[
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "contiue. make sure to use subagents."
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": " did you test the connect button on the website? it does not work for me. please redefine the test first. then tell me what the new test is. do not do anything else yet."
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "add that test to the prd file"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "do the same thing for all the  other button tests in the prd file"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now have your subagents fix the code so that it passes all the new tests"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when i click connect, at the top right it says \"connected to drone\" but there is no heartbeat. and no data on the hud. and the map says loading. All of these should be written into the tests. Rewrite the tests to be more systematic. The test should test that the data is displayed on the website when the drone is connected. Be very clear about this in the new tests in the prd. think harder."
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "keep working on the code until all the new tests are passed"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the connect to drone button doews not work. put that into the test. re run the test. tell me if it works."
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "it still doesnt work. make a more explicit detailed test for connect button. it should pass all the features"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "when i click connect a popup says \"localhost:5002 says Not connected to WebGCS server\". make a test to run the actual website and press the button to see what happens!"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "same problem. write the test better. think harder."
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "same problem. make the test actually test what happens when the user presses the connect button"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "same problem. fix the test !"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "same problem"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "error when  i press connect button Connection to WebGCS server lost. Please refresh the page.."
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "why don't you get the same error when you press the connect button?"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "think harder"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "server not running?"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "now it connects. what kind of test and instructions can you put into the prd file to make sure this does not happen in the future?"
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "bypassPermissions",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "continue. put all instructions into prd file."
+  }
+]

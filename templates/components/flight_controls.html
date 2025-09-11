@@ -1,0 +1,53 @@
+<!-- Flight Controls Component -->
+<div class="flight-controls-content">
+    <h3>Flight Controls</h3>
+    
+    <div class="control-group">
+        <h4>System Controls</h4>
+        <div class="button-grid">
+            <button id="arm-btn" class="btn btn-danger" disabled>ARM</button>
+            <button id="disarm-btn" class="btn btn-warning" disabled>DISARM</button>
+            <button id="takeoff-btn" class="btn btn-success" disabled>TAKEOFF</button>
+            <button id="land-btn" class="btn btn-info" disabled>LAND</button>
+        </div>
+    </div>
+    
+    <div class="control-group">
+        <h4>Flight Modes</h4>
+        <div class="mode-buttons">
+            <button id="stabilize-btn" class="btn btn-secondary flight-control-btn" disabled>STABILIZE</button>
+            <button id="alt-hold-btn" class="btn btn-secondary flight-control-btn" disabled>ALT HOLD</button>
+            <button id="loiter-btn" class="btn btn-secondary flight-control-btn" disabled>LOITER</button>
+            <button id="guided-btn" class="btn btn-secondary flight-control-btn" disabled>GUIDED</button>
+            <button id="rtl-btn" class="btn btn-secondary flight-control-btn" disabled>RTL</button>
+            <button id="auto-btn" class="btn btn-secondary flight-control-btn" disabled>AUTO</button>
+        </div>
+    </div>
+    
+    <div class="control-group">
+        <h4>Takeoff Settings</h4>
+        <div class="input-row">
+            <label>Altitude (m):</label>
+            <input type="number" id="takeoff-altitude" value="10" min="1" max="100" step="1">
+        </div>
+    </div>
+    
+    <div class="control-group">
+        <h4>Emergency</h4>
+        <button id="emergency-stop-btn" class="btn btn-emergency" disabled>EMERGENCY STOP</button>
+    </div>
+    
+    <!-- Command Status Display -->
+    <div id="command-status" class="command-status"></div>
+    
+    <div class="status-display">
+        <div class="status-item">
+            <label>Armed Status:</label>
+            <span id="armed-status" class="status-unknown">Unknown</span>
+        </div>
+        <div class="status-item">
+            <label>Flight Mode:</label>
+            <span id="flight-mode" class="status-unknown">Unknown</span>
+        </div>
+    </div>
+</div>

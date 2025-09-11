@@ -1,0 +1,98 @@
+2025-09-09 20:26:18,727 - INFO - 
+🚀 STARTING ULTRA-COMPREHENSIVE CONNECT BUTTON TEST
+2025-09-09 20:26:18,727 - INFO - Target: Virtual Drone at 192.168.193.235:5678
+2025-09-09 20:26:19,850 - INFO - Browser initialized with full monitoring
+2025-09-09 20:26:19,850 - INFO - 
+▶️ Starting Phase 1: Pre-Connection State Validation
+2025-09-09 20:26:19,850 - INFO - 
+🔍 PHASE 1: PRE-CONNECTION STATE VALIDATION
+2025-09-09 20:26:20,659 - INFO - [STEP 01] ✅ Website loaded successfully - URL: http://localhost:5002
+2025-09-09 20:26:20,676 - INFO - [STEP 02] ✅ Connect button found - ID: connect-drone-btn
+2025-09-09 20:26:20,681 - INFO - [STEP 03] ✅ Button text correct - Text: 'Connect to Drone'
+2025-09-09 20:26:20,682 - INFO - [STEP 04] ✅ Button is enabled and clickable
+2025-09-09 20:26:20,686 - INFO - [STEP 05] ✅ Connection status shows disconnected - Status: Disconnected
+2025-09-09 20:26:20,687 - INFO - [STEP 06] ⚠️ Heartbeat element not found - Optional element missing
+2025-09-09 20:26:20,689 - INFO - [STEP 07] ✅ WebGCS JavaScript loaded - window.WebGCS exists
+2025-09-09 20:26:20,689 - INFO - ✅ Phase 1: Pre-Connection State Validation PASSED
+2025-09-09 20:26:20,689 - INFO - 
+▶️ Starting Phase 2: SocketIO Connection Validation
+2025-09-09 20:26:20,689 - INFO - 
+🔌 PHASE 2: SOCKETIO CONNECTION VALIDATION
+2025-09-09 20:26:20,689 - INFO - [STEP 08] ✅ SocketIO library loaded - window.io exists
+2025-09-09 20:26:20,690 - INFO - [STEP 09] ❌ Socket NOT CONNECTED - socket.connected = false
+2025-09-09 20:26:20,690 - ERROR - ❌ Phase 2: SocketIO Connection Validation FAILED
+2025-09-09 20:26:20,690 - INFO - 
+================================================================================
+CONNECT BUTTON ULTRA-COMPREHENSIVE TEST REPORT
+================================================================================
+
+SUMMARY:
+  Total Steps: 9
+  ✅ Passed: 7
+  ❌ Failed: 1
+  ⚠️ Warnings: 1
+  Success Rate: 77.8%
+
+🚨 FAILURE POINT: Step 9: Socket NOT CONNECTED
+
+Phase 1: Pre-Connection State: ❌ FAILED (6/7)
+Phase 2: SocketIO Connection: ❌ FAILED (1/2)
+Phase 3: Button Click Execution: ✅ PASSED (0/0)
+Phase 4: Backend Processing: ✅ PASSED (0/0)
+Phase 5: Response Handling: ✅ PASSED (0/0)
+Phase 6: UI State Updates: ✅ PASSED (0/0)
+Phase 7: Real Data Validation: ✅ PASSED (0/0)
+
+DETAILED STEP RESULTS:
+--------------------------------------------------
+Step 01: ✅ Website loaded successfully
+          Details: URL: http://localhost:5002
+Step 02: ✅ Connect button found
+          Details: ID: connect-drone-btn
+Step 03: ✅ Button text correct
+          Details: Text: 'Connect to Drone'
+Step 04: ✅ Button is enabled and clickable
+Step 05: ✅ Connection status shows disconnected
+          Details: Status: Disconnected
+Step 06: ⚠️ Heartbeat element not found
+          Details: Optional element missing
+Step 07: ✅ WebGCS JavaScript loaded
+          Details: window.WebGCS exists
+Step 08: ✅ SocketIO library loaded
+          Details: window.io exists
+Step 09: ❌ Socket NOT CONNECTED
+          Details: socket.connected = false
+
+CONSOLE LOGS (last 20):
+------------------------------
+  [log] Initializing WebGCS...
+  [log] Initializing connection manager...
+  [log] Connecting to WebGCS server...
+  [log] Setting up SocketIO event handlers...
+  [log] Initializing telemetry display...
+  [log] Initializing flight controls...
+  [log] Initializing Primary Flight Display...
+  [log] Initializing input validation...
+  [log] UI components initialized
+  [log] WebGCS initialization complete
+  [error] Failed to load resource: the server responded with a status of 404 (NOT FOUND)
+
+NETWORK REQUESTS:
+--------------------
+  GET http://localhost:5002/static/js/telemetry.js
+  GET http://localhost:5002/static/js/controls.js
+  GET http://localhost:5002/static/js/map.js
+  GET http://localhost:5002/static/js/pfd.js
+  GET http://localhost:5002/static/js/validation.js
+  GET http://localhost:5002/api/status
+  GET http://localhost:5002/socket.io/?EIO=4&transport=polling&t=PangFF8
+  POST http://localhost:5002/socket.io/?EIO=4&transport=polling&t=PangFFl&sid=b0tFgvnJcKCCUtslAAAI
+  GET http://localhost:5002/socket.io/?EIO=4&transport=polling&t=PangFFn&sid=b0tFgvnJcKCCUtslAAAI
+  GET http://localhost:5002/socket.io/?EIO=4&transport=polling&t=PangFFs&sid=b0tFgvnJcKCCUtslAAAI
+
+================================================================================
+
+2025-09-09 20:26:20,810 - ERROR - 
+💥 CONNECT BUTTON TEST: FAILED
+2025-09-09 20:26:20,810 - ERROR - Failure point: Step 9: Socket NOT CONNECTED
+2025-09-09 20:26:20,810 - ERROR - Check the detailed report for exact failure location.

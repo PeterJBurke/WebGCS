@@ -1,0 +1,54 @@
+<!-- Primary Flight Display Component -->
+<div class="pfd-display-content">
+    <h3>Primary Flight Display</h3>
+    
+    <div class="pfd-container">
+        <canvas id="pfd-canvas" width="800" height="600"></canvas>
+        
+        <!-- PFD Status Overlay -->
+        <div class="pfd-status-overlay">
+            <div class="armed-indicator" id="armed-indicator">
+                <span id="armed-text">DISARMED</span>
+            </div>
+            
+            <div class="connection-indicator" id="pfd-connection">
+                <span>NO DATA</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PFD Data Display -->
+    <div class="pfd-data-panel">
+        <div class="data-group">
+            <h4>Attitude</h4>
+            <div class="data-item">
+                <label>Pitch:</label>
+                <span id="pitch-value">0.0°</span>
+            </div>
+            <div class="data-item">
+                <label>Roll:</label>
+                <span id="roll-value">0.0°</span>
+            </div>
+            <div class="data-item">
+                <label>Yaw:</label>
+                <span id="yaw-value">0.0°</span>
+            </div>
+        </div>
+        
+        <div class="data-group">
+            <h4>Position</h4>
+            <div class="data-item">
+                <label>Altitude:</label>
+                <span id="altitude-value">0.0 m</span>
+            </div>
+            <div class="data-item">
+                <label>Ground Speed:</label>
+                <span id="groundspeed-value">0.0 m/s</span>
+            </div>
+            <div class="data-item">
+                <label>Vertical Speed:</label>
+                <span id="verticalspeed-value">0.0 m/s</span>
+            </div>
+        </div>
+    </div>
+</div>

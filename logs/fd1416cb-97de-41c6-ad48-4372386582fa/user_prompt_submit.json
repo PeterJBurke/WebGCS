@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "fd1416cb-97de-41c6-ad48-4372386582fa",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/fd1416cb-97de-41c6-ad48-4372386582fa.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "@INITIAL_SETUP_PROMPT.md "
+  }
+]

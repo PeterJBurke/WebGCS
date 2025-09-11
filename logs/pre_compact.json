@@ -1,0 +1,26 @@
+[
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "hook_event_name": "PreCompact",
+    "trigger": "auto",
+    "custom_instructions": null
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "hook_event_name": "PreCompact",
+    "trigger": "auto",
+    "custom_instructions": null
+  },
+  {
+    "session_id": "64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/64f19afe-6ce3-4f8d-ae8a-2ee78ccbdbf8.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "hook_event_name": "PreCompact",
+    "trigger": "auto",
+    "custom_instructions": null
+  }
+]

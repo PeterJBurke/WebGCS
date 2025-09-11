@@ -1,0 +1,32 @@
+{
+  "user_experience": {
+    "popups_appeared": false,
+    "popup_messages": [],
+    "button_changed": true,
+    "connection_established": true,
+    "console_messages": [
+      "[log] Initializing WebGCS...",
+      "[log] Initializing connection manager...",
+      "[log] Connecting to WebGCS server...",
+      "[log] Setting up SocketIO event handlers...",
+      "[log] Initializing telemetry display...",
+      "[log] Initializing flight controls...",
+      "[log] Initializing Primary Flight Display...",
+      "[log] Initializing input validation...",
+      "[log] UI components initialized",
+      "[log] WebGCS initialization complete",
+      "[log] Drone disconnected: {status: disconnected, timestamp: null}",
+      "[log] System status update: {mavlink_connected: false, drone_armed: false, flight_mode: UNKNOWN, last_heartbeat: null}",
+      "[log] \u2705 Connected to WebGCS server",
+      "[log] Socket ID: j4x2ugRBsweudPVIAAAD",
+      "[log] \ud83d\udce1 WebGCS connection established",
+      "[error] Failed to load resource: the server responded with a status of 404 (NOT FOUND)",
+      "[log] \ud83d\udd18 Connect button clicked",
+      "[log] \ud83d\udd0c Sending connect command",
+      "[log] Sending command: connect_drone {}",
+      "[log] Telemetry update received: {timestamp: 2025-09-09T21:09:23.187377, last_heartbeat: 2025-09-09T21:09:23.187377, connection_status: Object}",
+      "[log] System status update: {mavlink_connected: true, drone_armed: false, flight_mode: UNKNOWN, last_heartbeat: 2025-09-09T21:09:23.187377}",
+      "[log] Drone connected: {status: connected, message: Drone connected successfully}"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "session_id": "4969a218-2a0e-4522-b159-065dd2221c3f",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/4969a218-2a0e-4522-b159-065dd2221c3f.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "is the playwright mcp available"
+  },
+  {
+    "session_id": "4969a218-2a0e-4522-b159-065dd2221c3f",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/4969a218-2a0e-4522-b159-065dd2221c3f.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "add it"
+  }
+]

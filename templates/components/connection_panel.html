@@ -1,0 +1,41 @@
+<!-- Connection Panel Component -->
+<div class="connection-panel-content">
+    <h3>MAVLink Connection</h3>
+    
+    <div class="connection-info">
+        <div class="info-item">
+            <label>Drone Endpoint:</label>
+            <span id="drone-endpoint">192.168.193.235:5678</span>
+        </div>
+        <div class="info-item">
+            <label>Connection Status:</label>
+            <span id="connection-status-text" class="status-disconnected">Disconnected</span>
+        </div>
+        <div class="info-item">
+            <label>Last Heartbeat:</label>
+            <span id="last-heartbeat">Never</span>
+        </div>
+    </div>
+    
+    <div class="connection-controls">
+        <button id="connect-drone-btn" class="btn btn-primary">Connect to Drone</button>
+    </div>
+    
+    <div class="connection-info">
+        <div class="info-item">
+            <label>Link Quality:</label>
+            <span id="telemetry-connection-quality">0%</span>
+        </div>
+        <div class="info-item">
+            <label>Last Heartbeat:</label>
+            <span id="telemetry-last-heartbeat">Never</span>
+        </div>
+    </div>
+    
+    <div class="connection-log">
+        <h4>Connection Log</h4>
+        <div id="connection-log-content" class="log-content">
+            <p>Ready to connect...</p>
+        </div>
+    </div>
+</div>

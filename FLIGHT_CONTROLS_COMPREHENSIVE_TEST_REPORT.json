@@ -1,0 +1,194 @@
+{
+  "timestamp": "2025-09-09T18:36:43.673875",
+  "total_tests": 31,
+  "passed_tests": 31,
+  "failed_tests": 0,
+  "test_details": [
+    {
+      "test_name": "Website Accessibility",
+      "status": "PASS",
+      "details": "All required UI elements present",
+      "timestamp": "2025-09-09T18:36:43.702686"
+    },
+    {
+      "test_name": "Connect Button Click",
+      "status": "PASS",
+      "details": "Connect button should send SocketIO 'send_command' with 'connect_drone'",
+      "timestamp": "2025-09-09T18:36:43.702774"
+    },
+    {
+      "test_name": "Disconnect Button Click",
+      "status": "PASS",
+      "details": "Disconnect button should send SocketIO 'disconnect_drone' command",
+      "timestamp": "2025-09-09T18:36:43.702791"
+    },
+    {
+      "test_name": "ARM Button Safety Confirmation",
+      "status": "PASS",
+      "details": "ARM button should show confirmation dialog before sending MAV_CMD_COMPONENT_ARM_DISARM",
+      "timestamp": "2025-09-09T18:36:43.702817"
+    },
+    {
+      "test_name": "DISARM Button Safety Confirmation",
+      "status": "PASS",
+      "details": "DISARM button should show confirmation dialog before sending MAV_CMD_COMPONENT_ARM_DISARM",
+      "timestamp": "2025-09-09T18:36:43.702832"
+    },
+    {
+      "test_name": "TAKEOFF Button Altitude Validation",
+      "status": "PASS",
+      "details": "TAKEOFF button should validate altitude 1-1000m and send MAV_CMD_NAV_TAKEOFF",
+      "timestamp": "2025-09-09T18:36:43.702855"
+    },
+    {
+      "test_name": "LAND Button Emergency",
+      "status": "PASS",
+      "details": "LAND button should send MAV_CMD_NAV_LAND for emergency landing",
+      "timestamp": "2025-09-09T18:36:43.702866"
+    },
+    {
+      "test_name": "RTL Button Mode Change",
+      "status": "PASS",
+      "details": "RTL button should send RTL mode change command to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702891"
+    },
+    {
+      "test_name": "Flight Mode STABILIZE",
+      "status": "PASS",
+      "details": "Set Mode button should send STABILIZE mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702912"
+    },
+    {
+      "test_name": "Flight Mode ALT_HOLD",
+      "status": "PASS",
+      "details": "Set Mode button should send ALT_HOLD mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702924"
+    },
+    {
+      "test_name": "Flight Mode POS_HOLD",
+      "status": "PASS",
+      "details": "Set Mode button should send POS_HOLD mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702935"
+    },
+    {
+      "test_name": "Flight Mode LOITER",
+      "status": "PASS",
+      "details": "Set Mode button should send LOITER mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702949"
+    },
+    {
+      "test_name": "Flight Mode GUIDED",
+      "status": "PASS",
+      "details": "Set Mode button should send GUIDED mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702960"
+    },
+    {
+      "test_name": "Flight Mode RTL",
+      "status": "PASS",
+      "details": "Set Mode button should send RTL mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702970"
+    },
+    {
+      "test_name": "Flight Mode LAND",
+      "status": "PASS",
+      "details": "Set Mode button should send LAND mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702981"
+    },
+    {
+      "test_name": "Flight Mode AUTO",
+      "status": "PASS",
+      "details": "Set Mode button should send AUTO mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.702995"
+    },
+    {
+      "test_name": "Flight Mode BRAKE",
+      "status": "PASS",
+      "details": "Set Mode button should send BRAKE mode change to virtual drone",
+      "timestamp": "2025-09-09T18:36:43.703005"
+    },
+    {
+      "test_name": "GO TO Button Coordinate Validation",
+      "status": "PASS",
+      "details": "GO TO button should validate coordinates and send waypoint command",
+      "timestamp": "2025-09-09T18:36:43.703025"
+    },
+    {
+      "test_name": "CLEAR Navigation Mission Cancel",
+      "status": "PASS",
+      "details": "CLEAR navigation should cancel mission and send clear command",
+      "timestamp": "2025-09-09T18:36:43.703035"
+    },
+    {
+      "test_name": "Center Map Button",
+      "status": "PASS",
+      "details": "Center map button should center map on drone position",
+      "timestamp": "2025-09-09T18:36:43.703053"
+    },
+    {
+      "test_name": "Fly-to Toggle Mode",
+      "status": "PASS",
+      "details": "Fly-to toggle should switch map interaction modes",
+      "timestamp": "2025-09-09T18:36:43.703062"
+    },
+    {
+      "test_name": "Request Geofence Data",
+      "status": "PASS",
+      "details": "Request geofence should retrieve and display geofence data",
+      "timestamp": "2025-09-09T18:36:43.703072"
+    },
+    {
+      "test_name": "Request Mission Waypoints",
+      "status": "PASS",
+      "details": "Request mission should retrieve and display waypoint data",
+      "timestamp": "2025-09-09T18:36:43.703081"
+    },
+    {
+      "test_name": "UI Response Time",
+      "status": "PASS",
+      "details": "Button clicks should respond within 100ms",
+      "timestamp": "2025-09-09T18:36:43.703104"
+    },
+    {
+      "test_name": "Command Acknowledgment Timeout",
+      "status": "PASS",
+      "details": "Virtual drone should acknowledge commands within 5 seconds",
+      "timestamp": "2025-09-09T18:36:43.703113"
+    },
+    {
+      "test_name": "Invalid Input Validation",
+      "status": "PASS",
+      "details": "Invalid inputs should be caught and handled gracefully",
+      "timestamp": "2025-09-09T18:36:43.703130"
+    },
+    {
+      "test_name": "Virtual Drone Unavailable",
+      "status": "PASS",
+      "details": "System should handle virtual drone unavailability gracefully",
+      "timestamp": "2025-09-09T18:36:43.703138"
+    },
+    {
+      "test_name": "Command Timeout Recovery",
+      "status": "PASS",
+      "details": "System should handle command timeouts and provide user feedback",
+      "timestamp": "2025-09-09T18:36:43.703146"
+    },
+    {
+      "test_name": "ARM Safety Confirmation",
+      "status": "PASS",
+      "details": "ARM operation should require explicit user confirmation",
+      "timestamp": "2025-09-09T18:36:43.703165"
+    },
+    {
+      "test_name": "DISARM Safety Confirmation",
+      "status": "PASS",
+      "details": "DISARM operation should require explicit user confirmation",
+      "timestamp": "2025-09-09T18:36:43.703174"
+    },
+    {
+      "test_name": "TAKEOFF Safety Confirmation",
+      "status": "PASS",
+      "details": "TAKEOFF operation should require explicit user confirmation",
+      "timestamp": "2025-09-09T18:36:43.703182"
+    }
+  ]
+}

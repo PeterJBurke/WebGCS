@@ -1,0 +1,102 @@
+{
+  "agent_totals": {
+    "main": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "coordinator-agent": {
+      "input": 1000,
+      "output": 600,
+      "total": 1600
+    },
+    "mavlink-protocol-agent": {
+      "input": 1200,
+      "output": 800,
+      "total": 2000
+    },
+    "web-interface-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "request-handlers-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "infrastructure-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "connection-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "flight-controls-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "navigation-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "telemetry-display-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "map-interface-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "ui-validation-testing-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "virtual-drone-communication-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    },
+    "token-tracking-agent": {
+      "input": 0,
+      "output": 0,
+      "total": 0
+    }
+  },
+  "usage_records": [
+    {
+      "agent_name": "mavlink-protocol-agent",
+      "input_tokens": 1200,
+      "output_tokens": 800,
+      "timestamp": 1757459112.316813,
+      "task_description": "Phase 1 MAVLink Foundation implementation complete"
+    },
+    {
+      "agent_name": "coordinator-agent",
+      "input_tokens": 500,
+      "output_tokens": 300,
+      "timestamp": 1757460637.215724,
+      "task_description": "Application startup"
+    },
+    {
+      "agent_name": "coordinator-agent",
+      "input_tokens": 500,
+      "output_tokens": 300,
+      "timestamp": 1757476546.002671,
+      "task_description": "Application startup"
+    }
+  ]
+}

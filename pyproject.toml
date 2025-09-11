@@ -1,0 +1,20 @@
+[project]
+name = "webgcs7"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp>=3.12.15",
+    "beautifulsoup4>=4.13.5",
+    "eventlet>=0.40.3",
+    "flask>=3.1.2",
+    "flask-socketio>=5.0,<6.0",
+    "playwright>=1.55.0",
+    "pymavlink>=2.4.49",
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.1.0",
+    "python-dotenv>=1.1.1",
+    "python-socketio[asyncio]>=5.13.0",
+    "requests>=2.32.5",
+]

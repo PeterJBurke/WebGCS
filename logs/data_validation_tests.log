@@ -1,0 +1,31 @@
+2025-09-09 19:49:38,834 - __main__ - INFO - ============================================================
+2025-09-09 19:49:38,834 - __main__ - INFO - STARTING DATA VALIDATION TEST SUITE
+2025-09-09 19:49:38,834 - __main__ - INFO - ============================================================
+2025-09-09 19:49:38,834 - __main__ - INFO - Test suite started at: 2025-09-09 19:49:38.834632
+2025-09-09 19:49:38,834 - __main__ - INFO - 
+2025-09-09 19:49:38,834 - __main__ - INFO - Running TEST-011: Real MAVLink Connection Validation
+2025-09-09 19:49:38,834 - __main__ - INFO - --------------------------------------------------
+2025-09-09 19:50:24,913 - __main__ - ERROR - ❌ TEST-011 FAILED: Real MAVLink Connection Validation
+2025-09-09 19:50:24,913 - __main__ - ERROR -    Failure details: 2025-09-09 19:49:49,663 - test_011_real_mavlink_connection - INFO - Waiting for real MAVLink heartbeat messages...
+------------------------------ Captured log call -------------------------------
+INFO     test_011_real_mavlink_connection:test_011_real_mavlink_connection.py:95 Clicking connect button to initiate real MAVLink connection
+INFO     test_011_real_mavlink_connection:test_011_real_mavlink_connection.py:109 Waiting for real MAVLink heartbeat messages...
+=========================== short test summary info ============================
+FAILED tests/test_011_real_mavlink_connection.py::TestRealMAVLinkConnection::test_backend_mavlink_connection_establishment
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+========================= 1 failed, 1 passed in 45.91s =========================
+
+
+2025-09-09 19:50:24,913 - __main__ - INFO - 
+2025-09-09 19:50:26,915 - __main__ - INFO - Running TEST-012: Telemetry Data Flow Validation
+2025-09-09 19:50:26,915 - __main__ - INFO - --------------------------------------------------
+2025-09-09 19:50:56,341 - __main__ - ERROR - ❌ TEST-012 FAILED: Telemetry Data Flow Validation
+2025-09-09 19:50:56,341 - __main__ - ERROR -    Failure details: E   AssertionError: FAILED: No real GLOBAL_POSITION_INT data displayed. Lat: 'N/A', Lon: 'N/A', Alt: 'N/A'. Values appear to be placeholders/defaults. Real MAVLink position messages not flowing to UI.
+2025-09-09 19:50:56,341 - __main__ - INFO - 
+2025-09-09 19:50:58,347 - __main__ - INFO - Running TEST-013: HUD Data Display Validation
+2025-09-09 19:50:58,347 - __main__ - INFO - --------------------------------------------------
+2025-09-09 19:51:27,794 - __main__ - ERROR - ❌ TEST-013 FAILED: HUD Data Display Validation
+2025-09-09 19:51:27,794 - __main__ - ERROR -    Failure details: E   AssertionError: FAILED: Flight data tapes showing placeholder data. No real airspeed/altitude/heading data from drone displayed in HUD tapes.
+2025-09-09 19:51:27,794 - __main__ - INFO - 
+2025-09-09 19:51:29,799 - __main__ - INFO - Running TEST-014: Map Data Display Validation
+2025-09-09 19:51:29,799 - __main__ - INFO - --------------------------------------------------

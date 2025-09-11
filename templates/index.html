@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGCS - Ground Control Station</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>WebGCS - Ground Control Station</h1>
+            <div class="connection-indicator" id="connection-status">Disconnected</div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Connection Panel -->
+            <div class="panel connection-panel">
+                {% include 'components/connection_panel.html' %}
+            </div>
+
+            <!-- Flight Controls -->
+            <div class="panel flight-controls">
+                {% include 'components/flight_controls.html' %}
+            </div>
+
+            <!-- Navigation Panel -->
+            <div class="panel navigation-panel">
+                {% include 'components/navigation_panel.html' %}
+            </div>
+
+            <!-- Primary Flight Display -->
+            <div class="panel pfd-display">
+                {% include 'components/pfd_display.html' %}
+            </div>
+
+            <!-- Map Container -->
+            <div class="panel map-container">
+                {% include 'components/map_container.html' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/connection.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/telemetry.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pfd.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+</body>
+</html>
