@@ -1,0 +1,9 @@
+[
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "hook_event_name": "SessionStart",
+    "source": "startup"
+  }
+]

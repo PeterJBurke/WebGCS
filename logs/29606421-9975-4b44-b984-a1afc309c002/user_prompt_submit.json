@@ -1,0 +1,122 @@
+[
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "read all the md files. Next, create a new md file. The new files should be a prd that also includes the instructions from all the other md files, including claude.md. HOWEVER, it should be an md file that I can use to prompt replit. So the only thing different is there will be no subagents and no need to configure claude code. Think harder."
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "the prd does not say the website has to have a heartbeat icon that beats when messages are received. the prd does not say the heartbeat messages should be  one hertz. the prd does not say there should be a heartbeat sound every time a heartbeat is received. change this"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Remove code examples and file and directory structure from the prd. Let the ai handle that."
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Remove example code snippets. Let the ai handle that.\n"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "\nRemove names of test python files. Let the ai handle that.\n"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Make sure to tell the ai to deploy the website and click on the buttons and confirm it works IN THE WEBSITE ITSELF (UI), not backend code or server. This is for ALL tests.\n"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Make the final test:\nLuanch the website.\nConnect to the drone by clicking it on the website.\nObserve a connection IN THE WEBSITE ITSELF (UI), not backend code or server.\nObserve the location of the drone on a map IN THE WEBSITE ITSELF (UI), not backend code or server.\nObserve all the drone telemetry data IN THE WEBSITE ITSELF (UI), not backend code or server.\nClick arm and takeoff. Make sure the drone takes off IN THE WEBSITE ITSELF (UI), not backend code or server.\n"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Use bootstrap for the UI.\n"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "add requirement that all bootstrap code needed for the website is locally cached in case there is not internet access"
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "remove the project structure directory format. let the ai decide it ."
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Change the IP address for the drone to:\n172.233.128.95:5678.\nAdd a requirement (and test) that this is the default IP address on the website.\nIt should be tested by loading the website and reading the value on the UI (not the backend server code)."
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "update @WEBGCS_REPLIT_PRD.md "
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "you have the wrong ip address and you did not remove the directory structure. "
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "for @WEBGCS_REPLIT_PRD.md confirm you have done all of the following: Remove code examples and file and directory structure from the prd. Let the ai handle that.\n\nRemove example code snippets. Let the ai handle that.\n\n\nRemove names of test python files. Let the ai handle that.\n\n\n\nMake sure to tell the ai to deploy the website and click on the buttons and confirm it works IN THE WEBSITE ITSELF (UI), not backend code or server. This is for ALL tests.\n\nMake the final test:\nLuanch the website.\nConnect to the drone by clicking it on the website.\nObserve a connection IN THE WEBSITE ITSELF (UI), not backend code or server.\nObserve the location of the drone on a map IN THE WEBSITE ITSELF (UI), not backend code or server.\nObserve all the drone telemetry data IN THE WEBSITE ITSELF (UI), not backend code or server.\nClick arm and takeoff. Make sure the drone takes off IN THE WEBSITE ITSELF (UI), not backend code or server.\n\nUse bootstrap for the UI.\n\n\nChange the IP address for the drone to:\n172.233.128.95:5678.\nAdd a requirement (and test) that this is the default IP address on the website.\nIt should be tested by loading the website and reading the value on the UI (not the backend server code)."
+  },
+  {
+    "session_id": "29606421-9975-4b44-b984-a1afc309c002",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/29606421-9975-4b44-b984-a1afc309c002.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "replit does not use localhost per se to deploy a website. it has it's own internal structre. so remove all the references to the details of how to deploy the website in @WEBGCS_REPLIT_PRD.md "
+  }
+]
