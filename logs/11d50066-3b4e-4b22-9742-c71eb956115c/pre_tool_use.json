@@ -1,0 +1,93 @@
+[
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "- TEST-002: Heartbeat message reception\n  * Receive HEARTBEAT messages at 1Hz (every 1 second)\n  * Parse system ID, component ID, and vehicle type\n  * Test heartbeat timeout detection\n  * Verify heartbeat animation triggers on message receipt\n  * Test heartbeat audio beep functionality",
+      "new_string": "- TEST-002: Heartbeat message reception\n  * Receive HEARTBEAT messages at 1Hz (every 1 second)\n  * Parse system ID, component ID, and vehicle type\n  * Test heartbeat timeout detection\n  * Verify heartbeat animation triggers on message receipt\n  * **\ud83d\udd0a HEARTBEAT AUDIO STRICT TEST**: Audio beep ONLY plays for HEARTBEAT messages, NOT other MAVLink messages\n  * **\ud83d\udea8 CRITICAL**: Test that ATTITUDE, GLOBAL_POSITION_INT, VFR_HUD messages do NOT trigger audio"
+    }
+  },
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "- TEST-013: Real MAVLink connection validation\n  * **BROWSER TESTING**: Open website in browser, click Connect button, observe UI changes\n  * **VISUAL VERIFICATION**: Watch heartbeat visual indicator pulse at 1Hz in browser\n  * **AUDIO TESTING**: Listen for heartbeat audio beep in browser interface\n  * **UI VALIDATION**: See heartbeat counter increment in connection panel on website",
+      "new_string": "- TEST-013: Real MAVLink connection validation\n  * **BROWSER TESTING**: Open website in browser, click Connect button, observe UI changes\n  * **VISUAL VERIFICATION**: Watch heartbeat visual indicator pulse at 1Hz in browser\n  * **\ud83d\udd0a STRICT AUDIO TESTING**: Listen for heartbeat audio beep ONLY on HEARTBEAT messages\n  * **\u274c AUDIO PROHIBITION**: Verify NO audio on ATTITUDE, POSITION, or other MAVLink messages\n  * **UI VALIDATION**: See heartbeat counter increment in connection panel on website\n- TEST-013a: **WEBSITE HEARTBEAT RATE VALIDATION**\n  * **\ud83c\udf10 BROWSER TESTING**: Open deployed website, connect to drone\n  * **\u23f1\ufe0f TIME HEARTBEAT AUDIO**: Count audio beeps over 30 seconds - should be exactly 30 beeps\n  * **\ud83d\udcca VISUAL COUNTER**: Watch heartbeat counter increment exactly once per second\n  * **\ud83d\udea8 STRICT TIMING**: Test FAILS if heartbeat rate is not 1Hz (\u00b10.1 second tolerance)\n  * **\ud83d\udccb REAL DATA ONLY**: No mock heartbeats - must use actual MAVLink HEARTBEAT messages"
+    }
+  },
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "- TEST-016: Map data display validation",
+      "new_string": "- TEST-016: **REAL MAP TILES VALIDATION** \n  * **\ud83c\udf10 BROWSER TESTING**: Open website and observe map in browser interface\n  * **\ud83d\uddfa\ufe0f NO PLACEHOLDERS**: Map MUST show real OpenStreetMap tiles with streets, buildings, labels\n  * **\u274c BLACK MAP PROHIBITION**: Test FAILS if map shows black/blank background\n  * **\ud83d\udea8 STRICT REQUIREMENT**: Must use Leaflet with real OSM tile servers\n  * **\ud83d\udccd STREET VISIBILITY**: Zoom in and verify actual street names and geographic features visible\n  * **\ud83d\udcbe OFFLINE CAPABILITY**: Test map tiles load and cache for offline use"
+    }
+  },
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "## User Interface Layout\n\n### Bootstrap 5 Responsive Design\n- **Framework**: Use Bootstrap 5 for responsive grid system and professional UI components\n- **Grid Layout**: Bootstrap container-fluid with responsive columns for different screen sizes\n- **Component Styling**: Bootstrap buttons, forms, cards, alerts, and navigation components\n- **Responsive Breakpoints**: Adapt layout for desktop, tablet, and mobile devices\n- **Professional Appearance**: Clean, modern interface using Bootstrap's design system\n- **\ud83d\udea8 OFFLINE REQUIREMENT**: All Bootstrap 5 assets (CSS, JS) MUST be locally cached/bundled\n- **No CDN Dependencies**: Do not use Bootstrap CDN links - download and serve locally\n- **Internet Independence**: Website must work without internet access for Bootstrap assets\n\n### Main Interface Components\n- **Primary Flight Display (VFR HUD)**: Bootstrap card containing 800x600px canvas with artificial horizon, flight tapes, and all 15 required components\n- **Interactive Map**: Bootstrap card with drone position, home marker, target markers, and click-to-fly functionality\n- **Connection Panel**: Bootstrap form with input groups for IP/port, styled buttons for Connect/Disconnect, connection status badges, heartbeat indicator\n- **Flight Controls**: Bootstrap button groups for ARM, DISARM, TAKEOFF (with input group for altitude), LAND, RTL, and styled dropdown for flight mode selection\n- **Navigation Panel**: Bootstrap form with input groups for latitude, longitude, altitude and styled action buttons\n- **Request Panel**: Bootstrap button toolbar for geofence and mission request buttons\n- **Message Log**: Bootstrap card with scrollable body containing timestamped system messages",
+      "new_string": "## User Interface Layout\n\n### Bootstrap 5 Responsive Design\n- **Framework**: Use Bootstrap 5 for responsive grid system and professional UI components\n- **Grid Layout**: Bootstrap container-fluid with responsive columns for different screen sizes\n- **Component Styling**: Bootstrap buttons, forms, cards, alerts, and navigation components\n- **Responsive Breakpoints**: Adapt layout for desktop, tablet, and mobile devices\n- **Professional Appearance**: Clean, modern interface using Bootstrap's design system\n- **\ud83d\udea8 OFFLINE REQUIREMENT**: All Bootstrap 5 assets (CSS, JS) MUST be locally cached/bundled\n- **No CDN Dependencies**: Do not use Bootstrap CDN links - download and serve locally\n- **Internet Independence**: Website must work without internet access for Bootstrap assets\n\n### **\ud83d\udea8 STRICT LAYOUT REQUIREMENTS**\n- **VFR HUD Position**: Top-left quarter of screen (25% of total screen space)\n- **Map Position**: Right half of screen (50% of total screen space) \n- **Controls Position**: Below HUD in remaining bottom-left area\n- **No Layout Deviation**: Test FAILS if HUD is not in top-left quarter or map is not right half\n\n### Main Interface Components\n- **Primary Flight Display (VFR HUD)**: Bootstrap card in TOP-LEFT quarter containing 800x600px canvas with artificial horizon, flight tapes, and all 15 required components\n- **Interactive Map**: Bootstrap card taking RIGHT HALF of screen with real OpenStreetMap tiles, drone position, home marker, target markers, and click-to-fly functionality\n- **Connection Panel**: Bootstrap form below HUD with input groups for IP/port, styled buttons for Connect/Disconnect, connection status badges, heartbeat indicator\n- **Flight Controls**: Bootstrap button groups below HUD for ARM, DISARM, TAKEOFF (with input group for altitude), LAND, RTL, and styled dropdown for flight mode selection\n- **Navigation Panel**: Bootstrap form below HUD with input groups for latitude, longitude, altitude and styled action buttons\n- **Request Panel**: Bootstrap button toolbar below HUD for geofence and mission request buttons\n- **Message Log**: Bootstrap card below HUD with scrollable body containing timestamped system messages"
+    }
+  },
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "**Map Interface Tests:**\n- TEST-028: Map drone position validation\n- TEST-029: Fly-to real command validation\n- TEST-030: Map interface interactions",
+      "new_string": "**Map Interface Tests:**\n- TEST-028: **LAYOUT POSITION VALIDATION**\n  * **\ud83c\udf10 BROWSER TESTING**: Open website and measure component positions\n  * **\ud83d\udccf HUD POSITION**: Verify VFR HUD is in top-left quarter (25% of screen)\n  * **\ud83d\udccf MAP POSITION**: Verify map takes right half of screen (50% of screen)\n  * **\ud83d\udccf CONTROLS POSITION**: Verify controls are below HUD in bottom-left area\n  * **\ud83d\udea8 STRICT MEASUREMENT**: Test FAILS if layout deviates from specified positions\n- TEST-029: **REAL MAP IMPLEMENTATION**\n  * **\ud83c\udf10 BROWSER TESTING**: Reload website and observe map area\n  * **\ud83d\uddfa\ufe0f OPENSTREETMAP**: Verify Leaflet map loads real OSM tiles with streets/buildings\n  * **\u274c NO BLACK MAP**: Test FAILS if map shows black/empty background\n  * **\ud83d\udd0d ZOOM FUNCTIONALITY**: Test map zoom shows increasing detail levels\n  * **\ud83d\udccd TILE VALIDATION**: Verify map tiles show actual geographic features\n- TEST-030: **DRONE POSITION MAP DISPLAY**\n  * **\ud83c\udf10 BROWSER TESTING**: Connect to drone and observe map\n  * **\ud83d\udccd DRONE MARKER**: Verify blue drone marker appears at correct GPS coordinates\n  * **\ud83d\udd04 POSITION UPDATES**: Watch drone marker move as GPS position changes\n  * **\u274c NO PAGE REFRESH**: Verify map updates WITHOUT full webpage reload\n  * **\u26a1 PARTIAL UPDATES**: Only drone marker position changes, not entire map\n  * **\ud83d\udea8 REAL GPS DATA**: Must use actual GLOBAL_POSITION_INT messages from drone"
+    }
+  },
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "- **Interactive Map**: Bootstrap card taking RIGHT HALF of screen with real OpenStreetMap tiles, drone position, home marker, target markers, and click-to-fly functionality",
+      "new_string": "- **Interactive Map**: Bootstrap card taking RIGHT HALF of screen with **REAL OpenStreetMap tiles using Leaflet**, drone position, home marker, target markers, and click-to-fly functionality"
+    }
+  },
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "acceptEdits",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "### Key Features\n- Real-time telemetry display at 10Hz\n- Professional Primary Flight Display (VFR HUD) with artificial horizon\n- Interactive map with click-to-fly functionality\n- Flight control buttons (ARM, DISARM, TAKEOFF, LAND, RTL, mode changes)\n- Safety confirmations for critical operations\n- Mission and geofence management\n- Offline map tile support\n- **Heartbeat audio feedback**: Audio beep played on each heartbeat (1Hz rate)\n- **Heartbeat visual indicator**: Animated heart icon that pulses with each heartbeat\n- Voice announcements and configurable audio feedback\n- Multi-device responsive design with Bootstrap 5\n- **Offline functionality**: Works without internet (local Bootstrap assets, offline maps)",
+      "new_string": "### Key Features\n- Real-time telemetry display at 10Hz\n- Professional Primary Flight Display (VFR HUD) with artificial horizon in top-left quarter\n- **Real OpenStreetMap with Leaflet**: Interactive map with actual street tiles taking right half of screen\n- Flight control buttons (ARM, DISARM, TAKEOFF, LAND, RTL, mode changes)\n- Safety confirmations for critical operations\n- Mission and geofence management\n- Offline map tile support\n- **Heartbeat audio feedback**: Audio beep played ONLY on HEARTBEAT messages (1Hz rate)\n- **Heartbeat visual indicator**: Animated heart icon that pulses with each heartbeat\n- Voice announcements and configurable audio feedback\n- Multi-device responsive design with Bootstrap 5\n- **Offline functionality**: Works without internet (local Bootstrap assets, offline maps)\n- **Efficient updates**: Partial UI updates without full page reloads"
+    }
+  }
+]

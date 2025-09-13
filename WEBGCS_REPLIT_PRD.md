@@ -15,17 +15,18 @@ WebGCS is a production-ready, safety-critical web-based ground control station f
 
 ### Key Features
 - Real-time telemetry display at 10Hz
-- Professional Primary Flight Display (VFR HUD) with artificial horizon
-- Interactive map with click-to-fly functionality
+- Professional Primary Flight Display (VFR HUD) with artificial horizon in top-left quarter
+- **Real OpenStreetMap with Leaflet**: Interactive map with actual street tiles taking right half of screen
 - Flight control buttons (ARM, DISARM, TAKEOFF, LAND, RTL, mode changes)
 - Safety confirmations for critical operations
 - Mission and geofence management
 - Offline map tile support
-- **Heartbeat audio feedback**: Audio beep played on each heartbeat (1Hz rate)
+- **Heartbeat audio feedback**: Audio beep played ONLY on HEARTBEAT messages (1Hz rate)
 - **Heartbeat visual indicator**: Animated heart icon that pulses with each heartbeat
 - Voice announcements and configurable audio feedback
 - Multi-device responsive design with Bootstrap 5
 - **Offline functionality**: Works without internet (local Bootstrap assets, offline maps)
+- **Efficient updates**: Partial UI updates without full page reloads
 
 ## Development Setup
 
@@ -181,14 +182,20 @@ Based on reference specifications, implement exactly these components:
 - **No CDN Dependencies**: Do not use Bootstrap CDN links - download and serve locally
 - **Internet Independence**: Website must work without internet access for Bootstrap assets
 
+### **🚨 STRICT LAYOUT REQUIREMENTS**
+- **VFR HUD Position**: Top-left quarter of screen (25% of total screen space)
+- **Map Position**: Right half of screen (50% of total screen space) 
+- **Controls Position**: Below HUD in remaining bottom-left area
+- **No Layout Deviation**: Test FAILS if HUD is not in top-left quarter or map is not right half
+
 ### Main Interface Components
-- **Primary Flight Display (VFR HUD)**: Bootstrap card containing 800x600px canvas with artificial horizon, flight tapes, and all 15 required components
-- **Interactive Map**: Bootstrap card with drone position, home marker, target markers, and click-to-fly functionality
-- **Connection Panel**: Bootstrap form with input groups for IP/port, styled buttons for Connect/Disconnect, connection status badges, heartbeat indicator
-- **Flight Controls**: Bootstrap button groups for ARM, DISARM, TAKEOFF (with input group for altitude), LAND, RTL, and styled dropdown for flight mode selection
-- **Navigation Panel**: Bootstrap form with input groups for latitude, longitude, altitude and styled action buttons
-- **Request Panel**: Bootstrap button toolbar for geofence and mission request buttons
-- **Message Log**: Bootstrap card with scrollable body containing timestamped system messages
+- **Primary Flight Display (VFR HUD)**: Bootstrap card in TOP-LEFT quarter containing 800x600px canvas with artificial horizon, flight tapes, and all 15 required components
+- **Interactive Map**: Bootstrap card taking RIGHT HALF of screen with **REAL OpenStreetMap tiles using Leaflet**, drone position, home marker, target markers, and click-to-fly functionality
+- **Connection Panel**: Bootstrap form below HUD with input groups for IP/port, styled buttons for Connect/Disconnect, connection status badges, heartbeat indicator
+- **Flight Controls**: Bootstrap button groups below HUD for ARM, DISARM, TAKEOFF (with input group for altitude), LAND, RTL, and styled dropdown for flight mode selection
+- **Navigation Panel**: Bootstrap form below HUD with input groups for latitude, longitude, altitude and styled action buttons
+- **Request Panel**: Bootstrap button toolbar below HUD for geofence and mission request buttons
+- **Message Log**: Bootstrap card below HUD with scrollable body containing timestamped system messages
 
 ## MAVLink Integration
 
@@ -288,7 +295,8 @@ All tests must verify actual functionality:
   * Parse system ID, component ID, and vehicle type
   * Test heartbeat timeout detection
   * Verify heartbeat animation triggers on message receipt
-  * Test heartbeat audio beep functionality
+  * **🔊 HEARTBEAT AUDIO STRICT TEST**: Audio beep ONLY plays for HEARTBEAT messages, NOT other MAVLink messages
+  * **🚨 CRITICAL**: Test that ATTITUDE, GLOBAL_POSITION_INT, VFR_HUD messages do NOT trigger audio
 - TEST-003: Telemetry/message processing
   * Process ATTITUDE, GLOBAL_POSITION_INT, VFR_HUD messages
   * Validate message parsing and data extraction
@@ -376,11 +384,24 @@ All tests must verify actual functionality:
 - TEST-013: Real MAVLink connection validation
   * **BROWSER TESTING**: Open website in browser, click Connect button, observe UI changes
   * **VISUAL VERIFICATION**: Watch heartbeat visual indicator pulse at 1Hz in browser
-  * **AUDIO TESTING**: Listen for heartbeat audio beep in browser interface
+  * **🔊 STRICT AUDIO TESTING**: Listen for heartbeat audio beep ONLY on HEARTBEAT messages
+  * **❌ AUDIO PROHIBITION**: Verify NO audio on ATTITUDE, POSITION, or other MAVLink messages
   * **UI VALIDATION**: See heartbeat counter increment in connection panel on website
+- TEST-013a: **WEBSITE HEARTBEAT RATE VALIDATION**
+  * **🌐 BROWSER TESTING**: Open deployed website, connect to drone
+  * **⏱️ TIME HEARTBEAT AUDIO**: Count audio beeps over 30 seconds - should be exactly 30 beeps
+  * **📊 VISUAL COUNTER**: Watch heartbeat counter increment exactly once per second
+  * **🚨 STRICT TIMING**: Test FAILS if heartbeat rate is not 1Hz (±0.1 second tolerance)
+  * **📋 REAL DATA ONLY**: No mock heartbeats - must use actual MAVLink HEARTBEAT messages
 - TEST-014: Telemetry data flow validation
 - TEST-015: HUD data display validation
-- TEST-016: Map data display validation
+- TEST-016: **REAL MAP TILES VALIDATION** 
+  * **🌐 BROWSER TESTING**: Open website and observe map in browser interface
+  * **🗺️ NO PLACEHOLDERS**: Map MUST show real OpenStreetMap tiles with streets, buildings, labels
+  * **❌ BLACK MAP PROHIBITION**: Test FAILS if map shows black/blank background
+  * **🚨 STRICT REQUIREMENT**: Must use Leaflet with real OSM tile servers
+  * **📍 STREET VISIBILITY**: Zoom in and verify actual street names and geographic features visible
+  * **💾 OFFLINE CAPABILITY**: Test map tiles load and cache for offline use
 
 **Flight Control Tests:**
 - TEST-017: ARM command real validation
@@ -400,9 +421,25 @@ All tests must verify actual functionality:
 - TEST-027: Mission REQUEST button
 
 **Map Interface Tests:**
-- TEST-028: Map drone position validation
-- TEST-029: Fly-to real command validation
-- TEST-030: Map interface interactions
+- TEST-028: **LAYOUT POSITION VALIDATION**
+  * **🌐 BROWSER TESTING**: Open website and measure component positions
+  * **📏 HUD POSITION**: Verify VFR HUD is in top-left quarter (25% of screen)
+  * **📏 MAP POSITION**: Verify map takes right half of screen (50% of screen)
+  * **📏 CONTROLS POSITION**: Verify controls are below HUD in bottom-left area
+  * **🚨 STRICT MEASUREMENT**: Test FAILS if layout deviates from specified positions
+- TEST-029: **REAL MAP IMPLEMENTATION**
+  * **🌐 BROWSER TESTING**: Reload website and observe map area
+  * **🗺️ OPENSTREETMAP**: Verify Leaflet map loads real OSM tiles with streets/buildings
+  * **❌ NO BLACK MAP**: Test FAILS if map shows black/empty background
+  * **🔍 ZOOM FUNCTIONALITY**: Test map zoom shows increasing detail levels
+  * **📍 TILE VALIDATION**: Verify map tiles show actual geographic features
+- TEST-030: **DRONE POSITION MAP DISPLAY**
+  * **🌐 BROWSER TESTING**: Connect to drone and observe map
+  * **📍 DRONE MARKER**: Verify blue drone marker appears at correct GPS coordinates
+  * **🔄 POSITION UPDATES**: Watch drone marker move as GPS position changes
+  * **❌ NO PAGE REFRESH**: Verify map updates WITHOUT full webpage reload
+  * **⚡ PARTIAL UPDATES**: Only drone marker position changes, not entire map
+  * **🚨 REAL GPS DATA**: Must use actual GLOBAL_POSITION_INT messages from drone
 
 **Additional Integration Tests:**
 - TEST-031: Button functionality

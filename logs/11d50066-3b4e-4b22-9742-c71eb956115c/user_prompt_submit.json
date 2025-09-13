@@ -1,0 +1,10 @@
+[
+  {
+    "session_id": "11d50066-3b4e-4b22-9742-c71eb956115c",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/11d50066-3b4e-4b22-9742-c71eb956115c.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "UserPromptSubmit",
+    "prompt": "Add the following tests to @WEBGCS_REPLIT_PRD.md\nMake them STRICTLY enforced. No mock data. No placeholders.\n\n\nthe heartbeat sound should only ding when a mavlink heartbeat message is received, not other mavlink messages\n\nI WANT YOU. TO TEST THE WEBSITE HEARTBEAT RATE FOR ME\n\n\nFor the map\nDo not use placeholder background instead of real map tiles.\n\nMake sure the HUD is on the top left.\nMake sure the HUD is only taking up about \u00bc of the screen (top left quarter)\nMake sure the map takes the right half of the screen.\nMake sure the rest of the info is below the HUD.\n\nreload the website and test if you can see the maps on the actual website, with streets, etc. it should not be a black map.\n\nMake sure to Now implement a real map with OpenStreetMap tiles using Leaflet to replace the placeholder. Test it in the browser.\n\nMake sure the drone position is being displayed on the map correctly.\n\ncheck that the drone position is correctly displayed on the map. do not refresh the entire webpage every time a mavlink packet is received, only the parts that change.\n"
+  }
+]
