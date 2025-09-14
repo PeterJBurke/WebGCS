@@ -1,0 +1,28 @@
+[
+  {
+    "session_id": "afb64f9f-40d0-4e67-a121-b5a2d81eef18",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/afb64f9f-40d0-4e67-a121-b5a2d81eef18.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Read",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "offset": 380,
+      "limit": 30
+    }
+  },
+  {
+    "session_id": "afb64f9f-40d0-4e67-a121-b5a2d81eef18",
+    "transcript_path": "/Users/peterburke/.claude/projects/-Users-peterburke-Documents-Code-WebGCS7/afb64f9f-40d0-4e67-a121-b5a2d81eef18.jsonl",
+    "cwd": "/Users/peterburke/Documents/Code/WebGCS7",
+    "permission_mode": "default",
+    "hook_event_name": "PreToolUse",
+    "tool_name": "Edit",
+    "tool_input": {
+      "file_path": "/Users/peterburke/Documents/Code/WebGCS7/WEBGCS_REPLIT_PRD.md",
+      "old_string": "- TEST-015: HUD data display validation\n- TEST-016: **REAL MAP TILES VALIDATION**",
+      "new_string": "- TEST-015: HUD data display validation\n- TEST-015a: **GPS VALIDATION**\n  * **\ud83c\udf10 BROWSER TESTING**: Connect to drone and observe GPS data in browser\n  * **\ud83d\udccd REAL COORDINATES**: Verify GPS coordinates are NOT (0,0) or placeholder values\n  * **\ud83d\udcca TELEMETRY PANEL**: Confirm actual latitude/longitude display in telemetry panel\n  * **\ud83d\uddfa\ufe0f MAP POSITION**: Verify same GPS coordinates position drone marker on map\n  * **\ud83d\udd04 DATA FLOW**: Test complete flow: Drone \u2192 MAVLink \u2192 Backend \u2192 UI \u2192 Display\n  * **\ud83d\udea8 REAL GPS ONLY**: Must use actual GLOBAL_POSITION_INT messages from drone\n  * **\u274c NO MOCK DATA**: Test FAILS if coordinates are fake, default, or placeholder\n- TEST-016: **REAL MAP TILES VALIDATION**"
+    }
+  }
+]

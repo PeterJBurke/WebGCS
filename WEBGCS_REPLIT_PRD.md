@@ -395,6 +395,14 @@ All tests must verify actual functionality:
   * **📋 REAL DATA ONLY**: No mock heartbeats - must use actual MAVLink HEARTBEAT messages
 - TEST-014: Telemetry data flow validation
 - TEST-015: HUD data display validation
+- TEST-015a: **GPS VALIDATION**
+  * **🌐 BROWSER TESTING**: Connect to drone and observe GPS data in browser
+  * **📍 REAL COORDINATES**: Verify GPS coordinates are NOT (0,0) or placeholder values
+  * **📊 TELEMETRY PANEL**: Confirm actual latitude/longitude display in telemetry panel
+  * **🗺️ MAP POSITION**: Verify same GPS coordinates position drone marker on map
+  * **🔄 DATA FLOW**: Test complete flow: Drone → MAVLink → Backend → UI → Display
+  * **🚨 REAL GPS ONLY**: Must use actual GLOBAL_POSITION_INT messages from drone
+  * **❌ NO MOCK DATA**: Test FAILS if coordinates are fake, default, or placeholder
 - TEST-016: **REAL MAP TILES VALIDATION** 
   * **🌐 BROWSER TESTING**: Open website and observe map in browser interface
   * **🗺️ NO PLACEHOLDERS**: Map MUST show real OpenStreetMap tiles with streets, buildings, labels
